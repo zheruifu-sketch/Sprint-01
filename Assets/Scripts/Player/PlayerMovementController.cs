@@ -6,6 +6,7 @@ public class PlayerMovementController : MonoBehaviour
     [Header("References")]
     [SerializeField] private PlayerFormRoot formRoot;
     [SerializeField] private PlayerGroundSensor groundSensor;
+    [SerializeField] private PlayerRuleController ruleController;
 
     [Header("Move Settings")]
     [SerializeField] private float humanMoveSpeed = 4f;
@@ -32,6 +33,7 @@ public class PlayerMovementController : MonoBehaviour
     {
         formRoot = GetComponent<PlayerFormRoot>();
         groundSensor = GetComponent<PlayerGroundSensor>();
+        ruleController = GetComponent<PlayerRuleController>();
     }
 
     private void Awake()
@@ -141,7 +143,8 @@ public class PlayerMovementController : MonoBehaviour
         switch (formRoot.CurrentForm)
         {
             case PlayerFormType.Human:
-                velocity.x = horizontalInput * humanMoveSpeed * speedMultiplier;
+                float humanZoneMultiplier = ruleController != null ? ruleController.HumanSpeedMultiplier : 1f;
+                velocity.x = horizontalInput * humanMoveSpeed * speedMultiplier * humanZoneMultiplier;
                 if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
                 {
                     velocity.y = 0f;
