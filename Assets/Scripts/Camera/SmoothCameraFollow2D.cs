@@ -7,6 +7,7 @@ public class SmoothCameraFollow2D : MonoBehaviour
     [SerializeField] private float smoothTime = 0.2f;
     [SerializeField] private bool followX = true;
     [SerializeField] private bool followY = true;
+    [SerializeField] private bool useRigidbodyPrediction = true;
 
     private Vector3 velocity;
     private Rigidbody2D targetRigidbody;
@@ -43,7 +44,7 @@ public class SmoothCameraFollow2D : MonoBehaviour
 
     private Vector3 GetDesiredPosition(Vector3 currentPosition)
     {
-        Vector2 targetPosition2D = targetRigidbody != null ? targetRigidbody.position : (Vector2)target.position;
+        Vector2 targetPosition2D = GetTargetPosition();
         Vector3 desiredPosition = new Vector3(targetPosition2D.x, targetPosition2D.y, 0f) + offset;
 
         if (!followX)
@@ -58,6 +59,17 @@ public class SmoothCameraFollow2D : MonoBehaviour
 
         desiredPosition.z = offset.z;
         return desiredPosition;
+    }
+
+    private Vector2 GetTargetPosition()
+    {
+        if (!useRigidbodyPrediction || targetRigidbody == null)
+        {
+            return target.position;
+        }
+
+        float predictionTime = Mathf.Clamp(Time.time - Time.fixedTime, 0f, Time.fixedDeltaTime);
+        return targetRigidbody.position + targetRigidbody.velocity * predictionTime;
     }
 
     private void CacheTargetRigidbody()
