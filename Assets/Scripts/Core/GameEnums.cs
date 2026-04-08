@@ -22,5 +22,6 @@ public enum FailureType
     FellIntoWater = 1,
     FellFromCliff = 2,
     HitObstacle = 3,
-    InvalidForm = 4
+    InvalidForm = 4,
+    EnergyDepleted = 5
 }

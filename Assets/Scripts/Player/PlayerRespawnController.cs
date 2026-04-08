@@ -7,6 +7,7 @@ public class PlayerRespawnController : MonoBehaviour
     [SerializeField] private PlayerFormRoot formRoot;
     [SerializeField] private PlayerRuleController ruleController;
     [SerializeField] private PlayerHealthController healthController;
+    [SerializeField] private PlayerEnergyController energyController;
 
     [Header("Respawn")]
     [SerializeField] private PlayerFormType respawnForm = PlayerFormType.Human;
@@ -22,6 +23,7 @@ public class PlayerRespawnController : MonoBehaviour
         formRoot = GetComponent<PlayerFormRoot>();
         ruleController = GetComponent<PlayerRuleController>();
         healthController = GetComponent<PlayerHealthController>();
+        energyController = GetComponent<PlayerEnergyController>();
     }
 
     private void Awake()
@@ -40,11 +42,21 @@ public class PlayerRespawnController : MonoBehaviour
             }
         }
 
+        if (energyController == null)
+        {
+            energyController = GetComponent<PlayerEnergyController>();
+            if (energyController == null)
+            {
+                energyController = gameObject.AddComponent<PlayerEnergyController>();
+            }
+        }
+
         spawnPosition = transform.position;
     }
 
     private void Update()
     {
+        UpdateEnergyAndRespawn();
         UpdateHazardDamageAndRespawn();
     }
 
@@ -107,6 +119,25 @@ public class PlayerRespawnController : MonoBehaviour
         if (healthController != null)
         {
             healthController.ResetHealth();
+        }
+
+        if (energyController != null)
+        {
+            energyController.ResetEnergy();
+        }
+    }
+
+    private void UpdateEnergyAndRespawn()
+    {
+        if (formRoot == null || energyController == null)
+        {
+            return;
+        }
+
+        energyController.ConsumeByForm(formRoot.CurrentForm, Time.deltaTime);
+        if (energyController.IsEmpty())
+        {
+            Respawn(FailureType.EnergyDepleted);
         }
     }
 

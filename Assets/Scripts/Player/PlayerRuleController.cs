@@ -9,14 +9,29 @@ public class PlayerRuleController : MonoBehaviour
 
     [Header("Rules")]
     [SerializeField] private float blizzardHumanSpeedMultiplier = 0.3f;
+    [SerializeField] private float transformCooldown = GameConstants.DefaultTransformCooldown;
     [SerializeField] private bool forceHumanWhenPlaneBlocked = true;
     [SerializeField] private Vector2 boatSwitchCheckOffset = GameConstants.DefaultBoatSwitchCheckOffset;
     [SerializeField] private float boatSwitchCheckRadius = GameConstants.DefaultBoatSwitchCheckRadius;
 
     private readonly Collider2D[] boatSwitchResults = new Collider2D[16];
+    private float transformCooldownRemaining;
 
     public float HumanSpeedMultiplier => IsInBlizzardAsHuman() ? blizzardHumanSpeedMultiplier : 1f;
     public float BlizzardSlowMultiplier => blizzardHumanSpeedMultiplier;
+    public bool IsTransformOnCooldown => transformCooldownRemaining > 0f;
+    public float TransformCooldownNormalizedRemaining
+    {
+        get
+        {
+            if (transformCooldown <= 0f)
+            {
+                return 0f;
+            }
+
+            return Mathf.Clamp01(transformCooldownRemaining / transformCooldown);
+        }
+    }
 
     private void Reset()
     {
@@ -34,6 +49,7 @@ public class PlayerRuleController : MonoBehaviour
 
     private void Update()
     {
+        UpdateTransformCooldown();
         HandleFormHotkeys();
         ApplyForcedFormRules();
     }
@@ -60,6 +76,11 @@ public class PlayerRuleController : MonoBehaviour
 
     private void HandleFormHotkeys()
     {
+        if (IsTransformOnCooldown)
+        {
+            return;
+        }
+
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             TrySwitchForm(PlayerFormType.Human);
@@ -85,7 +106,38 @@ public class PlayerRuleController : MonoBehaviour
             return;
         }
 
+        if (formRoot.CurrentForm == targetForm)
+        {
+            return;
+        }
+
         formRoot.SetForm(targetForm);
+        StartTransformCooldown();
+    }
+
+    private void UpdateTransformCooldown()
+    {
+        if (transformCooldownRemaining <= 0f)
+        {
+            return;
+        }
+
+        transformCooldownRemaining -= Time.deltaTime;
+        if (transformCooldownRemaining < 0f)
+        {
+            transformCooldownRemaining = 0f;
+        }
+    }
+
+    private void StartTransformCooldown()
+    {
+        if (transformCooldown <= 0f)
+        {
+            transformCooldownRemaining = 0f;
+            return;
+        }
+
+        transformCooldownRemaining = transformCooldown;
     }
 
     private bool CanUseForm(PlayerFormType targetForm)
