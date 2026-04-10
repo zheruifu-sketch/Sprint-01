@@ -139,6 +139,7 @@ public class PlayerMovementController : MonoBehaviour
         Rigidbody2D rb = formRoot.PlayerRigidbody;
         Vector2 velocity = rb.velocity;
         float speedMultiplier = sprintHeld ? sprintMultiplier : 1f;
+        bool isRunning = false;
 
         switch (formRoot.CurrentForm)
         {
@@ -157,17 +158,20 @@ public class PlayerMovementController : MonoBehaviour
                 {
                     rb.velocity = velocity;
                 }
+                isRunning = Mathf.Abs(horizontalInput) > 0.01f && groundSensor != null && groundSensor.IsGrounded;
                 break;
 
             case PlayerFormType.Car:
                 velocity.x = horizontalInput * carMoveSpeed * speedMultiplier;
                 rb.velocity = velocity;
+                isRunning = Mathf.Abs(horizontalInput) > 0.01f;
                 break;
 
             case PlayerFormType.Plane:
                 velocity.x = horizontalInput * planeMoveSpeed * speedMultiplier;
                 velocity.y = verticalInput * planeVerticalSpeed * speedMultiplier;
                 rb.velocity = velocity;
+                isRunning = Mathf.Abs(horizontalInput) > 0.01f || Mathf.Abs(verticalInput) > 0.01f;
                 break;
 
             case PlayerFormType.Boat:
@@ -179,9 +183,11 @@ public class PlayerMovementController : MonoBehaviour
 
                 velocity.x = horizontalInput * boatSpeed * speedMultiplier;
                 rb.velocity = velocity;
+                isRunning = false;
                 break;
         }
 
         formRoot.SetFacingFromHorizontal(horizontalInput);
+        formRoot.SetRunState(isRunning);
     }
 }

@@ -8,16 +8,34 @@ public class PlayerFormView : MonoBehaviour
     [SerializeField] private GameObject planeObject;
     [SerializeField] private GameObject boatObject;
 
+    [Header("Visual Targets")]
+    [SerializeField] private Transform humanVisual;
+    [SerializeField] private Transform carVisual;
+    [SerializeField] private Transform planeVisual;
+    [SerializeField] private Transform boatVisual;
+
     [Header("Facing")]
-    [SerializeField] private bool spritesFaceLeftByDefault = true;
+    [SerializeField] private bool humanFacesLeftByDefault = true;
+    [SerializeField] private bool carFacesLeftByDefault = true;
+    [SerializeField] private bool planeFacesLeftByDefault = true;
+    [SerializeField] private bool boatFacesLeftByDefault = true;
+
+    [Header("Animation")]
+    [SerializeField] private string runParameterName = "Run";
 
     private Vector3 humanScale = Vector3.one;
     private Vector3 carScale = Vector3.one;
     private Vector3 planeScale = Vector3.one;
     private Vector3 boatScale = Vector3.one;
+    private Animator humanAnimator;
+    private Animator carAnimator;
+    private Animator planeAnimator;
+    private Animator boatAnimator;
 
     private void Awake()
     {
+        ResolveVisualTargets();
+        CacheAnimators();
         CacheBaseScales();
     }
 
@@ -31,20 +49,42 @@ public class PlayerFormView : MonoBehaviour
 
     public void SetFacing(bool movingLeft)
     {
-        bool faceLeftVisually = spritesFaceLeftByDefault ? movingLeft : !movingLeft;
+        ApplyScale(humanVisual, humanScale, ResolveVisualFacing(humanFacesLeftByDefault, movingLeft));
+        ApplyScale(carVisual, carScale, ResolveVisualFacing(carFacesLeftByDefault, movingLeft));
+        ApplyScale(planeVisual, planeScale, ResolveVisualFacing(planeFacesLeftByDefault, movingLeft));
+        ApplyScale(boatVisual, boatScale, ResolveVisualFacing(boatFacesLeftByDefault, movingLeft));
+    }
 
-        ApplyScale(humanObject, humanScale, faceLeftVisually);
-        ApplyScale(carObject, carScale, faceLeftVisually);
-        ApplyScale(planeObject, planeScale, faceLeftVisually);
-        ApplyScale(boatObject, boatScale, faceLeftVisually);
+    public void SetRunState(PlayerFormType activeForm, bool isRunning)
+    {
+        SetRun(humanAnimator, activeForm == PlayerFormType.Human && isRunning);
+        SetRun(carAnimator, activeForm == PlayerFormType.Car && isRunning);
+        SetRun(planeAnimator, activeForm == PlayerFormType.Plane && isRunning);
+        SetRun(boatAnimator, activeForm == PlayerFormType.Boat && isRunning);
     }
 
     private void CacheBaseScales()
     {
-        humanScale = humanObject != null ? humanObject.transform.localScale : Vector3.one;
-        carScale = carObject != null ? carObject.transform.localScale : Vector3.one;
-        planeScale = planeObject != null ? planeObject.transform.localScale : Vector3.one;
-        boatScale = boatObject != null ? boatObject.transform.localScale : Vector3.one;
+        humanScale = humanVisual != null ? humanVisual.localScale : Vector3.one;
+        carScale = carVisual != null ? carVisual.localScale : Vector3.one;
+        planeScale = planeVisual != null ? planeVisual.localScale : Vector3.one;
+        boatScale = boatVisual != null ? boatVisual.localScale : Vector3.one;
+    }
+
+    private void ResolveVisualTargets()
+    {
+        humanVisual = ResolveVisualTarget(humanObject, humanVisual);
+        carVisual = ResolveVisualTarget(carObject, carVisual);
+        planeVisual = ResolveVisualTarget(planeObject, planeVisual);
+        boatVisual = ResolveVisualTarget(boatObject, boatVisual);
+    }
+
+    private void CacheAnimators()
+    {
+        humanAnimator = humanObject != null ? humanObject.GetComponent<Animator>() : null;
+        carAnimator = carObject != null ? carObject.GetComponent<Animator>() : null;
+        planeAnimator = planeObject != null ? planeObject.GetComponent<Animator>() : null;
+        boatAnimator = boatObject != null ? boatObject.GetComponent<Animator>() : null;
     }
 
     private static void SetFormActive(GameObject target, bool active)
@@ -55,7 +95,38 @@ public class PlayerFormView : MonoBehaviour
         }
     }
 
-    private static void ApplyScale(GameObject target, Vector3 baseScale, bool faceLeft)
+    private static Transform ResolveVisualTarget(GameObject rootObject, Transform explicitVisual)
+    {
+        if (explicitVisual != null)
+        {
+            return explicitVisual;
+        }
+
+        if (rootObject == null)
+        {
+            return null;
+        }
+
+        Transform rootTransform = rootObject.transform;
+        return rootTransform.childCount > 0 ? rootTransform.GetChild(0) : rootTransform;
+    }
+
+    private static bool ResolveVisualFacing(bool facesLeftByDefault, bool movingLeft)
+    {
+        return facesLeftByDefault ? movingLeft : !movingLeft;
+    }
+
+    private void SetRun(Animator animator, bool isRunning)
+    {
+        if (animator == null || string.IsNullOrEmpty(runParameterName))
+        {
+            return;
+        }
+
+        animator.SetBool(runParameterName, isRunning);
+    }
+
+    private static void ApplyScale(Transform target, Vector3 baseScale, bool faceLeft)
     {
         if (target == null)
         {
@@ -64,6 +135,6 @@ public class PlayerFormView : MonoBehaviour
 
         Vector3 nextScale = baseScale;
         nextScale.x = Mathf.Abs(baseScale.x) * (faceLeft ? 1f : -1f);
-        target.transform.localScale = nextScale;
+        target.localScale = nextScale;
     }
 }

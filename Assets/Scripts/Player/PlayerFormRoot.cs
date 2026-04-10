@@ -14,6 +14,9 @@ public class PlayerFormRoot : MonoBehaviour
     public Rigidbody2D PlayerRigidbody => playerRigidbody;
     public PlayerFormView FormView => formView;
 
+    private bool hasFacingDirection;
+    private bool facingLeft;
+
     private void Reset()
     {
         playerRigidbody = GetComponent<Rigidbody2D>();
@@ -40,6 +43,12 @@ public class PlayerFormRoot : MonoBehaviour
         if (formView != null)
         {
             formView.ShowForm(CurrentForm);
+            formView.SetRunState(CurrentForm, false);
+
+            if (hasFacingDirection)
+            {
+                formView.SetFacing(facingLeft);
+            }
         }
     }
 
@@ -50,6 +59,18 @@ public class PlayerFormRoot : MonoBehaviour
             return;
         }
 
-        formView.SetFacing(horizontalInput < 0f);
+        facingLeft = horizontalInput < 0f;
+        hasFacingDirection = true;
+        formView.SetFacing(facingLeft);
+    }
+
+    public void SetRunState(bool isRunning)
+    {
+        if (formView == null)
+        {
+            return;
+        }
+
+        formView.SetRunState(CurrentForm, isRunning);
     }
 }
