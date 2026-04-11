@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteAlways]
 [RequireComponent(typeof(SpriteRenderer))]
 public class LoopingBackgroundStrip2D : MonoBehaviour
 {
@@ -17,11 +16,11 @@ public class LoopingBackgroundStrip2D : MonoBehaviour
     [Header("Looping")]
     [SerializeField] private int extraTilesPerSide = 1;
 
-    private readonly List<SpriteRenderer> generatedTiles = new List<SpriteRenderer>();
+    private readonly Dictionary<int, SpriteRenderer> generatedTiles = new Dictionary<int, SpriteRenderer>();
     private Vector3 basePosition;
     private Vector3 cameraStartPosition;
     private float tileWidth;
-    private int currentTileCount;
+    private int centerTileIndex;
 
     private void Reset()
     {
@@ -31,17 +30,44 @@ public class LoopingBackgroundStrip2D : MonoBehaviour
 
     private void Awake()
     {
+        if (!Application.isPlaying)
+        {
+            return;
+        }
+
+        CleanupLoopTileChildren();
         Initialize();
     }
 
     private void OnEnable()
     {
+        if (!Application.isPlaying)
+        {
+            return;
+        }
+
+        CleanupLoopTileChildren();
         Initialize();
         UpdateTiles();
     }
 
+    private void OnDisable()
+    {
+        if (!Application.isPlaying)
+        {
+            return;
+        }
+
+        ClearGeneratedTiles();
+    }
+
     private void LateUpdate()
     {
+        if (!Application.isPlaying)
+        {
+            return;
+        }
+
         if (!EnsureReady())
         {
             return;
@@ -55,6 +81,11 @@ public class LoopingBackgroundStrip2D : MonoBehaviour
         if (sourceRenderer == null)
         {
             sourceRenderer = GetComponent<SpriteRenderer>();
+        }
+
+        if (targetCamera == null)
+        {
+            targetCamera = Camera.main;
         }
     }
 
@@ -80,7 +111,8 @@ public class LoopingBackgroundStrip2D : MonoBehaviour
 
         sourceRenderer.drawMode = SpriteDrawMode.Simple;
         tileWidth = sourceRenderer.bounds.size.x;
-        RebuildTilesIfNeeded();
+        centerTileIndex = 0;
+        generatedTiles[centerTileIndex] = sourceRenderer;
     }
 
     private bool EnsureReady()
@@ -104,53 +136,15 @@ public class LoopingBackgroundStrip2D : MonoBehaviour
         return tileWidth > 0.001f;
     }
 
-    private void RebuildTilesIfNeeded()
-    {
-        int visibleTileCount = Mathf.CeilToInt(GetCameraWidth() / tileWidth);
-        int tilesPerSide = Mathf.Max(1, visibleTileCount / 2 + 1 + extraTilesPerSide);
-        int requiredCount = tilesPerSide * 2 + 1;
-
-        if (requiredCount == currentTileCount && generatedTiles.Count == currentTileCount)
-        {
-            return;
-        }
-
-        ClearGeneratedTiles();
-
-        currentTileCount = requiredCount;
-        int centerIndex = tilesPerSide;
-
-        for (int i = 0; i < currentTileCount; i++)
-        {
-            SpriteRenderer tileRenderer;
-            if (i == centerIndex)
-            {
-                tileRenderer = sourceRenderer;
-            }
-            else
-            {
-                GameObject tileObject = new GameObject($"LoopTile_{i}");
-                tileObject.transform.SetParent(transform, false);
-                tileRenderer = tileObject.AddComponent<SpriteRenderer>();
-                CopyRendererSettings(tileRenderer, sourceRenderer);
-            }
-
-            generatedTiles.Add(tileRenderer);
-        }
-    }
-
     private void UpdateTiles()
     {
-        RebuildTilesIfNeeded();
-
         if (generatedTiles.Count == 0)
         {
             return;
         }
 
         float cameraOffsetX = (targetCamera.transform.position.x - cameraStartPosition.x) * horizontalParallax;
-        float desiredCenterX = basePosition.x + cameraOffsetX;
-        float snappedCenterX = basePosition.x + Mathf.Round((desiredCenterX - basePosition.x) / tileWidth) * tileWidth;
+        float centerX = basePosition.x + cameraOffsetX;
 
         float targetY = basePosition.y;
         if (followCameraY)
@@ -158,18 +152,25 @@ public class LoopingBackgroundStrip2D : MonoBehaviour
             targetY += (targetCamera.transform.position.y - cameraStartPosition.y) * verticalParallax;
         }
 
-        int centerIndex = generatedTiles.Count / 2;
-        for (int i = 0; i < generatedTiles.Count; i++)
+        float halfCameraWidth = GetCameraWidth() * 0.5f;
+        int leftTileIndex = Mathf.FloorToInt((centerX - halfCameraWidth - extraTilesPerSide * tileWidth - basePosition.x) / tileWidth);
+        int rightTileIndex = Mathf.CeilToInt((centerX + halfCameraWidth + extraTilesPerSide * tileWidth - basePosition.x) / tileWidth);
+
+        EnsureTileRange(leftTileIndex, rightTileIndex);
+        RecycleTilesOutsideRange(leftTileIndex, rightTileIndex);
+
+        foreach (KeyValuePair<int, SpriteRenderer> pair in generatedTiles)
         {
-            SpriteRenderer tile = generatedTiles[i];
+            int tileIndex = pair.Key;
+            SpriteRenderer tile = pair.Value;
             if (tile == null)
             {
                 continue;
             }
 
-            float offsetX = (i - centerIndex) * tileWidth;
+            float offsetX = tileIndex * tileWidth;
             Transform tileTransform = tile.transform;
-            tileTransform.position = new Vector3(snappedCenterX + offsetX, targetY, basePosition.z);
+            tileTransform.position = new Vector3(basePosition.x + offsetX, targetY, basePosition.z);
         }
     }
 
@@ -187,9 +188,9 @@ public class LoopingBackgroundStrip2D : MonoBehaviour
 
     private void ClearGeneratedTiles()
     {
-        for (int i = 0; i < generatedTiles.Count; i++)
+        foreach (KeyValuePair<int, SpriteRenderer> pair in generatedTiles)
         {
-            SpriteRenderer tile = generatedTiles[i];
+            SpriteRenderer tile = pair.Value;
             if (tile == null || tile == sourceRenderer)
             {
                 continue;
@@ -206,6 +207,89 @@ public class LoopingBackgroundStrip2D : MonoBehaviour
         }
 
         generatedTiles.Clear();
+        if (sourceRenderer != null)
+        {
+            generatedTiles[centerTileIndex] = sourceRenderer;
+        }
+    }
+
+    private void CleanupLoopTileChildren()
+    {
+        List<GameObject> staleLoopTiles = new List<GameObject>();
+
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Transform child = transform.GetChild(i);
+            if (child == null || !child.name.StartsWith("LoopTile_"))
+            {
+                continue;
+            }
+
+            staleLoopTiles.Add(child.gameObject);
+        }
+
+        for (int i = 0; i < staleLoopTiles.Count; i++)
+        {
+            Destroy(staleLoopTiles[i]);
+        }
+    }
+
+    private void EnsureTileRange(int leftTileIndex, int rightTileIndex)
+    {
+        for (int tileIndex = leftTileIndex; tileIndex <= rightTileIndex; tileIndex++)
+        {
+            if (generatedTiles.ContainsKey(tileIndex))
+            {
+                continue;
+            }
+
+            SpriteRenderer tileRenderer;
+            if (tileIndex == centerTileIndex)
+            {
+                tileRenderer = sourceRenderer;
+            }
+            else
+            {
+                GameObject tileObject = new GameObject($"LoopTile_{tileIndex}");
+                tileObject.transform.SetParent(transform, false);
+                tileRenderer = tileObject.AddComponent<SpriteRenderer>();
+                CopyRendererSettings(tileRenderer, sourceRenderer);
+            }
+
+            generatedTiles[tileIndex] = tileRenderer;
+        }
+    }
+
+    private void RecycleTilesOutsideRange(int leftTileIndex, int rightTileIndex)
+    {
+        List<int> keysToRemove = new List<int>();
+
+        foreach (KeyValuePair<int, SpriteRenderer> pair in generatedTiles)
+        {
+            int tileIndex = pair.Key;
+            if (tileIndex >= leftTileIndex && tileIndex <= rightTileIndex)
+            {
+                continue;
+            }
+
+            if (tileIndex == centerTileIndex)
+            {
+                continue;
+            }
+
+            SpriteRenderer tile = pair.Value;
+            if (tile != null)
+            {
+                Destroy(tile.gameObject);
+            }
+
+            keysToRemove.Add(tileIndex);
+        }
+
+        for (int i = 0; i < keysToRemove.Count; i++)
+        {
+            generatedTiles.Remove(keysToRemove[i]);
+        }
     }
 
     private static void CopyRendererSettings(SpriteRenderer target, SpriteRenderer source)
