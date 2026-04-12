@@ -143,6 +143,7 @@ public class LoopingBackgroundStrip2D : MonoBehaviour
             return;
         }
 
+        float cameraWorldX = targetCamera.transform.position.x;
         float cameraOffsetX = (targetCamera.transform.position.x - cameraStartPosition.x) * horizontalParallax;
         float centerX = basePosition.x + cameraOffsetX;
 
@@ -153,8 +154,8 @@ public class LoopingBackgroundStrip2D : MonoBehaviour
         }
 
         float halfCameraWidth = GetCameraWidth() * 0.5f;
-        int leftTileIndex = Mathf.FloorToInt((centerX - halfCameraWidth - extraTilesPerSide * tileWidth - basePosition.x) / tileWidth);
-        int rightTileIndex = Mathf.CeilToInt((centerX + halfCameraWidth + extraTilesPerSide * tileWidth - basePosition.x) / tileWidth);
+        int leftTileIndex = Mathf.FloorToInt((cameraWorldX - halfCameraWidth - centerX) / tileWidth) - extraTilesPerSide;
+        int rightTileIndex = Mathf.CeilToInt((cameraWorldX + halfCameraWidth - centerX) / tileWidth) + extraTilesPerSide;
 
         EnsureTileRange(leftTileIndex, rightTileIndex);
         RecycleTilesOutsideRange(leftTileIndex, rightTileIndex);
@@ -170,7 +171,7 @@ public class LoopingBackgroundStrip2D : MonoBehaviour
 
             float offsetX = tileIndex * tileWidth;
             Transform tileTransform = tile.transform;
-            tileTransform.position = new Vector3(basePosition.x + offsetX, targetY, basePosition.z);
+            tileTransform.position = new Vector3(centerX + offsetX, targetY, basePosition.z);
         }
     }
 

@@ -22,12 +22,15 @@ public class PlayerMovementController : MonoBehaviour
     [SerializeField] private float boatGravityScale = 3f;
     [SerializeField] private float jumpBufferTime = GameConstants.DefaultJumpBufferTime;
     [SerializeField] private float coyoteTime = GameConstants.DefaultCoyoteTime;
+    [SerializeField] private int maxHumanJumpCount = 2;
+    [SerializeField] private float groundedVelocityThreshold = 0.1f;
 
     private float horizontalInput;
     private float verticalInput;
     private bool sprintHeld;
     private float jumpBufferCounter;
     private float coyoteTimeCounter;
+    private int humanJumpCount;
 
     private void Reset()
     {
@@ -89,10 +92,11 @@ public class PlayerMovementController : MonoBehaviour
 
     private void UpdateGroundTimers()
     {
-        bool grounded = groundSensor != null && groundSensor.IsGrounded;
+        bool grounded = IsStableGrounded();
         if (grounded)
         {
             coyoteTimeCounter = coyoteTime;
+            humanJumpCount = 0;
         }
         else
         {
@@ -146,11 +150,15 @@ public class PlayerMovementController : MonoBehaviour
             case PlayerFormType.Human:
                 float humanZoneMultiplier = ruleController != null ? ruleController.HumanSpeedMultiplier : 1f;
                 velocity.x = horizontalInput * humanMoveSpeed * speedMultiplier * humanZoneMultiplier;
-                if (jumpBufferCounter > 0f && coyoteTimeCounter > 0f)
+                bool isGrounded = IsStableGrounded();
+                bool canUseGroundJump = jumpBufferCounter > 0f && coyoteTimeCounter > 0f;
+                bool canUseAirJump = jumpBufferCounter > 0f && !isGrounded && humanJumpCount > 0 && humanJumpCount < maxHumanJumpCount;
+                if (canUseGroundJump || canUseAirJump)
                 {
                     velocity.y = 0f;
                     rb.velocity = velocity;
                     rb.AddForce(Vector2.up * humanJumpForce, ForceMode2D.Impulse);
+                    humanJumpCount = Mathf.Min(maxHumanJumpCount, humanJumpCount + 1);
                     jumpBufferCounter = 0f;
                     coyoteTimeCounter = 0f;
                 }
@@ -158,7 +166,7 @@ public class PlayerMovementController : MonoBehaviour
                 {
                     rb.velocity = velocity;
                 }
-                isRunning = Mathf.Abs(horizontalInput) > 0.01f && groundSensor != null && groundSensor.IsGrounded;
+                isRunning = Mathf.Abs(horizontalInput) > 0.01f && isGrounded;
                 break;
 
             case PlayerFormType.Car:
@@ -189,5 +197,26 @@ public class PlayerMovementController : MonoBehaviour
 
         formRoot.SetFacingFromHorizontal(horizontalInput);
         formRoot.SetRunState(isRunning);
+    }
+
+    private bool IsStableGrounded()
+    {
+        if (groundSensor == null)
+        {
+            return false;
+        }
+
+        if (!groundSensor.IsGrounded)
+        {
+            return false;
+        }
+
+        Rigidbody2D rb = formRoot != null ? formRoot.PlayerRigidbody : null;
+        if (rb == null)
+        {
+            return true;
+        }
+
+        return Mathf.Abs(rb.velocity.y) <= groundedVelocityThreshold;
     }
 }
