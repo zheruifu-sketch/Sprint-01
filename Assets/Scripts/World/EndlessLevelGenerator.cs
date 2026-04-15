@@ -68,13 +68,23 @@ public class EndlessLevelGenerator : MonoBehaviour
         {
         }
 
-        public RandomSegmentRule(SegmentTemplate template, float weight, int minConsecutiveCount, int maxConsecutiveCount, bool canBeFirstRandomSegment = true)
+        public RandomSegmentRule(
+            SegmentTemplate template,
+            float weight,
+            int minConsecutiveCount,
+            int maxConsecutiveCount,
+            bool canBeFirstRandomSegment = true,
+            List<ZoneType> allowedPreviousZones = null)
         {
             this.template = template;
             this.weight = weight;
             this.minConsecutiveCount = minConsecutiveCount;
             this.maxConsecutiveCount = maxConsecutiveCount;
             this.canBeFirstRandomSegment = canBeFirstRandomSegment;
+            if (allowedPreviousZones != null)
+            {
+                this.allowedPreviousZones = new List<ZoneType>(allowedPreviousZones);
+            }
         }
 
         public SegmentTemplate Template => template;
@@ -103,6 +113,7 @@ public class EndlessLevelGenerator : MonoBehaviour
     [SerializeField] private Transform target;
     [SerializeField] private Transform segmentParent;
     [SerializeField] private GameLevelController levelController;
+    [SerializeField] private GameProgressionConfig progressionConfig;
 
     [Header("Spawn Range")]
     [SerializeField] private float initialLeftEdgeX;
@@ -132,6 +143,7 @@ public class EndlessLevelGenerator : MonoBehaviour
         target = FindPlayerTransform();
         segmentParent = transform;
         levelController = GameLevelController.GetOrCreateInstance();
+        progressionConfig = GameProgressionConfig.Load();
         EnsureDefaultRules();
     }
 
@@ -150,6 +162,11 @@ public class EndlessLevelGenerator : MonoBehaviour
         if (levelController == null)
         {
             levelController = GameLevelController.GetOrCreateInstance();
+        }
+
+        if (progressionConfig == null)
+        {
+            progressionConfig = GameProgressionConfig.Load();
         }
 
         EnsureDefaultRules();
@@ -246,6 +263,8 @@ public class EndlessLevelGenerator : MonoBehaviour
         openingSequenceGenerated = false;
         lastRandomRule = null;
         lastRandomRuleRepeatCount = 0;
+
+        ApplyConfiguredRules();
 
         if (clearChildrenOnPlay)
         {
@@ -557,6 +576,60 @@ public class EndlessLevelGenerator : MonoBehaviour
         }
     }
 
+    private void ApplyConfiguredRules()
+    {
+        if (progressionConfig == null || levelController == null)
+        {
+            return;
+        }
+
+        GameProgressionConfig.LevelDefinition levelDefinition = progressionConfig.GetLevel(levelController.CurrentLevelIndex);
+        if (levelDefinition == null)
+        {
+            return;
+        }
+
+        List<GameProgressionConfig.ZoneGenerationRule> configRules = levelDefinition.ZoneGenerationRules;
+        if (configRules == null || configRules.Count == 0)
+        {
+            return;
+        }
+
+        openingSequence.Clear();
+        GameObject roadPrefab = ResolvePrefabForZone(ZoneType.Road);
+        if (roadPrefab != null)
+        {
+            openingSequence.Add(CreateOpeningSegment("Start Road", roadPrefab, ZoneType.Road, levelDefinition.OpeningRoadRepeatCount));
+        }
+
+        randomRules.Clear();
+        for (int i = 0; i < configRules.Count; i++)
+        {
+            GameProgressionConfig.ZoneGenerationRule configRule = configRules[i];
+            if (configRule == null)
+            {
+                continue;
+            }
+
+            GameObject prefab = ResolvePrefabForZone(configRule.ZoneType);
+            if (prefab == null)
+            {
+                continue;
+            }
+
+            RandomSegmentRule rule = CreateRandomRule(
+                configRule.ZoneType.ToString(),
+                prefab,
+                configRule.ZoneType,
+                configRule.Weight,
+                configRule.MinConsecutiveCount,
+                configRule.MaxConsecutiveCount,
+                configRule.CanBeFirstRandomSegment,
+                configRule.AllowedPreviousZones);
+            randomRules.Add(rule);
+        }
+    }
+
     private static OpeningSegment CreateOpeningSegment(string label, GameObject prefab, ZoneType zoneType, int repeatCount)
     {
         return new OpeningSegment(new SegmentTemplate(label, prefab, zoneType), repeatCount);
@@ -565,6 +638,25 @@ public class EndlessLevelGenerator : MonoBehaviour
     private static RandomSegmentRule CreateRandomRule(string label, GameObject prefab, ZoneType zoneType, float weight, int minRepeat, int maxRepeat)
     {
         return new RandomSegmentRule(new SegmentTemplate(label, prefab, zoneType), weight, minRepeat, maxRepeat);
+    }
+
+    private static RandomSegmentRule CreateRandomRule(
+        string label,
+        GameObject prefab,
+        ZoneType zoneType,
+        float weight,
+        int minRepeat,
+        int maxRepeat,
+        bool canBeFirstRandomSegment,
+        List<ZoneType> allowedPreviousZones)
+    {
+        return new RandomSegmentRule(
+            new SegmentTemplate(label, prefab, zoneType),
+            weight,
+            minRepeat,
+            maxRepeat,
+            canBeFirstRandomSegment,
+            allowedPreviousZones);
     }
 
     private GameObject LoadSegmentPrefab(string prefabName)
@@ -581,6 +673,18 @@ public class EndlessLevelGenerator : MonoBehaviour
 #else
         return null;
 #endif
+    }
+
+    private GameObject ResolvePrefabForZone(ZoneType zoneType)
+    {
+        return zoneType switch
+        {
+            ZoneType.Road => LoadSegmentPrefab("公路"),
+            ZoneType.Water => LoadSegmentPrefab("水面"),
+            ZoneType.Cliff => LoadSegmentPrefab("悬崖"),
+            ZoneType.Blizzard => LoadSegmentPrefab("雪地"),
+            _ => null
+        };
     }
 
     private static ZoneType ResolveZoneType(SegmentTemplate template)
@@ -625,5 +729,6 @@ public class EndlessLevelGenerator : MonoBehaviour
     private void HandleLevelChanged(int _)
     {
         ClearGeneratedSegments();
+        ApplyConfiguredRules();
     }
 }

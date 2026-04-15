@@ -1,51 +1,23 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
 public class GameLevelController : MonoBehaviour
 {
-    [Serializable]
-    private class LevelConfig
-    {
-        [SerializeField] private string levelName = "Level";
-        [SerializeField] private List<PlayerFormType> unlockedForms = new List<PlayerFormType>();
-        [SerializeField] private List<ZoneType> allowedZones = new List<ZoneType>();
-
-        public LevelConfig()
-        {
-        }
-
-        public LevelConfig(string levelName, List<PlayerFormType> unlockedForms, List<ZoneType> allowedZones)
-        {
-            this.levelName = levelName;
-            this.unlockedForms = unlockedForms;
-            this.allowedZones = allowedZones;
-        }
-
-        public string LevelName => levelName;
-        public List<PlayerFormType> UnlockedForms => unlockedForms;
-        public List<ZoneType> AllowedZones => allowedZones;
-    }
-
-    [Header("Levels")]
-    [SerializeField] private int startingLevel = 1;
-    [SerializeField] private List<LevelConfig> levels = new List<LevelConfig>();
-
-    [Header("Debug")]
-    [SerializeField] private bool enableDebugHotkeys = true;
+    [Header("Config")]
+    [SerializeField] private GameProgressionConfig progressionConfig;
     [SerializeField] private GameSessionController sessionController;
 
     public static GameLevelController Instance { get; private set; }
 
-    public int LevelCount => levels.Count;
+    public int LevelCount => progressionConfig != null ? progressionConfig.LevelCount : 0;
     public int CurrentLevelIndex { get; private set; }
     public int CurrentLevelNumber => CurrentLevelIndex + 1;
     public string CurrentLevelName
     {
         get
         {
-            LevelConfig config = GetCurrentLevelConfig();
+            GameProgressionConfig.LevelDefinition config = GetCurrentLevelConfig();
             return config != null && !string.IsNullOrWhiteSpace(config.LevelName)
                 ? config.LevelName
                 : $"Level {CurrentLevelNumber}";
@@ -74,7 +46,7 @@ public class GameLevelController : MonoBehaviour
 
     private void Reset()
     {
-        EnsureDefaultLevels();
+        progressionConfig = GameProgressionConfig.Load();
     }
 
     private void Awake()
@@ -87,12 +59,13 @@ public class GameLevelController : MonoBehaviour
         }
 
         Instance = this;
-        EnsureDefaultLevels();
+        progressionConfig = progressionConfig != null ? progressionConfig : GameProgressionConfig.Load();
         GameFlowController.GetOrCreateInstance();
         sessionController = sessionController != null ? sessionController : GameSessionController.GetOrCreate();
+        int defaultStartingLevel = progressionConfig != null ? progressionConfig.DefaultStartingLevel : 1;
         int initialLevel = sessionController != null && sessionController.HasActiveRun
             ? sessionController.CurrentLevelNumber
-            : startingLevel;
+            : defaultStartingLevel;
         SetLevel(initialLevel - 1, false);
     }
 
@@ -106,34 +79,44 @@ public class GameLevelController : MonoBehaviour
 
     private void Update()
     {
-        if (!enableDebugHotkeys)
+        if (progressionConfig == null || !progressionConfig.EnableDebugHotkeys)
         {
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.F1))
+        if (Input.GetKeyDown(KeyCode.LeftBracket))
+        {
+            PreviousLevel();
+        }
+        else if (Input.GetKeyDown(KeyCode.RightBracket))
+        {
+            NextLevel();
+        }
+        else if (Input.GetKeyDown(KeyCode.Home))
         {
             SetLevel(0);
         }
-        else if (Input.GetKeyDown(KeyCode.F2))
+
+        for (int i = 0; i < Mathf.Min(9, LevelCount); i++)
         {
-            SetLevel(1);
-        }
-        else if (Input.GetKeyDown(KeyCode.F3))
-        {
-            SetLevel(2);
+            KeyCode levelHotkey = (KeyCode)((int)KeyCode.Alpha1 + i);
+            if (Input.GetKeyDown(levelHotkey))
+            {
+                SetLevel(i);
+                break;
+            }
         }
     }
 
     public void SetLevel(int levelIndex, bool notifyListeners = true)
     {
-        if (levels.Count == 0)
+        if (progressionConfig == null || progressionConfig.LevelCount == 0)
         {
             CurrentLevelIndex = 0;
             return;
         }
 
-        int clampedIndex = Mathf.Clamp(levelIndex, 0, levels.Count - 1);
+        int clampedIndex = Mathf.Clamp(levelIndex, 0, progressionConfig.LevelCount - 1);
         bool changed = clampedIndex != CurrentLevelIndex;
         CurrentLevelIndex = clampedIndex;
         if (sessionController != null && sessionController.HasActiveRun)
@@ -159,78 +142,67 @@ public class GameLevelController : MonoBehaviour
 
     public bool IsFormUnlocked(PlayerFormType formType)
     {
-        LevelConfig config = GetCurrentLevelConfig();
-        if (config == null || config.UnlockedForms == null || config.UnlockedForms.Count == 0)
-        {
-            return true;
-        }
-
-        return config.UnlockedForms.Contains(formType);
+        return progressionConfig == null || progressionConfig.IsFormUnlocked(CurrentLevelIndex, formType);
     }
 
     public bool IsZoneAllowed(ZoneType zoneType)
     {
-        LevelConfig config = GetCurrentLevelConfig();
-        if (config == null || config.AllowedZones == null || config.AllowedZones.Count == 0)
-        {
-            return true;
-        }
-
-        return config.AllowedZones.Contains(zoneType);
+        return progressionConfig == null || progressionConfig.IsZoneAllowed(CurrentLevelIndex, zoneType);
     }
 
     public PlayerFormType GetFallbackUnlockedForm(PlayerFormType preferredForm = PlayerFormType.Human)
     {
-        LevelConfig config = GetCurrentLevelConfig();
-        if (config == null || config.UnlockedForms == null || config.UnlockedForms.Count == 0)
-        {
-            return preferredForm;
-        }
-
-        if (config.UnlockedForms.Contains(preferredForm))
-        {
-            return preferredForm;
-        }
-
-        return config.UnlockedForms[0];
+        return progressionConfig != null
+            ? progressionConfig.GetFallbackUnlockedForm(CurrentLevelIndex, preferredForm)
+            : preferredForm;
     }
 
-    private LevelConfig GetCurrentLevelConfig()
+    public float GetCurrentTargetDistance()
     {
-        if (levels.Count == 0)
-        {
-            return null;
-        }
-
-        int safeIndex = Mathf.Clamp(CurrentLevelIndex, 0, levels.Count - 1);
-        return levels[safeIndex];
+        GameProgressionConfig.LevelDefinition config = GetCurrentLevelConfig();
+        return config != null ? config.TargetDistance : 60f;
     }
 
-    private void EnsureDefaultLevels()
+    public float GetTransitionDelay()
     {
-        if (levels.Count > 0)
-        {
-            return;
-        }
-
-        levels.Add(CreateLevel(
-            "Level 1",
-            new List<PlayerFormType> { PlayerFormType.Human, PlayerFormType.Car },
-            new List<ZoneType> { ZoneType.Road, ZoneType.Blizzard }));
-
-        levels.Add(CreateLevel(
-            "Level 2",
-            new List<PlayerFormType> { PlayerFormType.Human, PlayerFormType.Car, PlayerFormType.Boat },
-            new List<ZoneType> { ZoneType.Road, ZoneType.Blizzard, ZoneType.Water }));
-
-        levels.Add(CreateLevel(
-            "Level 3",
-            new List<PlayerFormType> { PlayerFormType.Human, PlayerFormType.Car, PlayerFormType.Boat, PlayerFormType.Plane },
-            new List<ZoneType> { ZoneType.Road, ZoneType.Blizzard, ZoneType.Water, ZoneType.Cliff }));
+        return progressionConfig != null ? progressionConfig.TransitionDelay : 1.25f;
     }
 
-    private static LevelConfig CreateLevel(string levelName, List<PlayerFormType> unlockedForms, List<ZoneType> allowedZones)
+    public string GetCurrentLevelDescription()
     {
-        return new LevelConfig(levelName, unlockedForms, allowedZones);
+        GameProgressionConfig.LevelDefinition config = GetCurrentLevelConfig();
+        if (config == null)
+        {
+            return string.Empty;
+        }
+
+        return config.Description;
+    }
+
+    public string GetCurrentLevelStartHint()
+    {
+        GameProgressionConfig.LevelDefinition config = GetCurrentLevelConfig();
+        if (config == null || string.IsNullOrWhiteSpace(config.StartHint))
+        {
+            return $"{CurrentLevelName} Start";
+        }
+
+        return config.StartHint;
+    }
+
+    public string GetCurrentLevelClearHint()
+    {
+        GameProgressionConfig.LevelDefinition config = GetCurrentLevelConfig();
+        if (config == null || string.IsNullOrWhiteSpace(config.ClearHint))
+        {
+            return $"{CurrentLevelName} Clear";
+        }
+
+        return config.ClearHint;
+    }
+
+    private GameProgressionConfig.LevelDefinition GetCurrentLevelConfig()
+    {
+        return progressionConfig != null ? progressionConfig.GetLevel(CurrentLevelIndex) : null;
     }
 }

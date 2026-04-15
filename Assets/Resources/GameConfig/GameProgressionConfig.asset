@@ -1,0 +1,117 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e1b7d4c4d7a4f64a8f0f87c4e672111, type: 3}
+  m_Name: GameProgressionConfig
+  m_EditorClassIdentifier: 
+  defaultStartingLevel: 1
+  transitionDelay: 1.25
+  enableDebugHotkeys: 1
+  levels:
+  - levelName: Level 1
+    description: "Level 1\nUnlocked Forms: Human, Car\nGoal: Reach 45m."
+    targetDistance: 45
+    startHint: Level 1 Start
+    clearHint: Level 1 Clear
+    openingRoadRepeatCount: 3
+    unlockedForms:
+    - 1
+    - 2
+    allowedZones:
+    - 1
+    - 4
+    zoneGenerationRules:
+    - zoneType: 1
+      weight: 2.2
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 3
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: []
+    - zoneType: 4
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: []
+  - levelName: Level 2
+    description: "Level 2\nUnlocked Forms: Human, Car, Boat\nGoal: Reach 70m."
+    targetDistance: 70
+    startHint: Level 2 Start
+    clearHint: Level 2 Clear
+    openingRoadRepeatCount: 3
+    unlockedForms:
+    - 1
+    - 2
+    - 4
+    allowedZones:
+    - 1
+    - 2
+    - 4
+    zoneGenerationRules:
+    - zoneType: 1
+      weight: 2
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 3
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: []
+    - zoneType: 2
+      weight: 1.2
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: []
+    - zoneType: 4
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: []
+  - levelName: Level 3
+    description: "Level 3\nUnlocked Forms: Human, Car, Boat, Plane\nGoal: Reach 95m."
+    targetDistance: 95
+    startHint: Level 3 Start
+    clearHint: Level 3 Clear
+    openingRoadRepeatCount: 3
+    unlockedForms:
+    - 1
+    - 2
+    - 4
+    - 3
+    allowedZones:
+    - 1
+    - 2
+    - 3
+    - 4
+    zoneGenerationRules:
+    - zoneType: 1
+      weight: 2.2
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 3
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: []
+    - zoneType: 2
+      weight: 1.2
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: []
+    - zoneType: 4
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: []
+    - zoneType: 3
+      weight: 0.9
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: []

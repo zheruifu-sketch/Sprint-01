@@ -23,7 +23,7 @@ public class GameSessionController : MonoBehaviour
 
     private void Awake()
     {
-        GameSessionController[] controllers = FindObjectsOfType<GameSessionController>(true);
+        GameSessionController[] controllers = FindObjectsOfType<GameSessionController>();
         for (int i = 0; i < controllers.Length; i++)
         {
             if (controllers[i] == this)

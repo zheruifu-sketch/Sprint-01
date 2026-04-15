@@ -13,10 +13,6 @@ public class GameFlowController : MonoBehaviour
     [SerializeField] private Transform player;
     [SerializeField] private PlayerHintUI hintUI;
 
-    [Header("Progress")]
-    [SerializeField] private float[] levelTargetDistances = { 45f, 70f, 95f };
-    [SerializeField] private float transitionDelay = 1.25f;
-
     [Header("UI")]
     [SerializeField] private Canvas rootCanvas;
     [SerializeField] private GameObject startPanel;
@@ -178,10 +174,12 @@ public class GameFlowController : MonoBehaviour
 
         int currentLevel = levelController != null ? levelController.CurrentLevelNumber : 1;
         int levelCount = levelController != null ? Mathf.Max(1, levelController.LevelCount) : 3;
+        float transitionDelay = levelController != null ? levelController.GetTransitionDelay() : 1.25f;
 
         if (currentLevel < levelCount)
         {
-            ShowHint($"Level {currentLevel} Clear", transitionDelay);
+            string clearHint = levelController != null ? levelController.GetCurrentLevelClearHint() : $"Level {currentLevel} Clear";
+            ShowHint(clearHint, transitionDelay);
             yield return new WaitForSeconds(transitionDelay);
             if (sessionController != null)
             {
@@ -226,13 +224,7 @@ public class GameFlowController : MonoBehaviour
 
     private float GetCurrentTargetDistance()
     {
-        if (levelController == null || levelTargetDistances == null || levelTargetDistances.Length == 0)
-        {
-            return 60f;
-        }
-
-        int index = Mathf.Clamp(levelController.CurrentLevelIndex, 0, levelTargetDistances.Length - 1);
-        return Mathf.Max(1f, levelTargetDistances[index]);
+        return levelController != null ? levelController.GetCurrentTargetDistance() : 60f;
     }
 
     private float GetDistanceTravelled()
@@ -259,7 +251,7 @@ public class GameFlowController : MonoBehaviour
             return;
         }
 
-        ShowHint($"{levelController.CurrentLevelName} Start", 1.6f);
+        ShowHint(levelController.GetCurrentLevelStartHint(), 1.6f);
     }
 
     private void ShowHint(string message, float duration)
@@ -272,6 +264,15 @@ public class GameFlowController : MonoBehaviour
 
     private string BuildStartDescription()
     {
+        if (levelController != null)
+        {
+            string description = levelController.GetCurrentLevelDescription();
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+                return description;
+            }
+        }
+
         float targetDistance = GetCurrentTargetDistance();
         return $"Level 1 starts with Human and Car.\nReach {targetDistance:0}m to clear the level.";
     }
