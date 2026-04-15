@@ -84,13 +84,13 @@ public class LevelHazardController : MonoBehaviour
 
         for (int i = 0; i < levelDefinition.Hazards.Count; i++)
         {
-            GameProgressionConfig.HazardDefinition hazardDefinition = levelDefinition.Hazards[i];
-            if (hazardDefinition == null || !hazardDefinition.Enabled || hazardDefinition.HazardPrefab == null)
+            HazardProfile hazardProfile = levelDefinition.Hazards[i];
+            if (hazardProfile == null || !hazardProfile.Enabled || hazardProfile.HazardPrefab == null)
             {
                 continue;
             }
 
-            SpawnHazard(hazardDefinition);
+            SpawnHazard(hazardProfile);
         }
     }
 
@@ -118,28 +118,28 @@ public class LevelHazardController : MonoBehaviour
         activeHazards.Clear();
     }
 
-    private void SpawnHazard(GameProgressionConfig.HazardDefinition hazardDefinition)
+    private void SpawnHazard(HazardProfile hazardProfile)
     {
-        Vector3 spawnPosition = hazardDefinition.SpawnPositionMode == GameProgressionConfig.HazardSpawnPositionMode.RelativeToPlayer && playerTransform != null
-            ? playerTransform.position + hazardDefinition.SpawnOffset
-            : hazardDefinition.SpawnOffset;
+        Vector3 spawnPosition = hazardProfile.SpawnPositionMode == HazardProfile.HazardSpawnPositionMode.RelativeToPlayer && playerTransform != null
+            ? playerTransform.position + hazardProfile.SpawnOffset
+            : hazardProfile.SpawnOffset;
 
         GameObject hazardInstance = Instantiate(
-            hazardDefinition.HazardPrefab,
+            hazardProfile.HazardPrefab,
             spawnPosition,
             Quaternion.identity,
             hazardParent);
 
-        hazardInstance.name = string.IsNullOrWhiteSpace(hazardDefinition.DisplayName)
-            ? $"{hazardDefinition.HazardType} Hazard"
-            : hazardDefinition.DisplayName;
+        hazardInstance.name = string.IsNullOrWhiteSpace(hazardProfile.DisplayName)
+            ? $"{hazardProfile.HazardType} Hazard"
+            : hazardProfile.DisplayName;
 
         activeHazards.Add(hazardInstance);
 
         LevelHazardBehaviour[] behaviours = hazardInstance.GetComponentsInChildren<LevelHazardBehaviour>(true);
         for (int i = 0; i < behaviours.Length; i++)
         {
-            behaviours[i].Initialize(hazardDefinition, playerTransform, levelController);
+            behaviours[i].Initialize(hazardProfile, playerTransform, levelController);
         }
     }
 

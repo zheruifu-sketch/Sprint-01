@@ -17,104 +17,101 @@ MonoBehaviour:
   enableDebugHotkeys: 1
   levels:
   - levelName: Level 1
-    description: "Level 1\nUnlocked Forms: Human, Car\nGoal: Reach 45m."
+    description: 'Level 1
+
+      Unlocked Forms: Human, Car
+
+      Goal: Reach 45m.'
     targetDistance: 45
     startHint: Level 1 Start
     clearHint: Level 1 Clear
     openingRoadRepeatCount: 3
-    unlockedForms:
-    - 1
-    - 2
-    allowedZones:
-    - 1
-    - 4
+    unlockedForms: 0100000002000000
+    allowedZones: 0100000004000000
     zoneGenerationRules:
     - zoneType: 1
       weight: 2.2
       minConsecutiveCount: 1
       maxConsecutiveCount: 3
       canBeFirstRandomSegment: 1
-      allowedPreviousZones: []
+      allowedPreviousZones: 
     - zoneType: 4
       weight: 1
       minConsecutiveCount: 1
       maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
-      allowedPreviousZones: []
-    hazards: []
+      allowedPreviousZones: 
+    hazards:
+    - {fileID: 11400000, guid: d361f22f1c51490291cdca2d768429c2, type: 2}
   - levelName: Level 2
-    description: "Level 2\nUnlocked Forms: Human, Car, Boat\nGoal: Reach 70m."
+    description: 'Level 2
+
+      Unlocked Forms: Human, Car, Boat
+
+      Goal: Reach
+      70m.'
     targetDistance: 70
     startHint: Level 2 Start
     clearHint: Level 2 Clear
     openingRoadRepeatCount: 3
-    unlockedForms:
-    - 1
-    - 2
-    - 4
-    allowedZones:
-    - 1
-    - 2
-    - 4
+    unlockedForms: 010000000200000004000000
+    allowedZones: 010000000200000004000000
     zoneGenerationRules:
     - zoneType: 1
       weight: 2
       minConsecutiveCount: 1
       maxConsecutiveCount: 3
       canBeFirstRandomSegment: 1
-      allowedPreviousZones: []
+      allowedPreviousZones: 
     - zoneType: 2
       weight: 1.2
       minConsecutiveCount: 1
       maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
-      allowedPreviousZones: []
+      allowedPreviousZones: 
     - zoneType: 4
       weight: 1
       minConsecutiveCount: 1
       maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
-      allowedPreviousZones: []
+      allowedPreviousZones: 
     hazards: []
   - levelName: Level 3
-    description: "Level 3\nUnlocked Forms: Human, Car, Boat, Plane\nGoal: Reach 95m."
+    description: 'Level 3
+
+      Unlocked Forms: Human, Car, Boat, Plane
+
+      Goal:
+      Reach 95m.'
     targetDistance: 95
     startHint: Level 3 Start
     clearHint: Level 3 Clear
     openingRoadRepeatCount: 3
-    unlockedForms:
-    - 1
-    - 2
-    - 4
-    - 3
-    allowedZones:
-    - 1
-    - 2
-    - 3
-    - 4
+    unlockedForms: 01000000020000000400000003000000
+    allowedZones: 01000000020000000300000004000000
     zoneGenerationRules:
     - zoneType: 1
       weight: 2.2
       minConsecutiveCount: 1
       maxConsecutiveCount: 3
       canBeFirstRandomSegment: 1
-      allowedPreviousZones: []
+      allowedPreviousZones: 
     - zoneType: 2
       weight: 1.2
       minConsecutiveCount: 1
       maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
-      allowedPreviousZones: []
+      allowedPreviousZones: 
     - zoneType: 4
       weight: 1
       minConsecutiveCount: 1
       maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
-      allowedPreviousZones: []
+      allowedPreviousZones: 
     - zoneType: 3
       weight: 0.9
       minConsecutiveCount: 1
       maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
-      allowedPreviousZones: []
+      allowedPreviousZones: 
     hazards: []
