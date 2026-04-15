@@ -4,6 +4,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class LevelHazardController : MonoBehaviour
 {
+    public static LevelHazardController Instance { get; private set; }
+
     [Header("References")]
     [SerializeField] private GameLevelController levelController;
     [SerializeField] private GameProgressionConfig progressionConfig;
@@ -11,12 +13,14 @@ public class LevelHazardController : MonoBehaviour
     [SerializeField] private Transform hazardParent;
 
     private readonly List<GameObject> activeHazards = new List<GameObject>();
+    private readonly List<RisingWaterHazard> activeRisingWaterHazards = new List<RisingWaterHazard>();
 
     public static LevelHazardController GetOrCreateInstance()
     {
         LevelHazardController existing = FindObjectOfType<LevelHazardController>();
         if (existing != null)
         {
+            Instance = existing;
             return existing;
         }
 
@@ -34,6 +38,13 @@ public class LevelHazardController : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
         levelController = levelController != null ? levelController : GameLevelController.GetOrCreateInstance();
         progressionConfig = progressionConfig != null ? progressionConfig : GameProgressionConfig.Load();
         playerTransform = playerTransform != null ? playerTransform : FindPlayerTransform();
@@ -116,6 +127,46 @@ public class LevelHazardController : MonoBehaviour
         }
 
         activeHazards.Clear();
+        activeRisingWaterHazards.Clear();
+    }
+
+    public bool IsPointInsideGlobalWater(Vector3 point)
+    {
+        for (int i = 0; i < activeRisingWaterHazards.Count; i++)
+        {
+            RisingWaterHazard risingWater = activeRisingWaterHazards[i];
+            if (risingWater != null && risingWater.IsPointBelowDangerLine(point))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public bool TryGetGlobalWaterSurfaceY(out float waterSurfaceY)
+    {
+        bool found = false;
+        float highestSurfaceY = float.MinValue;
+
+        for (int i = 0; i < activeRisingWaterHazards.Count; i++)
+        {
+            RisingWaterHazard risingWater = activeRisingWaterHazards[i];
+            if (risingWater == null)
+            {
+                continue;
+            }
+
+            float surfaceY = risingWater.GetWaterSurfaceY();
+            if (!found || surfaceY > highestSurfaceY)
+            {
+                highestSurfaceY = surfaceY;
+                found = true;
+            }
+        }
+
+        waterSurfaceY = found ? highestSurfaceY : 0f;
+        return found;
     }
 
     private void SpawnHazard(HazardProfile hazardProfile)
@@ -140,6 +191,11 @@ public class LevelHazardController : MonoBehaviour
         for (int i = 0; i < behaviours.Length; i++)
         {
             behaviours[i].Initialize(hazardProfile, playerTransform, levelController);
+
+            if (behaviours[i] is RisingWaterHazard risingWaterHazard)
+            {
+                activeRisingWaterHazards.Add(risingWaterHazard);
+            }
         }
     }
 
@@ -152,5 +208,13 @@ public class LevelHazardController : MonoBehaviour
     {
         PlayerFormRoot player = FindObjectOfType<PlayerFormRoot>();
         return player != null ? player.transform : null;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 }

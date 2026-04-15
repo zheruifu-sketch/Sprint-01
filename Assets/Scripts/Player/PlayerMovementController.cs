@@ -7,6 +7,7 @@ public class PlayerMovementController : MonoBehaviour
     [SerializeField] private PlayerFormRoot formRoot;
     [SerializeField] private PlayerGroundSensor groundSensor;
     [SerializeField] private PlayerRuleController ruleController;
+    [SerializeField] private LevelHazardController hazardController;
     [SerializeField] private GameSessionController sessionController;
 
     [Header("Move Settings")]
@@ -15,6 +16,10 @@ public class PlayerMovementController : MonoBehaviour
     [SerializeField] private float planeMoveSpeed = 6f;
     [SerializeField] private float planeVerticalSpeed = 5f;
     [SerializeField] private float boatMoveSpeed = 4.5f;
+    [SerializeField] private float boatFloatHeightOffset = 0.85f;
+    [SerializeField] private float boatFloatVerticalSpeed = 8f;
+    [SerializeField] private float boatFloatSnapDeadZone = 0.08f;
+    [SerializeField] private float boatFloatActivationMargin = 0.35f;
     [SerializeField] private float sprintMultiplier = 1.6f;
     [SerializeField] private float humanJumpForce = 9f;
     [SerializeField] private float humanGravityScale = 3f;
@@ -32,6 +37,7 @@ public class PlayerMovementController : MonoBehaviour
     private float jumpBufferCounter;
     private float coyoteTimeCounter;
     private int humanJumpCount;
+    private bool boatFloatSimulationActive;
 
     private void Reset()
     {
@@ -39,6 +45,7 @@ public class PlayerMovementController : MonoBehaviour
         groundSensor = GetComponent<PlayerGroundSensor>();
         ruleController = GetComponent<PlayerRuleController>();
         sessionController = FindObjectOfType<GameSessionController>();
+        hazardController = FindObjectOfType<LevelHazardController>();
     }
 
     private void Awake()
@@ -51,6 +58,11 @@ public class PlayerMovementController : MonoBehaviour
         if (sessionController == null)
         {
             sessionController = GameSessionController.GetOrCreate();
+        }
+
+        if (hazardController == null)
+        {
+            hazardController = LevelHazardController.GetOrCreateInstance();
         }
     }
 
@@ -131,6 +143,9 @@ public class PlayerMovementController : MonoBehaviour
             return;
         }
 
+        bool shouldUseBoatFloatMode = ShouldUseBoatFloatMode();
+        UpdateBoatFloatSimulationState(shouldUseBoatFloatMode);
+
         switch (formRoot.CurrentForm)
         {
             case PlayerFormType.Human:
@@ -143,7 +158,7 @@ public class PlayerMovementController : MonoBehaviour
                 formRoot.PlayerRigidbody.gravityScale = planeGravityScale;
                 break;
             case PlayerFormType.Boat:
-                formRoot.PlayerRigidbody.gravityScale = boatGravityScale;
+                formRoot.PlayerRigidbody.gravityScale = shouldUseBoatFloatMode ? 0f : boatGravityScale;
                 break;
         }
     }
@@ -159,6 +174,7 @@ public class PlayerMovementController : MonoBehaviour
         Vector2 velocity = rb.velocity;
         float speedMultiplier = sprintHeld ? sprintMultiplier : 1f;
         bool isRunning = false;
+        bool shouldUseBoatFloatMode = ShouldUseBoatFloatMode();
 
         switch (formRoot.CurrentForm)
         {
@@ -204,8 +220,17 @@ public class PlayerMovementController : MonoBehaviour
                     boatSpeed = humanMoveSpeed * ruleController.BlizzardSlowMultiplier;
                 }
 
-                velocity.x = horizontalInput * boatSpeed * speedMultiplier;
-                rb.velocity = velocity;
+                if (shouldUseBoatFloatMode)
+                {
+                    ApplyBoatFloatTransformMovement(boatSpeed * speedMultiplier);
+                }
+                else
+                {
+                    velocity.x = horizontalInput * boatSpeed * speedMultiplier;
+                    velocity.y = 0f;
+                    rb.velocity = velocity;
+                }
+
                 isRunning = false;
                 break;
         }
@@ -233,5 +258,68 @@ public class PlayerMovementController : MonoBehaviour
         }
 
         return Mathf.Abs(rb.velocity.y) <= groundedVelocityThreshold;
+    }
+
+    private void ApplyBoatFloatTransformMovement(float horizontalSpeed)
+    {
+        if (formRoot == null || hazardController == null)
+        {
+            return;
+        }
+
+        if (!hazardController.TryGetGlobalWaterSurfaceY(out float waterSurfaceY))
+        {
+            return;
+        }
+
+        Rigidbody2D rb = formRoot.PlayerRigidbody;
+        if (rb != null)
+        {
+            rb.velocity = Vector2.zero;
+        }
+
+        Vector3 position = transform.position;
+        position.x += horizontalInput * horizontalSpeed * Time.fixedDeltaTime;
+        float targetY = waterSurfaceY + boatFloatHeightOffset;
+        position.y = Mathf.Abs(targetY - position.y) <= boatFloatSnapDeadZone
+            ? targetY
+            : Mathf.MoveTowards(position.y, targetY, boatFloatVerticalSpeed * Time.fixedDeltaTime);
+        transform.position = position;
+    }
+
+    private bool ShouldUseBoatFloatMode()
+    {
+        if (formRoot == null || formRoot.CurrentForm != PlayerFormType.Boat || hazardController == null)
+        {
+            return false;
+        }
+
+        if (!hazardController.TryGetGlobalWaterSurfaceY(out float waterSurfaceY))
+        {
+            return false;
+        }
+
+        float maxSupportedY = waterSurfaceY + boatFloatHeightOffset + boatFloatActivationMargin;
+        return transform.position.y <= maxSupportedY;
+    }
+
+    private void UpdateBoatFloatSimulationState(bool shouldUseBoatFloatMode)
+    {
+        if (formRoot == null || formRoot.PlayerRigidbody == null)
+        {
+            return;
+        }
+
+        if (boatFloatSimulationActive == shouldUseBoatFloatMode)
+        {
+            return;
+        }
+
+        boatFloatSimulationActive = shouldUseBoatFloatMode;
+        formRoot.PlayerRigidbody.simulated = !shouldUseBoatFloatMode;
+        if (!shouldUseBoatFloatMode)
+        {
+            formRoot.PlayerRigidbody.velocity = Vector2.zero;
+        }
     }
 }

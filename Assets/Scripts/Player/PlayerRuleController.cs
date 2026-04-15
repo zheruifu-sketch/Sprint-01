@@ -8,6 +8,7 @@ public class PlayerRuleController : MonoBehaviour
     [SerializeField] private PlayerZoneSensor zoneSensor;
     [SerializeField] private GameLevelController levelController;
     [SerializeField] private GameSessionController sessionController;
+    [SerializeField] private LevelHazardController hazardController;
 
     [Header("Rules")]
     [SerializeField] private float blizzardHumanSpeedMultiplier = 0.3f;
@@ -41,6 +42,7 @@ public class PlayerRuleController : MonoBehaviour
         zoneSensor = GetComponent<PlayerZoneSensor>();
         levelController = GameLevelController.GetOrCreateInstance();
         sessionController = FindObjectOfType<GameSessionController>();
+        hazardController = FindObjectOfType<LevelHazardController>();
     }
 
     private void Awake()
@@ -58,6 +60,11 @@ public class PlayerRuleController : MonoBehaviour
         if (sessionController == null)
         {
             sessionController = GameSessionController.GetOrCreate();
+        }
+
+        if (hazardController == null)
+        {
+            hazardController = LevelHazardController.GetOrCreateInstance();
         }
     }
 
@@ -94,6 +101,16 @@ public class PlayerRuleController : MonoBehaviour
         return zoneSensor != null && zoneSensor.IsInZone(ZoneType.Water);
     }
 
+    public bool IsInFloodWater()
+    {
+        return hazardController != null && hazardController.IsPointInsideGlobalWater(transform.position);
+    }
+
+    public bool IsInWaterEnvironment()
+    {
+        return IsInWater() || IsInFloodWater();
+    }
+
     public bool IsInCliff()
     {
         return zoneSensor != null && zoneSensor.IsInZone(ZoneType.Cliff);
@@ -106,7 +123,7 @@ public class PlayerRuleController : MonoBehaviour
 
     public bool IsBoatSupportedSurface()
     {
-        return IsInWater() || IsInBlizzard();
+        return IsInWaterEnvironment() || IsInBlizzard();
     }
 
     private void HandleFormHotkeys()
@@ -234,6 +251,11 @@ public class PlayerRuleController : MonoBehaviour
 
     private bool CanSwitchBoatFromNearbyWater()
     {
+        if (IsInFloodWater())
+        {
+            return true;
+        }
+
         Vector2 origin = transform.position;
         origin += boatSwitchCheckOffset;
 

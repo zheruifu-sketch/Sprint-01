@@ -10,6 +10,7 @@ public class RisingWaterHazard : LevelHazardBehaviour
 
     private HazardProfile hazardProfile;
     private Transform playerTransform;
+    private PlayerFormRoot playerFormRoot;
     private PlayerRespawnController playerRespawnController;
     private PlayerHealthController playerHealthController;
     private float currentWaterY;
@@ -20,6 +21,7 @@ public class RisingWaterHazard : LevelHazardBehaviour
     {
         this.hazardProfile = hazardProfile;
         this.playerTransform = playerTransform;
+        playerFormRoot = playerTransform != null ? playerTransform.GetComponent<PlayerFormRoot>() : null;
         playerRespawnController = playerTransform != null ? playerTransform.GetComponent<PlayerRespawnController>() : null;
         playerHealthController = playerTransform != null ? playerTransform.GetComponent<PlayerHealthController>() : null;
 
@@ -60,6 +62,7 @@ public class RisingWaterHazard : LevelHazardBehaviour
             return;
         }
 
+        EnsureVisible();
         UpdateWaterHeight();
         UpdateHorizontalFollow();
         UpdatePlayerThreat();
@@ -86,6 +89,11 @@ public class RisingWaterHazard : LevelHazardBehaviour
         float playerY = playerTransform.position.y + playerClearanceOffset;
         float dangerLineY = ResolveDangerLineY();
         if (playerY > dangerLineY)
+        {
+            return;
+        }
+
+        if (playerFormRoot != null && playerFormRoot.CurrentForm == PlayerFormType.Boat)
         {
             return;
         }
@@ -155,5 +163,28 @@ public class RisingWaterHazard : LevelHazardBehaviour
         }
 
         return currentWaterY;
+    }
+
+    public bool IsPointBelowDangerLine(Vector3 worldPoint)
+    {
+        return worldPoint.y <= ResolveDangerLineY();
+    }
+
+    public float GetWaterSurfaceY()
+    {
+        if (waterVisualRoot != null)
+        {
+            return waterVisualRoot.position.y;
+        }
+
+        return currentWaterY;
+    }
+
+    private void EnsureVisible()
+    {
+        if (waterVisualRoot != null && !waterVisualRoot.gameObject.activeSelf)
+        {
+            waterVisualRoot.gameObject.SetActive(true);
+        }
     }
 }
