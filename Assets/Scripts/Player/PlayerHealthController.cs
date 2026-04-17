@@ -57,6 +57,26 @@ public class PlayerHealthController : MonoBehaviour
         return CurrentHealth <= 0f;
     }
 
+    public bool IsFull()
+    {
+        return CurrentHealth >= MaxHealth;
+    }
+
+    public void Heal(float amount)
+    {
+        if (amount <= 0f || IsDead() || IsFull())
+        {
+            return;
+        }
+
+        float previous = CurrentHealth;
+        CurrentHealth = Mathf.Min(MaxHealth, CurrentHealth + amount);
+        if (!Mathf.Approximately(previous, CurrentHealth))
+        {
+            NotifyHealthChanged();
+        }
+    }
+
     private void NotifyHealthChanged()
     {
         HealthChanged?.Invoke(CurrentHealth, MaxHealth);

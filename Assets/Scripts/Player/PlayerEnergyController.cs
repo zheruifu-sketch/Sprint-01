@@ -47,6 +47,26 @@ public class PlayerEnergyController : MonoBehaviour
         return CurrentEnergy <= 0f;
     }
 
+    public bool IsFull()
+    {
+        return CurrentEnergy >= MaxEnergy;
+    }
+
+    public void RestoreEnergy(float amount)
+    {
+        if (amount <= 0f || IsFull())
+        {
+            return;
+        }
+
+        float previous = CurrentEnergy;
+        CurrentEnergy = Mathf.Min(MaxEnergy, CurrentEnergy + amount);
+        if (!Mathf.Approximately(previous, CurrentEnergy))
+        {
+            NotifyEnergyChanged();
+        }
+    }
+
     private float GetConsumeRate(PlayerFormType currentForm)
     {
         switch (currentForm)

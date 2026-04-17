@@ -26,6 +26,28 @@ public class GameProgressionConfig : ScriptableObject
     [Serializable]
     public class LevelDefinition
     {
+        [Serializable]
+        public class PickupSpawnSettings
+        {
+            [SerializeField] private bool enabled = true;
+            [SerializeField] private float minSpawnDistance = 14f;
+            [SerializeField] private float spawnChance = 0.55f;
+            [SerializeField] private int maxActivePickups = 3;
+            [SerializeField] private float minSpawnAheadDistance = 8f;
+            [SerializeField] private float maxSpawnAheadDistance = 18f;
+            [SerializeField] private float yOffset = 1.1f;
+            [SerializeField] private List<PickupProfile> profiles = new List<PickupProfile>();
+
+            public bool Enabled => enabled;
+            public float MinSpawnDistance => Mathf.Max(1f, minSpawnDistance);
+            public float SpawnChance => Mathf.Clamp01(spawnChance);
+            public int MaxActivePickups => Mathf.Max(0, maxActivePickups);
+            public float MinSpawnAheadDistance => Mathf.Max(0f, minSpawnAheadDistance);
+            public float MaxSpawnAheadDistance => Mathf.Max(MinSpawnAheadDistance, maxSpawnAheadDistance);
+            public float YOffset => yOffset;
+            public List<PickupProfile> Profiles => profiles;
+        }
+
         [SerializeField] private string levelName = "Level";
         [SerializeField] private string description = string.Empty;
         [SerializeField] private float targetDistance = 45f;
@@ -36,6 +58,7 @@ public class GameProgressionConfig : ScriptableObject
         [SerializeField] private List<ZoneType> allowedZones = new List<ZoneType>();
         [SerializeField] private List<ZoneGenerationRule> zoneGenerationRules = new List<ZoneGenerationRule>();
         [SerializeField] private List<HazardProfile> hazards = new List<HazardProfile>();
+        [SerializeField] private PickupSpawnSettings pickups = new PickupSpawnSettings();
 
         public string LevelName => string.IsNullOrWhiteSpace(levelName) ? "Level" : levelName;
         public string Description => description;
@@ -47,6 +70,7 @@ public class GameProgressionConfig : ScriptableObject
         public List<ZoneType> AllowedZones => allowedZones;
         public List<ZoneGenerationRule> ZoneGenerationRules => zoneGenerationRules;
         public List<HazardProfile> Hazards => hazards;
+        public PickupSpawnSettings Pickups => pickups;
     }
 
     [Header("Flow")]

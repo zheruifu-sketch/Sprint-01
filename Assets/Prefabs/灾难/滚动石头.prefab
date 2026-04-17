@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 8856069384269329438}
   - component: {fileID: 388444639630574589}
   - component: {fileID: 6415617168733540147}
+  - component: {fileID: 9168820841235279932}
+  - component: {fileID: 2454835701562158388}
   m_Layer: 0
   m_Name: "\u6EDA\u52A8\u77F3\u5934"
   m_TagString: Untagged
@@ -106,3 +108,34 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &9168820841235279932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1165821349952151377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dd43eaf77c249e0a4c72f97bcece761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visualRoot: {fileID: 8856069384269329438}
+  hitPadding: 0.1
+  fallbackHitRadius: 1.25
+--- !u!58 &2454835701562158388
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1165821349952151377}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0.18241239}
+  serializedVersion: 2
+  m_Radius: 3.3336866

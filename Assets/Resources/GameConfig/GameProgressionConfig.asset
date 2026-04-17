@@ -22,7 +22,7 @@ MonoBehaviour:
       Unlocked Forms: Human, Car
 
       Goal: Reach 45m.'
-    targetDistance: 45
+    targetDistance: 1000
     startHint: Level 1 Start
     clearHint: Level 1 Clear
     openingRoadRepeatCount: 3
@@ -42,7 +42,18 @@ MonoBehaviour:
       canBeFirstRandomSegment: 1
       allowedPreviousZones: 
     hazards:
-    - {fileID: 11400000, guid: c2cb36d2212d471ab743bcc237419f4c, type: 2}
+    - {fileID: 0}
+    pickups:
+      enabled: 1
+      minSpawnDistance: 14
+      spawnChance: 0.45
+      maxActivePickups: 2
+      minSpawnAheadDistance: 8
+      maxSpawnAheadDistance: 16
+      yOffset: -13
+      profiles:
+      - {fileID: 11400000, guid: 8aa1f23b012a43ca9dca0c98fbd68749, type: 2}
+      - {fileID: 11400000, guid: 14187dc2bd3b44fb970f7c5081f3c71d, type: 2}
   - levelName: Level 2
     description: 'Level 2
 
@@ -77,6 +88,17 @@ MonoBehaviour:
       allowedPreviousZones: 
     hazards:
     - {fileID: 11400000, guid: d361f22f1c51490291cdca2d768429c2, type: 2}
+    pickups:
+      enabled: 1
+      minSpawnDistance: 13
+      spawnChance: 0.5
+      maxActivePickups: 2
+      minSpawnAheadDistance: 8
+      maxSpawnAheadDistance: 17
+      yOffset: 1.2
+      profiles:
+      - {fileID: 11400000, guid: 8aa1f23b012a43ca9dca0c98fbd68749, type: 2}
+      - {fileID: 11400000, guid: 14187dc2bd3b44fb970f7c5081f3c71d, type: 2}
   - levelName: Level 3
     description: 'Level 3
 
@@ -118,3 +140,14 @@ MonoBehaviour:
     hazards:
     - {fileID: 11400000, guid: 8d4b14e359be4885a5532489a10cd7d9, type: 2}
     - {fileID: 11400000, guid: c2cb36d2212d471ab743bcc237419f4c, type: 2}
+    pickups:
+      enabled: 1
+      minSpawnDistance: 12
+      spawnChance: 0.55
+      maxActivePickups: 3
+      minSpawnAheadDistance: 8
+      maxSpawnAheadDistance: 18
+      yOffset: 1.2
+      profiles:
+      - {fileID: 11400000, guid: 8aa1f23b012a43ca9dca0c98fbd68749, type: 2}
+      - {fileID: 11400000, guid: 14187dc2bd3b44fb970f7c5081f3c71d, type: 2}
