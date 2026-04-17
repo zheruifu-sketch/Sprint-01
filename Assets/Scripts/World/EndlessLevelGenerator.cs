@@ -727,14 +727,27 @@ public class EndlessLevelGenerator : MonoBehaviour
 
     private GameObject LoadSegmentPrefab(string prefabName)
     {
-        GameObject loaded = Resources.Load<GameObject>(prefabName);
+        GameObject loaded = Resources.Load<GameObject>($"Segments/{prefabName}");
         if (loaded != null)
         {
             return loaded;
         }
 
-        string assetPath = $"Assets/Prefabs/环境/{prefabName}.prefab";
+        loaded = Resources.Load<GameObject>(prefabName);
+        if (loaded != null)
+        {
+            return loaded;
+        }
+
 #if UNITY_EDITOR
+        string assetPath = $"Assets/Resources/Segments/{prefabName}.prefab";
+        GameObject editorLoaded = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+        if (editorLoaded != null)
+        {
+            return editorLoaded;
+        }
+
+        assetPath = $"Assets/Prefabs/环境/{prefabName}.prefab";
         return UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
 #else
         return null;
