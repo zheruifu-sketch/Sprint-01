@@ -105,7 +105,6 @@ public class PlayerRespawnController : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[Respawn] Trigger form={GetCurrentFormLabel()} failureType={failureType}", this);
         LastFailureType = failureType;
         isReloadingScene = true;
 
@@ -138,13 +137,11 @@ public class PlayerRespawnController : MonoBehaviour
             && formRoot.CurrentForm == PlayerFormType.Boat
             && ruleController.IsBoatSupportedByFlood())
         {
-            Debug.Log($"[RespawnHazard] SkipFloodDamage form={GetCurrentFormLabel()}", this);
             return;
         }
 
         if (TryGetActiveHazard(out FailureType failureType))
         {
-            Debug.Log($"[RespawnHazard] ActiveHazard form={GetCurrentFormLabel()} failureType={failureType}", this);
             if (failureType == FailureType.FellFromCliff)
             {
                 Respawn(failureType);
@@ -166,21 +163,18 @@ public class PlayerRespawnController : MonoBehaviour
             && formRoot.CurrentForm == PlayerFormType.Boat
             && ruleController.IsBoatSupportedByFlood())
         {
-            Debug.Log($"[RespawnHazard] FloodBoatImmune form={GetCurrentFormLabel()}", this);
             failureType = FailureType.None;
             return false;
         }
 
         if (useGlobalFallDeath && transform.position.y <= cliffDeathY)
         {
-            Debug.Log($"[RespawnHazard] CliffDeath form={GetCurrentFormLabel()} y={transform.position.y:F3} cliffDeathY={cliffDeathY:F3}", this);
             failureType = FailureType.FellFromCliff;
             return true;
         }
 
         if (ruleController != null && formRoot.CurrentForm != PlayerFormType.Boat && ruleController.IsInWater())
         {
-            Debug.Log($"[RespawnHazard] StaticWater form={GetCurrentFormLabel()}", this);
             failureType = FailureType.FellIntoWater;
             return true;
         }
@@ -192,24 +186,17 @@ public class PlayerRespawnController : MonoBehaviour
                               && transform.position.y <= cliffDeathY;
         if (isInCliffDanger)
         {
-            Debug.Log($"[RespawnHazard] CliffZone form={GetCurrentFormLabel()} y={transform.position.y:F3}", this);
             failureType = FailureType.FellFromCliff;
             return true;
         }
 
         if (ruleController != null && formRoot.CurrentForm == PlayerFormType.Boat && !ruleController.IsBoatSupportedSurface())
         {
-            Debug.Log($"[RespawnHazard] BoatInvalidSurface form={GetCurrentFormLabel()} floodSupport={ruleController.IsBoatSupportedByFlood()} inFlood={ruleController.IsInFloodWater()} inWater={ruleController.IsInWater()} inBlizzard={ruleController.IsInBlizzard()}", this);
             failureType = FailureType.InvalidForm;
             return true;
         }
 
         failureType = FailureType.None;
         return false;
-    }
-
-    private string GetCurrentFormLabel()
-    {
-        return formRoot != null ? formRoot.CurrentForm.ToString() : "Unknown";
     }
 }

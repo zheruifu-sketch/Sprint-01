@@ -100,13 +100,11 @@ public class RisingWaterHazard : LevelHazardBehaviour
 
         if (IsBoatImmuneToFlood())
         {
-            Debug.Log($"[RisingWater] Immune form=Boat playerY={playerY:F3} dangerLineY={dangerLineY:F3}", this);
             return;
         }
 
         if (hazardProfile.RisingWater.InstantKillBelowWaterLine)
         {
-            Debug.Log($"[RisingWater] InstantKill form={GetCurrentFormLabel()} playerY={playerY:F3} dangerLineY={dangerLineY:F3}", this);
             if (playerRespawnController != null)
             {
                 playerRespawnController.Respawn(FailureType.FellIntoWater);
@@ -117,7 +115,6 @@ public class RisingWaterHazard : LevelHazardBehaviour
 
         if (playerHealthController == null)
         {
-            Debug.Log($"[RisingWater] NoHealthController form={GetCurrentFormLabel()} playerY={playerY:F3} dangerLineY={dangerLineY:F3}", this);
             if (playerRespawnController != null)
             {
                 playerRespawnController.Respawn(FailureType.FellIntoWater);
@@ -126,7 +123,6 @@ public class RisingWaterHazard : LevelHazardBehaviour
             return;
         }
 
-        Debug.Log($"[RisingWater] HazardDamage form={GetCurrentFormLabel()} playerY={playerY:F3} dangerLineY={dangerLineY:F3}", this);
         playerHealthController.ApplyHazardDamage(Time.deltaTime);
         if (playerHealthController.IsDead() && playerRespawnController != null)
         {
@@ -205,10 +201,5 @@ public class RisingWaterHazard : LevelHazardBehaviour
     private bool IsBoatImmuneToFlood()
     {
         return playerFormRoot != null && playerFormRoot.CurrentForm == PlayerFormType.Boat;
-    }
-
-    private string GetCurrentFormLabel()
-    {
-        return playerFormRoot != null ? playerFormRoot.CurrentForm.ToString() : "Unknown";
     }
 }

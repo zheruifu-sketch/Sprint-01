@@ -5,6 +5,7 @@ public class BoulderChaseHazard : LevelHazardBehaviour
 {
     [Header("Optional Overrides")]
     [SerializeField] private Transform visualRoot;
+    [SerializeField] private Collider2D hitCollider;
     [SerializeField] private float hitPadding = 0.1f;
     [SerializeField] private float fallbackHitRadius = 1.25f;
 
@@ -44,6 +45,7 @@ public class BoulderChaseHazard : LevelHazardBehaviour
     private void Reset()
     {
         visualRoot = transform;
+        hitCollider = GetComponent<Collider2D>();
     }
 
     private void Awake()
@@ -51,6 +53,11 @@ public class BoulderChaseHazard : LevelHazardBehaviour
         if (visualRoot == null)
         {
             visualRoot = transform;
+        }
+
+        if (hitCollider == null)
+        {
+            hitCollider = GetComponent<Collider2D>();
         }
     }
 
@@ -122,6 +129,13 @@ public class BoulderChaseHazard : LevelHazardBehaviour
 
     private Bounds GetHazardBounds()
     {
+        if (hitCollider != null && hitCollider.enabled)
+        {
+            Bounds colliderBounds = hitCollider.bounds;
+            colliderBounds.Expand(Mathf.Max(0f, hitPadding));
+            return colliderBounds;
+        }
+
         SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>(true);
         Bounds hazardBounds = new Bounds(transform.position, Vector3.zero);
         bool found = false;
