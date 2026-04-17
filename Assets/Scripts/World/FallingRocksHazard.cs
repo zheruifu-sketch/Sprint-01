@@ -82,8 +82,12 @@ public class FallingRocksHazard : LevelHazardBehaviour
             return;
         }
 
-        SpawnWave();
-        spawnTimer = Mathf.Max(0.05f, hazardProfile.FallingRocks.SpawnInterval);
+        ScheduleNextSpawn();
+
+        if (Random.value <= hazardProfile.FallingRocks.SpawnChance)
+        {
+            SpawnWave();
+        }
     }
 
     private void SpawnWave()
@@ -130,6 +134,17 @@ public class FallingRocksHazard : LevelHazardBehaviour
         float minAhead = settings.MinSpawnAheadDistance;
         float maxAhead = settings.MaxSpawnAheadDistance;
         float aheadX = Random.Range(minAhead, maxAhead);
+        if (Mathf.Abs(aheadX) < settings.MinHorizontalDistanceFromPlayer)
+        {
+            float sign = aheadX >= 0f ? 1f : -1f;
+            if (Mathf.Approximately(sign, 0f))
+            {
+                sign = Random.value < 0.5f ? -1f : 1f;
+            }
+
+            aheadX = sign * settings.MinHorizontalDistanceFromPlayer;
+        }
+
         float spreadX = settings.RocksPerWave > 1 ? (waveIndex - (settings.RocksPerWave - 1) * 0.5f) * 1.25f : 0f;
 
         Vector3 spawnPosition = playerTransform.position;
@@ -137,6 +152,14 @@ public class FallingRocksHazard : LevelHazardBehaviour
         spawnPosition.y += settings.SpawnHeight;
         spawnPosition.z = 0f;
         return spawnPosition;
+    }
+
+    private void ScheduleNextSpawn()
+    {
+        HazardProfile.FallingRocksSettings settings = hazardProfile.FallingRocks;
+        float baseInterval = Mathf.Max(0.05f, settings.SpawnInterval);
+        float jitter = settings.SpawnIntervalJitter;
+        spawnTimer = Mathf.Max(0.05f, baseInterval + Random.Range(-jitter, jitter));
     }
 
     private void UpdateRocks()

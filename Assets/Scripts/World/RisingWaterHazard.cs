@@ -2,6 +2,14 @@ using UnityEngine;
 
 public class RisingWaterHazard : LevelHazardBehaviour
 {
+    private enum WaterCycleState
+    {
+        HoldingLow = 0,
+        Rising = 1,
+        HoldingHigh = 2,
+        Falling = 3
+    }
+
     [Header("Optional Overrides")]
     [SerializeField] private Transform waterVisualRoot;
     [SerializeField] private Transform damageLine;
@@ -15,6 +23,8 @@ public class RisingWaterHazard : LevelHazardBehaviour
     private PlayerHealthController playerHealthController;
     private float currentWaterY;
     private float currentWaterX;
+    private WaterCycleState cycleState;
+    private float stateTimer;
     private bool initialized;
 
     public override void Initialize(HazardProfile hazardProfile, Transform playerTransform, GameLevelController levelController)
@@ -29,6 +39,8 @@ public class RisingWaterHazard : LevelHazardBehaviour
         currentWaterX = playerTransform != null
             ? playerTransform.position.x + horizontalFollowOffset
             : (waterVisualRoot != null ? waterVisualRoot.position.x : transform.position.x);
+        cycleState = WaterCycleState.HoldingLow;
+        stateTimer = GetRandomDuration(hazardProfile.RisingWater.MinHoldAtLowDuration, hazardProfile.RisingWater.MaxHoldAtLowDuration);
         ApplyWaterLineImmediately();
         initialized = true;
     }
@@ -71,10 +83,44 @@ public class RisingWaterHazard : LevelHazardBehaviour
     private void UpdateWaterHeight()
     {
         HazardProfile.RisingWaterSettings settings = hazardProfile.RisingWater;
-        currentWaterY = Mathf.MoveTowards(
-            currentWaterY,
-            settings.MaxY,
-            Mathf.Max(0f, settings.RiseSpeed) * Time.deltaTime);
+        switch (cycleState)
+        {
+            case WaterCycleState.HoldingLow:
+                currentWaterY = settings.StartY;
+                stateTimer -= Time.deltaTime;
+                if (stateTimer <= 0f)
+                {
+                    cycleState = WaterCycleState.Rising;
+                }
+                break;
+
+            case WaterCycleState.Rising:
+                currentWaterY = Mathf.MoveTowards(currentWaterY, settings.MaxY, settings.RiseSpeed * Time.deltaTime);
+                if (Mathf.Approximately(currentWaterY, settings.MaxY))
+                {
+                    cycleState = WaterCycleState.HoldingHigh;
+                    stateTimer = GetRandomDuration(settings.MinHoldAtHighDuration, settings.MaxHoldAtHighDuration);
+                }
+                break;
+
+            case WaterCycleState.HoldingHigh:
+                currentWaterY = settings.MaxY;
+                stateTimer -= Time.deltaTime;
+                if (stateTimer <= 0f)
+                {
+                    cycleState = WaterCycleState.Falling;
+                }
+                break;
+
+            case WaterCycleState.Falling:
+                currentWaterY = Mathf.MoveTowards(currentWaterY, settings.StartY, settings.FallSpeed * Time.deltaTime);
+                if (Mathf.Approximately(currentWaterY, settings.StartY))
+                {
+                    cycleState = WaterCycleState.HoldingLow;
+                    stateTimer = GetRandomDuration(settings.MinHoldAtLowDuration, settings.MaxHoldAtLowDuration);
+                }
+                break;
+        }
 
         ApplyWaterLineImmediately();
     }
@@ -201,5 +247,15 @@ public class RisingWaterHazard : LevelHazardBehaviour
     private bool IsBoatImmuneToFlood()
     {
         return playerFormRoot != null && playerFormRoot.CurrentForm == PlayerFormType.Boat;
+    }
+
+    private static float GetRandomDuration(float minDuration, float maxDuration)
+    {
+        if (maxDuration <= minDuration)
+        {
+            return Mathf.Max(0f, minDuration);
+        }
+
+        return Random.Range(minDuration, maxDuration);
     }
 }

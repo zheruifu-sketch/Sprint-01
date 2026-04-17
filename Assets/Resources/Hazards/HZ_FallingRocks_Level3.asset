@@ -29,11 +29,14 @@ MonoBehaviour:
     maxY: 8
     instantKillBelowWaterLine: 0
   fallingRocks:
-    spawnInterval: 2.5
+    spawnInterval: 3.6
+    spawnIntervalJitter: 0.7
+    spawnChance: 0.75
     rocksPerWave: 1
-    warningDuration: 0.75
-    spawnHeight: 9
-    minSpawnAheadDistance: 7
-    maxSpawnAheadDistance: 14
-    fallSpeed: 12
+    warningDuration: 0.9
+    spawnHeight: 10
+    minSpawnAheadDistance: -2
+    maxSpawnAheadDistance: 12
+    minHorizontalDistanceFromPlayer: 4.5
+    fallSpeed: 10
     instantKillOnHit: 1

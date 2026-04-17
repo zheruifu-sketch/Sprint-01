@@ -57,10 +57,7 @@ public class PlayerFormView : MonoBehaviour
 
     public void SetRunState(PlayerFormType activeForm, bool isRunning)
     {
-        SetRun(humanAnimator, activeForm == PlayerFormType.Human && isRunning);
-        SetRun(carAnimator, activeForm == PlayerFormType.Car && isRunning);
-        SetRun(planeAnimator, activeForm == PlayerFormType.Plane && isRunning);
-        SetRun(boatAnimator, activeForm == PlayerFormType.Boat && isRunning);
+        SetRun(ResolveAnimator(activeForm), isRunning);
     }
 
     private void CacheBaseScales()
@@ -116,14 +113,38 @@ public class PlayerFormView : MonoBehaviour
         return facesLeftByDefault ? movingLeft : !movingLeft;
     }
 
+    private Animator ResolveAnimator(PlayerFormType formType)
+    {
+        return formType switch
+        {
+            PlayerFormType.Human => humanAnimator,
+            PlayerFormType.Car => carAnimator,
+            PlayerFormType.Plane => planeAnimator,
+            PlayerFormType.Boat => boatAnimator,
+            _ => null
+        };
+    }
+
     private void SetRun(Animator animator, bool isRunning)
     {
-        if (animator == null || string.IsNullOrEmpty(runParameterName))
+        if (!CanWriteAnimatorParameter(animator) || string.IsNullOrEmpty(runParameterName))
         {
             return;
         }
 
         animator.SetBool(runParameterName, isRunning);
+    }
+
+    private static bool CanWriteAnimatorParameter(Animator animator)
+    {
+        if (animator == null)
+        {
+            return false;
+        }
+
+        return animator.isActiveAndEnabled
+               && animator.gameObject.activeInHierarchy
+               && animator.runtimeAnimatorController != null;
     }
 
     private static void ApplyScale(Transform target, Vector3 baseScale, bool faceLeft)

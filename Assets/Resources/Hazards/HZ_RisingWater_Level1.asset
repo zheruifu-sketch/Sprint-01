@@ -24,16 +24,24 @@ MonoBehaviour:
     acceleration: 0
     instantKillOnTouch: 1
   risingWater:
-    startY: -1.85
-    riseSpeed: 1
+    startY: -3.6
+    riseSpeed: 0.85
+    fallSpeed: 0.75
     maxY: 2
+    minHoldAtHighDuration: 3
+    maxHoldAtHighDuration: 3
+    minHoldAtLowDuration: 2.8
+    maxHoldAtLowDuration: 5.2
     instantKillBelowWaterLine: 0
   fallingRocks:
     spawnInterval: 2
+    spawnIntervalJitter: 0.75
+    spawnChance: 0.7
     rocksPerWave: 1
     warningDuration: 0.75
     spawnHeight: 10
     minSpawnAheadDistance: 6
     maxSpawnAheadDistance: 14
+    minHorizontalDistanceFromPlayer: 3
     fallSpeed: 12
     instantKillOnHit: 1

@@ -21,7 +21,7 @@ MonoBehaviour:
   boulderChase:
     startBehindDistance: 12
     moveSpeed: 2
-    acceleration: 0.35
+    acceleration: 0.2
     instantKillOnTouch: 1
   risingWater:
     startY: -4
