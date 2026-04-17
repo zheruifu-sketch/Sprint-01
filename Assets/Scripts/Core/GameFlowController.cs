@@ -16,9 +16,11 @@ public class GameFlowController : MonoBehaviour
     [Header("UI")]
     [SerializeField] private Canvas rootCanvas;
     [SerializeField] private GameObject startPanel;
+    [SerializeField] private GameObject endPanel;
     [SerializeField] private TMP_Text startTitleText;
     [SerializeField] private TMP_Text startDescriptionText;
     [SerializeField] private Button startButton;
+    [SerializeField] private Button endConfirmButton;
     [SerializeField] private TMP_Text startButtonLabelText;
     [SerializeField] private TMP_Text headerText;
     [SerializeField] private TMP_Text progressText;
@@ -138,6 +140,11 @@ public class GameFlowController : MonoBehaviour
         {
             startDescriptionText.text = BuildStartDescription();
         }
+
+        if (endPanel != null)
+        {
+            endPanel.SetActive(false);
+        }
     }
 
     private void ResumeGameplay()
@@ -148,6 +155,11 @@ public class GameFlowController : MonoBehaviour
         if (startPanel != null)
         {
             startPanel.SetActive(false);
+        }
+
+        if (endPanel != null)
+        {
+            endPanel.SetActive(false);
         }
     }
 
@@ -190,14 +202,7 @@ public class GameFlowController : MonoBehaviour
             yield break;
         }
 
-        ShowHint("All Levels Clear - Restarting", transitionDelay);
-        yield return new WaitForSeconds(transitionDelay);
-        if (sessionController != null)
-        {
-            sessionController.ResetRun();
-        }
-
-        ReloadActiveScene();
+        ShowEndScreen();
     }
 
     private void RefreshHeader()
@@ -291,17 +296,25 @@ public class GameFlowController : MonoBehaviour
 
         Transform canvasTransform = rootCanvas.transform;
         startPanel = startPanel != null ? startPanel : FindChildGameObject(canvasTransform, "GameStartPanel");
+        endPanel = endPanel != null ? endPanel : FindChildGameObject(canvasTransform, "EndUI");
         headerText = headerText != null ? headerText : FindChildText(canvasTransform, "GameFlowHUD/LevelText");
         progressText = progressText != null ? progressText : FindChildText(canvasTransform, "GameFlowHUD/ProgressText");
         startTitleText = startTitleText != null ? startTitleText : FindChildText(canvasTransform, "GameStartPanel/Card/Title");
         startDescriptionText = startDescriptionText != null ? startDescriptionText : FindChildText(canvasTransform, "GameStartPanel/Card/Description");
         startButton = startButton != null ? startButton : FindChildButton(canvasTransform, "GameStartPanel/Card/StartButton");
+        endConfirmButton = endConfirmButton != null ? endConfirmButton : FindChildButton(canvasTransform, "EndUI/Card/StartButton");
         startButtonLabelText = startButtonLabelText != null ? startButtonLabelText : FindChildText(canvasTransform, "GameStartPanel/Card/StartButton/Label");
 
         if (startButton != null)
         {
             startButton.onClick.RemoveListener(BeginNewRun);
             startButton.onClick.AddListener(BeginNewRun);
+        }
+
+        if (endConfirmButton != null)
+        {
+            endConfirmButton.onClick.RemoveListener(HandleEndConfirmClicked);
+            endConfirmButton.onClick.AddListener(HandleEndConfirmClicked);
         }
     }
 
@@ -347,5 +360,35 @@ public class GameFlowController : MonoBehaviour
         levelStartX = GetPlayerX();
         RefreshHeader();
         RefreshProgressText();
+    }
+
+    private void ShowEndScreen()
+    {
+        Time.timeScale = 0f;
+
+        if (startPanel != null)
+        {
+            startPanel.SetActive(false);
+        }
+
+        if (endPanel != null)
+        {
+            endPanel.SetActive(true);
+        }
+    }
+
+    private void HandleEndConfirmClicked()
+    {
+        if (sessionController != null)
+        {
+            sessionController.ResetRun();
+        }
+
+        if (endPanel != null)
+        {
+            endPanel.SetActive(false);
+        }
+
+        ReloadActiveScene();
     }
 }

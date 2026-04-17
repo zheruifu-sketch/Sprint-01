@@ -399,19 +399,70 @@ public class EndlessLevelGenerator : MonoBehaviour
 
     private static SegmentMeasurement MeasureInstanceFromRootCollider(GameObject instance)
     {
-        Collider2D rootCollider = instance.GetComponent<Collider2D>();
-        if (rootCollider == null)
+        Collider2D zoneCollider = FindZoneCollider(instance);
+        if (zoneCollider != null && zoneCollider.enabled)
         {
-            return new SegmentMeasurement
-            {
-                MinX = -0.5f,
-                MaxX = 0.5f,
-                Width = 1f
-            };
+            return MeasureFromCollider(instance.transform.position.x, zoneCollider);
+        }
+
+        Collider2D[] colliders = instance.GetComponentsInChildren<Collider2D>(true);
+        if (colliders == null || colliders.Length == 0)
+        {
+            return CreateFallbackMeasurement();
         }
 
         float originX = instance.transform.position.x;
-        Bounds bounds = rootCollider.bounds;
+        bool found = false;
+        float localMinX = 0f;
+        float localMaxX = 0f;
+
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            Collider2D collider = colliders[i];
+            if (collider == null || !collider.enabled)
+            {
+                continue;
+            }
+
+            Bounds bounds = collider.bounds;
+            float colliderMinX = bounds.min.x - originX;
+            float colliderMaxX = bounds.max.x - originX;
+
+            if (!found)
+            {
+                localMinX = colliderMinX;
+                localMaxX = colliderMaxX;
+                found = true;
+            }
+            else
+            {
+                localMinX = Mathf.Min(localMinX, colliderMinX);
+                localMaxX = Mathf.Max(localMaxX, colliderMaxX);
+            }
+        }
+
+        if (!found)
+        {
+            return CreateFallbackMeasurement();
+        }
+
+        return new SegmentMeasurement
+        {
+            MinX = localMinX,
+            MaxX = localMaxX,
+            Width = Mathf.Max(0.01f, localMaxX - localMinX)
+        };
+    }
+
+    private static Collider2D FindZoneCollider(GameObject instance)
+    {
+        ZoneDefinition zoneDefinition = instance.GetComponentInChildren<ZoneDefinition>(true);
+        return zoneDefinition != null ? zoneDefinition.GetComponent<Collider2D>() : null;
+    }
+
+    private static SegmentMeasurement MeasureFromCollider(float originX, Collider2D collider)
+    {
+        Bounds bounds = collider.bounds;
         float localMinX = bounds.min.x - originX;
         float localMaxX = bounds.max.x - originX;
 
@@ -420,6 +471,16 @@ public class EndlessLevelGenerator : MonoBehaviour
             MinX = localMinX,
             MaxX = localMaxX,
             Width = Mathf.Max(0.01f, localMaxX - localMinX)
+        };
+    }
+
+    private static SegmentMeasurement CreateFallbackMeasurement()
+    {
+        return new SegmentMeasurement
+        {
+            MinX = -0.5f,
+            MaxX = 0.5f,
+            Width = 1f
         };
     }
 
@@ -510,7 +571,12 @@ public class EndlessLevelGenerator : MonoBehaviour
                 continue;
             }
 
-            if (rule == lastRandomRule && lastRandomRuleRepeatCount >= rule.MaxConsecutiveCount)
+            if (!hasPreviousRandomRule && !rule.CanBeFirstRandomSegment)
+            {
+                continue;
+            }
+
+            if (!AllowsPreviousZone(rule, previousZone))
             {
                 continue;
             }

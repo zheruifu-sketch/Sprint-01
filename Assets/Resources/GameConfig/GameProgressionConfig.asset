@@ -21,35 +21,28 @@ MonoBehaviour:
 
       Unlocked Forms: Human, Car
 
-      Goal: Reach 45m.'
-    targetDistance: 1000
+      Goal: Reach 150m.'
+    targetDistance: 150
     startHint: Level 1 Start
     clearHint: Level 1 Clear
-    openingRoadRepeatCount: 3
+    openingRoadRepeatCount: 2
     unlockedForms: 0100000002000000
-    allowedZones: 0100000004000000
+    allowedZones: 01000000
     zoneGenerationRules:
     - zoneType: 1
-      weight: 2.2
+      weight: 3
       minConsecutiveCount: 1
-      maxConsecutiveCount: 3
+      maxConsecutiveCount: 4
       canBeFirstRandomSegment: 1
       allowedPreviousZones: 
-    - zoneType: 4
-      weight: 1
-      minConsecutiveCount: 1
-      maxConsecutiveCount: 2
-      canBeFirstRandomSegment: 1
-      allowedPreviousZones: 
-    hazards:
-    - {fileID: 0}
+    hazards: []
     pickups:
-      enabled: 1
-      minSpawnDistance: 14
-      spawnChance: 0.45
+      enabled: 0
+      minSpawnDistance: 18
+      spawnChance: 0.4
       maxActivePickups: 2
-      minSpawnAheadDistance: 8
-      maxSpawnAheadDistance: 16
+      minSpawnAheadDistance: 10
+      maxSpawnAheadDistance: 18
       yOffset: -13
       profiles:
       - {fileID: 11400000, guid: 8aa1f23b012a43ca9dca0c98fbd68749, type: 2}
@@ -59,43 +52,35 @@ MonoBehaviour:
 
       Unlocked Forms: Human, Car, Boat
 
-      Goal: Reach
-      70m.'
-    targetDistance: 70
+      Goal: Reach 200m.'
+    targetDistance: 200
     startHint: Level 2 Start
     clearHint: Level 2 Clear
-    openingRoadRepeatCount: 3
+    openingRoadRepeatCount: 2
     unlockedForms: 010000000200000004000000
-    allowedZones: 010000000200000004000000
+    allowedZones: 0100000002000000
     zoneGenerationRules:
     - zoneType: 1
-      weight: 2
+      weight: 1.8
       minConsecutiveCount: 1
-      maxConsecutiveCount: 3
+      maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
       allowedPreviousZones: 
     - zoneType: 2
-      weight: 1.2
+      weight: 1.8
       minConsecutiveCount: 1
       maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
       allowedPreviousZones: 
-    - zoneType: 4
-      weight: 1
-      minConsecutiveCount: 1
-      maxConsecutiveCount: 2
-      canBeFirstRandomSegment: 1
-      allowedPreviousZones: 
-    hazards:
-    - {fileID: 11400000, guid: d361f22f1c51490291cdca2d768429c2, type: 2}
+    hazards: []
     pickups:
-      enabled: 1
-      minSpawnDistance: 13
-      spawnChance: 0.5
+      enabled: 0
+      minSpawnDistance: 17
+      spawnChance: 0.45
       maxActivePickups: 2
-      minSpawnAheadDistance: 8
-      maxSpawnAheadDistance: 17
-      yOffset: 1.2
+      minSpawnAheadDistance: 10
+      maxSpawnAheadDistance: 18
+      yOffset: -13
       profiles:
       - {fileID: 11400000, guid: 8aa1f23b012a43ca9dca0c98fbd68749, type: 2}
       - {fileID: 11400000, guid: 14187dc2bd3b44fb970f7c5081f3c71d, type: 2}
@@ -104,23 +89,22 @@ MonoBehaviour:
 
       Unlocked Forms: Human, Car, Boat, Plane
 
-      Goal:
-      Reach 95m.'
-    targetDistance: 95
+      Goal: Reach 250m.'
+    targetDistance: 250
     startHint: Level 3 Start
     clearHint: Level 3 Clear
-    openingRoadRepeatCount: 3
+    openingRoadRepeatCount: 1
     unlockedForms: 01000000020000000400000003000000
     allowedZones: 01000000020000000300000004000000
     zoneGenerationRules:
     - zoneType: 1
-      weight: 2.2
+      weight: 1.4
       minConsecutiveCount: 1
-      maxConsecutiveCount: 3
+      maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
       allowedPreviousZones: 
     - zoneType: 2
-      weight: 1.2
+      weight: 1.6
       minConsecutiveCount: 1
       maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
@@ -132,7 +116,206 @@ MonoBehaviour:
       canBeFirstRandomSegment: 1
       allowedPreviousZones: 
     - zoneType: 3
-      weight: 0.9
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    hazards: []
+    pickups:
+      enabled: 0
+      minSpawnDistance: 16
+      spawnChance: 0.5
+      maxActivePickups: 3
+      minSpawnAheadDistance: 10
+      maxSpawnAheadDistance: 19
+      yOffset: -13
+      profiles:
+      - {fileID: 11400000, guid: 8aa1f23b012a43ca9dca0c98fbd68749, type: 2}
+      - {fileID: 11400000, guid: 14187dc2bd3b44fb970f7c5081f3c71d, type: 2}
+  - levelName: Level 4
+    description: 'Level 4
+
+      Unlocked Forms: Human, Car, Boat, Plane
+
+      Goal: Reach 300m.'
+    targetDistance: 300
+    startHint: Level 4 Start
+    clearHint: Level 4 Clear
+    openingRoadRepeatCount: 1
+    unlockedForms: 01000000020000000400000003000000
+    allowedZones: 01000000020000000300000004000000
+    zoneGenerationRules:
+    - zoneType: 1
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    - zoneType: 2
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    - zoneType: 4
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    - zoneType: 3
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    hazards:
+    - {fileID: 11400000, guid: 8d4b14e359be4885a5532489a10cd7d9, type: 2}
+    pickups:
+      enabled: 0
+      minSpawnDistance: 15
+      spawnChance: 0.52
+      maxActivePickups: 3
+      minSpawnAheadDistance: 10
+      maxSpawnAheadDistance: 19
+      yOffset: -13
+      profiles:
+      - {fileID: 11400000, guid: 8aa1f23b012a43ca9dca0c98fbd68749, type: 2}
+      - {fileID: 11400000, guid: 14187dc2bd3b44fb970f7c5081f3c71d, type: 2}
+  - levelName: Level 5
+    description: 'Level 5
+
+      Unlocked Forms: Human, Car, Boat, Plane
+
+      Goal: Reach 350m.'
+    targetDistance: 350
+    startHint: Level 5 Start
+    clearHint: Level 5 Clear
+    openingRoadRepeatCount: 1
+    unlockedForms: 01000000020000000400000003000000
+    allowedZones: 01000000020000000300000004000000
+    zoneGenerationRules:
+    - zoneType: 1
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    - zoneType: 2
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    - zoneType: 4
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    - zoneType: 3
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    hazards:
+    - {fileID: 11400000, guid: d361f22f1c51490291cdca2d768429c2, type: 2}
+    pickups:
+      enabled: 0
+      minSpawnDistance: 14
+      spawnChance: 0.55
+      maxActivePickups: 3
+      minSpawnAheadDistance: 10
+      maxSpawnAheadDistance: 20
+      yOffset: -13
+      profiles:
+      - {fileID: 11400000, guid: 8aa1f23b012a43ca9dca0c98fbd68749, type: 2}
+      - {fileID: 11400000, guid: 14187dc2bd3b44fb970f7c5081f3c71d, type: 2}
+  - levelName: Level 6
+    description: 'Level 6
+
+      Unlocked Forms: Human, Car, Boat, Plane
+
+      Goal: Reach 400m.'
+    targetDistance: 400
+    startHint: Level 6 Start
+    clearHint: Level 6 Clear
+    openingRoadRepeatCount: 1
+    unlockedForms: 01000000020000000400000003000000
+    allowedZones: 01000000020000000300000004000000
+    zoneGenerationRules:
+    - zoneType: 1
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    - zoneType: 2
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    - zoneType: 4
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    - zoneType: 3
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    hazards:
+    - {fileID: 11400000, guid: c2cb36d2212d471ab743bcc237419f4c, type: 2}
+    pickups:
+      enabled: 0
+      minSpawnDistance: 13
+      spawnChance: 0.55
+      maxActivePickups: 3
+      minSpawnAheadDistance: 10
+      maxSpawnAheadDistance: 20
+      yOffset: -13
+      profiles:
+      - {fileID: 11400000, guid: 8aa1f23b012a43ca9dca0c98fbd68749, type: 2}
+      - {fileID: 11400000, guid: 14187dc2bd3b44fb970f7c5081f3c71d, type: 2}
+  - levelName: Level 7
+    description: 'Level 7
+
+      Unlocked Forms: Human, Car, Boat, Plane
+
+      Goal: Reach 500m.'
+    targetDistance: 500
+    startHint: Level 7 Start
+    clearHint: Level 7 Clear
+    openingRoadRepeatCount: 1
+    unlockedForms: 01000000020000000400000003000000
+    allowedZones: 01000000020000000300000004000000
+    zoneGenerationRules:
+    - zoneType: 1
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    - zoneType: 2
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    - zoneType: 4
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 2
+      canBeFirstRandomSegment: 1
+      allowedPreviousZones: 
+    - zoneType: 3
+      weight: 1
       minConsecutiveCount: 1
       maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
@@ -143,11 +326,11 @@ MonoBehaviour:
     pickups:
       enabled: 1
       minSpawnDistance: 12
-      spawnChance: 0.55
+      spawnChance: 0.58
       maxActivePickups: 3
-      minSpawnAheadDistance: 8
-      maxSpawnAheadDistance: 18
-      yOffset: 1.2
+      minSpawnAheadDistance: 10
+      maxSpawnAheadDistance: 21
+      yOffset: -13
       profiles:
       - {fileID: 11400000, guid: 8aa1f23b012a43ca9dca0c98fbd68749, type: 2}
       - {fileID: 11400000, guid: 14187dc2bd3b44fb970f7c5081f3c71d, type: 2}

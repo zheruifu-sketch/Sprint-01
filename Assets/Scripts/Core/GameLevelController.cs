@@ -71,6 +71,11 @@ public class GameLevelController : MonoBehaviour
         SetLevel(initialLevel - 1, false);
     }
 
+    private void Start()
+    {
+        LevelChanged?.Invoke(CurrentLevelIndex);
+    }
+
     private void OnDestroy()
     {
         if (Instance == this)
