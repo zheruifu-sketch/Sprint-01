@@ -24,7 +24,6 @@ public class GameFlowController : MonoBehaviour
     [SerializeField] private TMP_Text startButtonLabelText;
     [SerializeField] private TMP_Text headerText;
     [SerializeField] private TMP_Text progressText;
-    [SerializeField] private string titleText = "Jump Game";
     [SerializeField] private string startButtonText = "Start";
     private bool isTransitioning;
     private float levelStartX;
@@ -320,11 +319,6 @@ public class GameFlowController : MonoBehaviour
 
     private void RefreshStaticUiText()
     {
-        if (startTitleText != null)
-        {
-            startTitleText.text = titleText;
-        }
-
         if (startButtonLabelText != null)
         {
             startButtonLabelText.text = startButtonText;
