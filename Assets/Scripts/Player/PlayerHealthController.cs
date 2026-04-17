@@ -32,6 +32,7 @@ public class PlayerHealthController : MonoBehaviour
             return;
         }
 
+        Debug.Log($"[Health] ApplyHazardDamage form={GetCurrentFormLabel()} deltaTime={deltaTime:F3} dps={HazardDamagePerSecond:F2} damage={HazardDamagePerSecond * deltaTime:F3}", this);
         ApplyDamage(HazardDamagePerSecond * deltaTime);
     }
 
@@ -46,6 +47,7 @@ public class PlayerHealthController : MonoBehaviour
         CurrentHealth = Mathf.Max(0f, CurrentHealth - damage);
         if (!Mathf.Approximately(previous, CurrentHealth))
         {
+            Debug.Log($"[Health] ApplyDamage form={GetCurrentFormLabel()} damage={damage:F3} health={previous:F3}->{CurrentHealth:F3}", this);
             NotifyHealthChanged();
         }
     }
@@ -58,5 +60,11 @@ public class PlayerHealthController : MonoBehaviour
     private void NotifyHealthChanged()
     {
         HealthChanged?.Invoke(CurrentHealth, MaxHealth);
+    }
+
+    private string GetCurrentFormLabel()
+    {
+        PlayerFormRoot formRoot = GetComponent<PlayerFormRoot>();
+        return formRoot != null ? formRoot.CurrentForm.ToString() : "Unknown";
     }
 }

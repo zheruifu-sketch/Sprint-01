@@ -16,6 +16,7 @@ public class PlayerRuleController : MonoBehaviour
     [SerializeField] private bool forceHumanWhenPlaneBlocked = true;
     [SerializeField] private Vector2 boatSwitchCheckOffset = GameConstants.DefaultBoatSwitchCheckOffset;
     [SerializeField] private float boatSwitchCheckRadius = GameConstants.DefaultBoatSwitchCheckRadius;
+    [SerializeField] private float floodBoatSupportHeight = 1.5f;
 
     private readonly Collider2D[] boatSwitchResults = new Collider2D[16];
     private float transformCooldownRemaining;
@@ -103,7 +104,22 @@ public class PlayerRuleController : MonoBehaviour
 
     public bool IsInFloodWater()
     {
-        return hazardController != null && hazardController.IsPointInsideGlobalWater(transform.position);
+        return hazardController != null && hazardController.IsPointInsideGlobalWaterBody(transform.position, 0.35f);
+    }
+
+    public bool IsBoatSupportedByFlood()
+    {
+        if (formRoot == null || formRoot.CurrentForm != PlayerFormType.Boat || hazardController == null)
+        {
+            return false;
+        }
+
+        if (!hazardController.TryGetGlobalWaterSurfaceY(out float waterSurfaceY))
+        {
+            return false;
+        }
+
+        return transform.position.y <= waterSurfaceY + floodBoatSupportHeight;
     }
 
     public bool IsInWaterEnvironment()
@@ -123,7 +139,7 @@ public class PlayerRuleController : MonoBehaviour
 
     public bool IsBoatSupportedSurface()
     {
-        return IsInWaterEnvironment() || IsInBlizzard();
+        return IsInWater() || IsBoatSupportedByFlood() || IsInBlizzard();
     }
 
     private void HandleFormHotkeys()
