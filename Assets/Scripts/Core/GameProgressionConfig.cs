@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "GameProgressionConfig", menuName = "JumpGame/Game Progression Config")]
 public class GameProgressionConfig : ScriptableObject
@@ -8,19 +9,21 @@ public class GameProgressionConfig : ScriptableObject
     [Serializable]
     public class ZoneGenerationRule
     {
-        [SerializeField] private ZoneType zoneType = ZoneType.None;
+        [FormerlySerializedAs("zoneType")]
+        [SerializeField] private EnvironmentType environmentType = EnvironmentType.None;
         [SerializeField] private float weight = 1f;
         [SerializeField] private int minConsecutiveCount = 1;
         [SerializeField] private int maxConsecutiveCount = 2;
         [SerializeField] private bool canBeFirstRandomSegment = true;
-        [SerializeField] private List<ZoneType> allowedPreviousZones = new List<ZoneType>();
+        [FormerlySerializedAs("allowedPreviousZones")]
+        [SerializeField] private List<EnvironmentType> allowedPreviousEnvironments = new List<EnvironmentType>();
 
-        public ZoneType ZoneType => zoneType;
+        public EnvironmentType EnvironmentType => environmentType;
         public float Weight => Mathf.Max(0.01f, weight);
         public int MinConsecutiveCount => Mathf.Max(1, minConsecutiveCount);
         public int MaxConsecutiveCount => Mathf.Max(MinConsecutiveCount, maxConsecutiveCount);
         public bool CanBeFirstRandomSegment => canBeFirstRandomSegment;
-        public List<ZoneType> AllowedPreviousZones => allowedPreviousZones;
+        public List<EnvironmentType> AllowedPreviousEnvironments => allowedPreviousEnvironments;
     }
 
     [Serializable]
@@ -55,7 +58,8 @@ public class GameProgressionConfig : ScriptableObject
         [SerializeField] private string clearHint = string.Empty;
         [SerializeField] private int openingRoadRepeatCount = 3;
         [SerializeField] private List<PlayerFormType> unlockedForms = new List<PlayerFormType>();
-        [SerializeField] private List<ZoneType> allowedZones = new List<ZoneType>();
+        [FormerlySerializedAs("allowedZones")]
+        [SerializeField] private List<EnvironmentType> allowedEnvironments = new List<EnvironmentType>();
         [SerializeField] private List<ZoneGenerationRule> zoneGenerationRules = new List<ZoneGenerationRule>();
         [SerializeField] private List<HazardProfile> hazards = new List<HazardProfile>();
         [SerializeField] private PickupSpawnSettings pickups = new PickupSpawnSettings();
@@ -67,7 +71,7 @@ public class GameProgressionConfig : ScriptableObject
         public string ClearHint => clearHint;
         public int OpeningRoadRepeatCount => Mathf.Max(1, openingRoadRepeatCount);
         public List<PlayerFormType> UnlockedForms => unlockedForms;
-        public List<ZoneType> AllowedZones => allowedZones;
+        public List<EnvironmentType> AllowedEnvironments => allowedEnvironments;
         public List<ZoneGenerationRule> ZoneGenerationRules => zoneGenerationRules;
         public List<HazardProfile> Hazards => hazards;
         public PickupSpawnSettings Pickups => pickups;
@@ -121,15 +125,15 @@ public class GameProgressionConfig : ScriptableObject
         return level.UnlockedForms.Contains(formType);
     }
 
-    public bool IsZoneAllowed(int levelIndex, ZoneType zoneType)
+    public bool IsEnvironmentAllowed(int levelIndex, EnvironmentType environmentType)
     {
         LevelDefinition level = GetLevel(levelIndex);
-        if (level == null || level.AllowedZones == null || level.AllowedZones.Count == 0)
+        if (level == null || level.AllowedEnvironments == null || level.AllowedEnvironments.Count == 0)
         {
             return true;
         }
 
-        return level.AllowedZones.Contains(zoneType);
+        return level.AllowedEnvironments.Contains(environmentType);
     }
 
     public PlayerFormType GetFallbackUnlockedForm(int levelIndex, PlayerFormType preferredForm = PlayerFormType.Human)

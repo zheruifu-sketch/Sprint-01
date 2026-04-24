@@ -224,10 +224,7 @@ public class PickupSpawner : MonoBehaviour
                 continue;
             }
 
-            ZoneDefinition zoneDefinition = collider.GetComponent<ZoneDefinition>();
-            bool isRoad = zoneDefinition != null
-                          ? zoneDefinition.ZoneType == ZoneType.Road
-                          : collider.CompareTag("Road");
+            bool isRoad = WorldSemanticUtility.HasEnvironment(collider, EnvironmentType.Road);
             if (!isRoad)
             {
                 continue;

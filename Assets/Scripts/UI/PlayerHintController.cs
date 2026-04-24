@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [DisallowMultipleComponent]
 public class PlayerHintController : MonoBehaviour
@@ -8,7 +9,8 @@ public class PlayerHintController : MonoBehaviour
     [Serializable]
     private class ZoneHintEntry
     {
-        [SerializeField] private ZoneType zoneType = ZoneType.None;
+        [FormerlySerializedAs("zoneType")]
+        [SerializeField] private EnvironmentType environmentType = EnvironmentType.None;
         [SerializeField] private string message = string.Empty;
         [SerializeField] private PlayerFormType recommendedForm = PlayerFormType.Human;
         [SerializeField] private bool suppressWhenAlreadyUsingRecommendedForm = true;
@@ -20,14 +22,14 @@ public class PlayerHintController : MonoBehaviour
         }
 
         public ZoneHintEntry(
-            ZoneType zoneType,
+            EnvironmentType environmentType,
             string message,
             PlayerFormType recommendedForm,
             bool suppressWhenAlreadyUsingRecommendedForm = true,
             bool showOnlyOnce = true,
             float duration = 3f)
         {
-            this.zoneType = zoneType;
+            this.environmentType = environmentType;
             this.message = message;
             this.recommendedForm = recommendedForm;
             this.suppressWhenAlreadyUsingRecommendedForm = suppressWhenAlreadyUsingRecommendedForm;
@@ -35,7 +37,7 @@ public class PlayerHintController : MonoBehaviour
             this.duration = duration;
         }
 
-        public ZoneType ZoneType => zoneType;
+        public EnvironmentType EnvironmentType => environmentType;
         public string Message => message;
         public PlayerFormType RecommendedForm => recommendedForm;
         public bool SuppressWhenAlreadyUsingRecommendedForm => suppressWhenAlreadyUsingRecommendedForm;
@@ -45,7 +47,7 @@ public class PlayerHintController : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private PlayerFormRoot playerFormRoot;
-    [SerializeField] private PlayerZoneSensor zoneSensor;
+    [SerializeField] private PlayerEnvironmentContext environmentContext;
     [SerializeField] private PlayerHintUI hintUI;
     [SerializeField] private GameLevelController levelController;
 
@@ -62,8 +64,8 @@ public class PlayerHintController : MonoBehaviour
         new ZoneHintEntry()
     };
 
-    private readonly Dictionary<ZoneType, bool> previousZoneStates = new Dictionary<ZoneType, bool>();
-    private readonly HashSet<ZoneType> shownZoneHints = new HashSet<ZoneType>();
+    private readonly Dictionary<EnvironmentType, bool> previousZoneStates = new Dictionary<EnvironmentType, bool>();
+    private readonly HashSet<EnvironmentType> shownZoneHints = new HashSet<EnvironmentType>();
     private float introHintTimer;
     private bool introHintQueued;
 
@@ -92,10 +94,10 @@ public class PlayerHintController : MonoBehaviour
     private void ResetZoneHintsToDefaults()
     {
         zoneHints.Clear();
-        zoneHints.Add(new ZoneHintEntry(ZoneType.Water, "Water ahead: try Boat form", PlayerFormType.Boat));
-        zoneHints.Add(new ZoneHintEntry(ZoneType.Cliff, "Cliff ahead: try Plane form", PlayerFormType.Plane));
-        zoneHints.Add(new ZoneHintEntry(ZoneType.Blizzard, "Blizzard ahead: use Human or Boat form", PlayerFormType.Human, false));
-        zoneHints.Add(new ZoneHintEntry(ZoneType.Obstacle, "Obstacle ahead: avoid it or switch form", PlayerFormType.Human, false));
+        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Water, "Water ahead: try Boat form", PlayerFormType.Boat));
+        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Cliff, "Cliff ahead: try Plane form", PlayerFormType.Plane));
+        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Blizzard, "Blizzard ahead: use Human or Boat form", PlayerFormType.Human, false));
+        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Obstacle, "Obstacle ahead: avoid it or switch form", PlayerFormType.Human, false));
     }
 
     private void AutoBind()
@@ -105,14 +107,14 @@ public class PlayerHintController : MonoBehaviour
             playerFormRoot = FindObjectOfType<PlayerFormRoot>();
         }
 
-        if (zoneSensor == null && playerFormRoot != null)
+        if (environmentContext == null && playerFormRoot != null)
         {
-            zoneSensor = playerFormRoot.GetComponent<PlayerZoneSensor>();
+            environmentContext = playerFormRoot.GetComponent<PlayerEnvironmentContext>();
         }
 
-        if (zoneSensor == null)
+        if (environmentContext == null)
         {
-            zoneSensor = FindObjectOfType<PlayerZoneSensor>();
+            environmentContext = FindObjectOfType<PlayerEnvironmentContext>();
         }
 
         if (hintUI == null)
@@ -141,7 +143,7 @@ public class PlayerHintController : MonoBehaviour
         for (int i = 0; i < zoneHints.Count; i++)
         {
             ZoneHintEntry entry = zoneHints[i];
-            if (entry != null && entry.ZoneType != ZoneType.None && !string.IsNullOrWhiteSpace(entry.Message))
+            if (entry != null && entry.EnvironmentType != EnvironmentType.None && !string.IsNullOrWhiteSpace(entry.Message))
             {
                 return true;
             }
@@ -156,12 +158,12 @@ public class PlayerHintController : MonoBehaviour
         for (int i = 0; i < zoneHints.Count; i++)
         {
             ZoneHintEntry entry = zoneHints[i];
-            if (entry == null || entry.ZoneType == ZoneType.None)
+            if (entry == null || entry.EnvironmentType == EnvironmentType.None)
             {
                 continue;
             }
 
-            previousZoneStates[entry.ZoneType] = IsPlayerInZone(entry.ZoneType);
+            previousZoneStates[entry.EnvironmentType] = IsPlayerInEnvironment(entry.EnvironmentType);
         }
     }
 
@@ -184,7 +186,7 @@ public class PlayerHintController : MonoBehaviour
 
     private void UpdateZoneHints()
     {
-        if (zoneSensor == null)
+        if (environmentContext == null)
         {
             return;
         }
@@ -192,30 +194,30 @@ public class PlayerHintController : MonoBehaviour
         for (int i = 0; i < zoneHints.Count; i++)
         {
             ZoneHintEntry entry = zoneHints[i];
-            if (entry == null || entry.ZoneType == ZoneType.None || string.IsNullOrWhiteSpace(entry.Message))
+            if (entry == null || entry.EnvironmentType == EnvironmentType.None || string.IsNullOrWhiteSpace(entry.Message))
             {
                 continue;
             }
 
-            bool isInside = IsPlayerInZone(entry.ZoneType);
-            bool wasInside = previousZoneStates.TryGetValue(entry.ZoneType, out bool value) && value;
+            bool isInside = IsPlayerInEnvironment(entry.EnvironmentType);
+            bool wasInside = previousZoneStates.TryGetValue(entry.EnvironmentType, out bool value) && value;
 
             if (isInside && !wasInside && ShouldShowZoneHint(entry))
             {
                 ShowHint(entry.Message, entry.Duration);
                 if (entry.ShowOnlyOnce)
                 {
-                    shownZoneHints.Add(entry.ZoneType);
+                    shownZoneHints.Add(entry.EnvironmentType);
                 }
             }
 
-            previousZoneStates[entry.ZoneType] = isInside;
+            previousZoneStates[entry.EnvironmentType] = isInside;
         }
     }
 
     private bool ShouldShowZoneHint(ZoneHintEntry entry)
     {
-        if (entry.ShowOnlyOnce && shownZoneHints.Contains(entry.ZoneType))
+        if (entry.ShowOnlyOnce && shownZoneHints.Contains(entry.EnvironmentType))
         {
             return false;
         }
@@ -230,9 +232,9 @@ public class PlayerHintController : MonoBehaviour
         return true;
     }
 
-    private bool IsPlayerInZone(ZoneType zoneType)
+    private bool IsPlayerInEnvironment(EnvironmentType environmentType)
     {
-        return zoneSensor != null && zoneSensor.IsInZone(zoneType);
+        return environmentContext != null && environmentContext.IsInEnvironment(environmentType);
     }
 
     private void ShowHint(string message, float duration)

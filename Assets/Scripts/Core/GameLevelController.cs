@@ -152,9 +152,9 @@ public class GameLevelController : MonoBehaviour
         return progressionConfig == null || progressionConfig.IsFormUnlocked(CurrentLevelIndex, formType);
     }
 
-    public bool IsZoneAllowed(ZoneType zoneType)
+    public bool IsEnvironmentAllowed(EnvironmentType environmentType)
     {
-        return progressionConfig == null || progressionConfig.IsZoneAllowed(CurrentLevelIndex, zoneType);
+        return progressionConfig == null || progressionConfig.IsEnvironmentAllowed(CurrentLevelIndex, environmentType);
     }
 
     public PlayerFormType GetFallbackUnlockedForm(PlayerFormType preferredForm = PlayerFormType.Human)

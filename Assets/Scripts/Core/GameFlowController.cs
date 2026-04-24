@@ -97,7 +97,7 @@ public class GameFlowController : MonoBehaviour
     {
         RefreshProgressText();
 
-        if (sessionController == null || !sessionController.HasActiveRun || isTransitioning)
+        if (sessionController == null || !sessionController.IsGameplayRunning || isTransitioning)
         {
             return;
         }
@@ -182,6 +182,10 @@ public class GameFlowController : MonoBehaviour
     {
         isTransitioning = true;
         Time.timeScale = 1f;
+        if (sessionController != null)
+        {
+            sessionController.BeginTransition();
+        }
 
         int currentLevel = levelController != null ? levelController.CurrentLevelNumber : 1;
         int levelCount = levelController != null ? Mathf.Max(1, levelController.LevelCount) : 3;
@@ -359,6 +363,11 @@ public class GameFlowController : MonoBehaviour
     private void ShowEndScreen()
     {
         Time.timeScale = 0f;
+        isTransitioning = false;
+        if (sessionController != null)
+        {
+            sessionController.CompleteRun();
+        }
 
         if (startPanel != null)
         {

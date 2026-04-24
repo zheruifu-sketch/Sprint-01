@@ -6,7 +6,23 @@ public enum PlayerFormType
     Boat = 4
 }
 
-public enum ZoneType
+[System.Flags]
+public enum RuleTag
+{
+    None = 0,
+    SupportsGroundedTravel = 1 << 0,
+    SupportsBoat = 1 << 1,
+    BlocksBoat = 1 << 2,
+    BlocksPlane = 1 << 3,
+    SlowsHuman = 1 << 4,
+    HazardDamage = 1 << 5,
+    InstantWaterDeath = 1 << 6,
+    CliffDrop = 1 << 7,
+    Obstacle = 1 << 8,
+    HintTrigger = 1 << 9
+}
+
+public enum EnvironmentType
 {
     None = 0,
     Road = 1,
@@ -24,4 +40,12 @@ public enum FailureType
     HitObstacle = 3,
     InvalidForm = 4,
     EnergyDepleted = 5
+}
+
+public enum GameRunState
+{
+    Idle = 0,
+    Running = 1,
+    Transitioning = 2,
+    Completed = 3
 }

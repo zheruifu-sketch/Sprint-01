@@ -6,13 +6,9 @@ public class PlayerRespawnController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private PlayerFormRoot formRoot;
-    [SerializeField] private PlayerRuleController ruleController;
     [SerializeField] private PlayerHealthController healthController;
     [SerializeField] private PlayerEnergyController energyController;
-    [Header("Fall Death")]
-    [SerializeField] private bool useGlobalFallDeath = true;
-    [SerializeField] private float cliffGroundY = GameConstants.DefaultCliffGroundY;
-    [SerializeField] private float cliffDeathY = GameConstants.DefaultCliffDeathY;
+    [SerializeField] private PlayerHazardResolver hazardResolver;
 
     public FailureType LastFailureType { get; private set; } = FailureType.None;
     
@@ -21,9 +17,9 @@ public class PlayerRespawnController : MonoBehaviour
     private void Reset()
     {
         formRoot = GetComponent<PlayerFormRoot>();
-        ruleController = GetComponent<PlayerRuleController>();
         healthController = GetComponent<PlayerHealthController>();
         energyController = GetComponent<PlayerEnergyController>();
+        hazardResolver = GetComponent<PlayerHazardResolver>();
     }
 
     private void Awake()
@@ -31,6 +27,11 @@ public class PlayerRespawnController : MonoBehaviour
         if (formRoot == null)
         {
             formRoot = GetComponent<PlayerFormRoot>();
+        }
+
+        if (hazardResolver == null)
+        {
+            hazardResolver = GetComponent<PlayerHazardResolver>();
         }
 
         if (healthController == null)
@@ -65,24 +66,8 @@ public class PlayerRespawnController : MonoBehaviour
             return;
         }
 
-        if (collision.collider.CompareTag("Obstacle"))
-        {
-            if (healthController == null)
-            {
-                Respawn(FailureType.HitObstacle);
-                return;
-            }
-
-            healthController.ApplyDamage(healthController.MaxHealth);
-            if (healthController.IsDead())
-            {
-                Respawn(FailureType.HitObstacle);
-            }
-            return;
-        }
-
-        ZoneDefinition zoneDefinition = collision.collider.GetComponent<ZoneDefinition>();
-        if (zoneDefinition != null && zoneDefinition.ZoneType == ZoneType.Obstacle)
+        if (WorldSemanticUtility.HasEnvironment(collision.collider, EnvironmentType.Obstacle) ||
+            (WorldSemanticUtility.ResolveRuleTags(collision.collider) & RuleTag.Obstacle) != 0)
         {
             if (healthController == null)
             {
@@ -133,14 +118,12 @@ public class PlayerRespawnController : MonoBehaviour
             return;
         }
 
-        if (ruleController != null
-            && formRoot.CurrentForm == PlayerFormType.Boat
-            && ruleController.IsBoatSupportedByFlood())
+        if (hazardResolver != null && hazardResolver.IsProtectedBoatState())
         {
             return;
         }
 
-        if (TryGetActiveHazard(out FailureType failureType))
+        if (hazardResolver != null && hazardResolver.TryGetActiveHazard(out FailureType failureType))
         {
             if (failureType == FailureType.FellFromCliff)
             {
@@ -154,49 +137,5 @@ public class PlayerRespawnController : MonoBehaviour
                 Respawn(failureType);
             }
         }
-    }
-
-    private bool TryGetActiveHazard(out FailureType failureType)
-    {
-        if (ruleController != null
-            && formRoot != null
-            && formRoot.CurrentForm == PlayerFormType.Boat
-            && ruleController.IsBoatSupportedByFlood())
-        {
-            failureType = FailureType.None;
-            return false;
-        }
-
-        if (useGlobalFallDeath && transform.position.y <= cliffDeathY)
-        {
-            failureType = FailureType.FellFromCliff;
-            return true;
-        }
-
-        if (ruleController != null && formRoot.CurrentForm != PlayerFormType.Boat && ruleController.IsInWater())
-        {
-            failureType = FailureType.FellIntoWater;
-            return true;
-        }
-
-        bool isInCliffDanger = ruleController != null
-                              && formRoot.CurrentForm != PlayerFormType.Plane
-                              && ruleController.IsInCliff()
-                              && transform.position.y <= cliffGroundY
-                              && transform.position.y <= cliffDeathY;
-        if (isInCliffDanger)
-        {
-            failureType = FailureType.FellFromCliff;
-            return true;
-        }
-
-        if (ruleController != null && formRoot.CurrentForm == PlayerFormType.Boat && !ruleController.IsBoatSupportedSurface())
-        {
-            failureType = FailureType.InvalidForm;
-            return true;
-        }
-
-        failureType = FailureType.None;
-        return false;
     }
 }

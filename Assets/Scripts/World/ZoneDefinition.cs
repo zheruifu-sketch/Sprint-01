@@ -1,9 +1,17 @@
+using UnityEngine.Serialization;
 using UnityEngine;
 
 [DisallowMultipleComponent]
 public class ZoneDefinition : MonoBehaviour
 {
-    [field: SerializeField] public ZoneType ZoneType { get; private set; } = ZoneType.None;
+    [Header("Semantic")]
+    [FormerlySerializedAs("zoneType")]
+    [SerializeField] private EnvironmentType environmentType = EnvironmentType.None;
+    [FormerlySerializedAs("ruleTags")]
+    [SerializeField] private RuleTag additionalRuleTags = RuleTag.None;
+
+    public EnvironmentType EnvironmentType => environmentType;
+    public RuleTag RuleTags => WorldSemanticUtility.GetDefaultRuleTags(environmentType) | additionalRuleTags;
 
     private void Reset()
     {

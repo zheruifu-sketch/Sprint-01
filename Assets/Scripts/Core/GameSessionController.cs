@@ -3,10 +3,12 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class GameSessionController : MonoBehaviour
 {
-    [SerializeField] private bool hasActiveRun;
+    [SerializeField] private GameRunState runState;
     [SerializeField] private int currentLevelNumber = 1;
 
-    public bool HasActiveRun => hasActiveRun;
+    public bool HasActiveRun => runState != GameRunState.Idle;
+    public bool IsGameplayRunning => runState == GameRunState.Running;
+    public GameRunState RunState => runState;
     public int CurrentLevelNumber => currentLevelNumber < 1 ? 1 : currentLevelNumber;
 
     public static GameSessionController GetOrCreate()
@@ -40,25 +42,45 @@ public class GameSessionController : MonoBehaviour
 
     public void StartNewRun()
     {
-        hasActiveRun = true;
+        runState = GameRunState.Running;
         currentLevelNumber = 1;
     }
 
     public void ResumeLevel(int levelNumber)
     {
-        hasActiveRun = true;
+        runState = GameRunState.Running;
         currentLevelNumber = Mathf.Max(1, levelNumber);
+    }
+
+    public void BeginTransition()
+    {
+        if (runState == GameRunState.Idle)
+        {
+            return;
+        }
+
+        runState = GameRunState.Transitioning;
     }
 
     public void AdvanceLevel(int maxLevelNumber)
     {
-        hasActiveRun = true;
+        runState = GameRunState.Running;
         currentLevelNumber = Mathf.Clamp(currentLevelNumber + 1, 1, Mathf.Max(1, maxLevelNumber));
+    }
+
+    public void CompleteRun()
+    {
+        if (runState == GameRunState.Idle)
+        {
+            return;
+        }
+
+        runState = GameRunState.Completed;
     }
 
     public void ResetRun()
     {
-        hasActiveRun = false;
+        runState = GameRunState.Idle;
         currentLevelNumber = 1;
     }
 }
