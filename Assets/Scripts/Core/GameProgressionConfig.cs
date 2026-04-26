@@ -57,7 +57,6 @@ public class GameProgressionConfig : ScriptableObject
         [SerializeField] private string startHint = string.Empty;
         [SerializeField] private string clearHint = string.Empty;
         [SerializeField] private int openingRoadRepeatCount = 3;
-        [SerializeField] private LevelPatternDefinition patternDefinition;
         [SerializeField] private List<PlayerFormType> unlockedForms = new List<PlayerFormType>();
         [FormerlySerializedAs("allowedZones")]
         [SerializeField] private List<EnvironmentType> allowedEnvironments = new List<EnvironmentType>();
@@ -70,25 +69,12 @@ public class GameProgressionConfig : ScriptableObject
         public float TargetDistance => Mathf.Max(1f, targetDistance);
         public string StartHint => startHint;
         public string ClearHint => clearHint;
-        public int OpeningRoadRepeatCount => patternDefinition != null
-            ? patternDefinition.OpeningRoadRepeatCount
-            : Mathf.Max(1, openingRoadRepeatCount);
-        public LevelPatternDefinition PatternDefinition => patternDefinition;
+        public int OpeningRoadRepeatCount => Mathf.Max(1, openingRoadRepeatCount);
         public List<PlayerFormType> UnlockedForms => unlockedForms;
         public List<EnvironmentType> AllowedEnvironments => allowedEnvironments;
         public List<ZoneGenerationRule> ZoneGenerationRules => zoneGenerationRules;
         public List<HazardProfile> Hazards => hazards;
         public PickupSpawnSettings Pickups => pickups;
-
-        public IEnumerable<LevelPatternDefinition.EnvironmentGenerationRule> EnumerateEnvironmentRules()
-        {
-            if (patternDefinition != null && patternDefinition.EnvironmentRules != null && patternDefinition.EnvironmentRules.Count > 0)
-            {
-                return patternDefinition.EnvironmentRules;
-            }
-
-            return Array.Empty<LevelPatternDefinition.EnvironmentGenerationRule>();
-        }
     }
 
     [Header("Flow")]

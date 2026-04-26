@@ -37,26 +37,6 @@ public class EndlessLevelGenerator : MonoBehaviour
     }
 
     [Serializable]
-    private class EnvironmentSegmentEntry
-    {
-        [SerializeField] private EnvironmentType environmentType = EnvironmentType.None;
-        [SerializeField] private GameObject prefab;
-
-        public EnvironmentSegmentEntry()
-        {
-        }
-
-        public EnvironmentSegmentEntry(EnvironmentType environmentType, GameObject prefab)
-        {
-            this.environmentType = environmentType;
-            this.prefab = prefab;
-        }
-
-        public EnvironmentType EnvironmentType => environmentType;
-        public GameObject Prefab => prefab;
-    }
-
-    [Serializable]
     private class OpeningSegment
     {
         [SerializeField] private SegmentTemplate template = new SegmentTemplate();
@@ -147,9 +127,6 @@ public class EndlessLevelGenerator : MonoBehaviour
     [SerializeField] private bool clearChildrenOnPlay = true;
     [SerializeField] private List<OpeningSegment> openingSequence = new List<OpeningSegment>();
 
-    [Header("Segment Library")]
-    [SerializeField] private List<EnvironmentSegmentEntry> segmentLibrary = new List<EnvironmentSegmentEntry>();
-
     [Header("Random Rules")]
     [SerializeField] private List<RandomSegmentRule> randomRules = new List<RandomSegmentRule>();
     [SerializeField] private int randomSeed = 230;
@@ -170,7 +147,6 @@ public class EndlessLevelGenerator : MonoBehaviour
         segmentParent = transform;
         levelController = GameLevelController.GetOrCreateInstance();
         progressionConfig = GameProgressionConfig.Load();
-        EnsureDefaultSegmentLibrary();
         EnsureDefaultRules();
     }
 
@@ -196,7 +172,6 @@ public class EndlessLevelGenerator : MonoBehaviour
             progressionConfig = GameProgressionConfig.Load();
         }
 
-        EnsureDefaultSegmentLibrary();
         EnsureDefaultRules();
         InitializeRuntimeState();
     }
@@ -670,45 +645,6 @@ public class EndlessLevelGenerator : MonoBehaviour
         }
     }
 
-    private void EnsureDefaultSegmentLibrary()
-    {
-        if (segmentLibrary.Count > 0 && HasConfiguredSegmentLibrary())
-        {
-            return;
-        }
-
-        segmentLibrary.Clear();
-        AddSegmentLibraryEntry(EnvironmentType.Road, "公路");
-        AddSegmentLibraryEntry(EnvironmentType.Water, "水面");
-        AddSegmentLibraryEntry(EnvironmentType.Cliff, "悬崖");
-        AddSegmentLibraryEntry(EnvironmentType.Blizzard, "雪地");
-    }
-
-    private bool HasConfiguredSegmentLibrary()
-    {
-        for (int i = 0; i < segmentLibrary.Count; i++)
-        {
-            EnvironmentSegmentEntry entry = segmentLibrary[i];
-            if (entry != null && entry.EnvironmentType != EnvironmentType.None && entry.Prefab != null)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private void AddSegmentLibraryEntry(EnvironmentType environmentType, string prefabName)
-    {
-        GameObject prefab = LoadSegmentPrefab(prefabName);
-        if (prefab == null)
-        {
-            return;
-        }
-
-        segmentLibrary.Add(new EnvironmentSegmentEntry(environmentType, prefab));
-    }
-
     private void ApplyConfiguredRules()
     {
         if (progressionConfig == null || levelController == null)
@@ -722,28 +658,8 @@ public class EndlessLevelGenerator : MonoBehaviour
             return;
         }
 
-        List<LevelPatternDefinition.EnvironmentGenerationRule> configRules = new List<LevelPatternDefinition.EnvironmentGenerationRule>(levelDefinition.EnumerateEnvironmentRules());
-        if (configRules.Count == 0 && levelDefinition.ZoneGenerationRules != null)
-        {
-            for (int i = 0; i < levelDefinition.ZoneGenerationRules.Count; i++)
-            {
-                GameProgressionConfig.ZoneGenerationRule legacyRule = levelDefinition.ZoneGenerationRules[i];
-                if (legacyRule == null)
-                {
-                    continue;
-                }
-
-                configRules.Add(new LevelPatternDefinition.EnvironmentGenerationRule(
-                    legacyRule.EnvironmentType,
-                    legacyRule.Weight,
-                    legacyRule.MinConsecutiveCount,
-                    legacyRule.MaxConsecutiveCount,
-                    legacyRule.CanBeFirstRandomSegment,
-                    legacyRule.AllowedPreviousEnvironments));
-            }
-        }
-
-        if (configRules.Count == 0)
+        List<GameProgressionConfig.ZoneGenerationRule> configRules = levelDefinition.ZoneGenerationRules;
+        if (configRules == null || configRules.Count == 0)
         {
             return;
         }
@@ -758,7 +674,7 @@ public class EndlessLevelGenerator : MonoBehaviour
         randomRules.Clear();
         for (int i = 0; i < configRules.Count; i++)
         {
-            LevelPatternDefinition.EnvironmentGenerationRule configRule = configRules[i];
+            GameProgressionConfig.ZoneGenerationRule configRule = configRules[i];
             if (configRule == null)
             {
                 continue;
@@ -843,18 +759,14 @@ public class EndlessLevelGenerator : MonoBehaviour
 
     private GameObject ResolvePrefabForEnvironment(EnvironmentType environmentType)
     {
-        for (int i = 0; i < segmentLibrary.Count; i++)
+        return environmentType switch
         {
-            EnvironmentSegmentEntry entry = segmentLibrary[i];
-            if (entry == null || entry.EnvironmentType != environmentType || entry.Prefab == null)
-            {
-                continue;
-            }
-
-            return entry.Prefab;
-        }
-
-        return null;
+            EnvironmentType.Road => LoadSegmentPrefab("公路"),
+            EnvironmentType.Water => LoadSegmentPrefab("水面"),
+            EnvironmentType.Cliff => LoadSegmentPrefab("悬崖"),
+            EnvironmentType.Blizzard => LoadSegmentPrefab("雪地"),
+            _ => null
+        };
     }
 
     private static EnvironmentType ResolveEnvironmentType(SegmentTemplate template)
@@ -899,5 +811,4 @@ public class EndlessLevelGenerator : MonoBehaviour
         ClearGeneratedSegments();
         ApplyConfiguredRules();
     }
-
 }

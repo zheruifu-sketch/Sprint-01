@@ -5,21 +5,45 @@ public class PlayerRuleController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private PlayerFormRoot formRoot;
-    [SerializeField] private PlayerEnvironmentContext environmentContext;
+    [SerializeField] private PlayerZoneSensor zoneSensor;
+    [SerializeField] private GameLevelController levelController;
+    [SerializeField] private GameSessionController sessionController;
     [SerializeField] private LevelHazardController hazardController;
-    [SerializeField] private PlayerTuningConfig tuningConfig;
+
+    [Header("Rules")]
+    [SerializeField] private float blizzardHumanSpeedMultiplier = 0.3f;
+    [SerializeField] private float transformCooldown = GameConstants.DefaultTransformCooldown;
+    [SerializeField] private bool forceHumanWhenPlaneBlocked = true;
+    [SerializeField] private Vector2 boatSwitchCheckOffset = GameConstants.DefaultBoatSwitchCheckOffset;
+    [SerializeField] private float boatSwitchCheckRadius = GameConstants.DefaultBoatSwitchCheckRadius;
+    [SerializeField] private float floodBoatSupportHeight = 1.5f;
 
     private readonly Collider2D[] boatSwitchResults = new Collider2D[16];
+    private float transformCooldownRemaining;
 
-    public float HumanSpeedMultiplier => IsInBlizzardAsHuman() ? (tuningConfig != null ? tuningConfig.EnvironmentRules.BlizzardHumanSpeedMultiplier : 0.3f) : 1f;
-    public float BlizzardSlowMultiplier => tuningConfig != null ? tuningConfig.EnvironmentRules.BlizzardHumanSpeedMultiplier : 0.3f;
+    public float HumanSpeedMultiplier => IsInBlizzardAsHuman() ? blizzardHumanSpeedMultiplier : 1f;
+    public float BlizzardSlowMultiplier => blizzardHumanSpeedMultiplier;
+    public bool IsTransformOnCooldown => transformCooldownRemaining > 0f;
+    public float TransformCooldownNormalizedRemaining
+    {
+        get
+        {
+            if (transformCooldown <= 0f)
+            {
+                return 0f;
+            }
+
+            return Mathf.Clamp01(transformCooldownRemaining / transformCooldown);
+        }
+    }
 
     private void Reset()
     {
         formRoot = GetComponent<PlayerFormRoot>();
-        environmentContext = GetComponent<PlayerEnvironmentContext>();
+        zoneSensor = GetComponent<PlayerZoneSensor>();
+        levelController = GameLevelController.GetOrCreateInstance();
+        sessionController = FindObjectOfType<GameSessionController>();
         hazardController = FindObjectOfType<LevelHazardController>();
-        tuningConfig = PlayerTuningConfig.Load();
     }
 
     private void Awake()
@@ -29,25 +53,53 @@ public class PlayerRuleController : MonoBehaviour
             formRoot = GetComponent<PlayerFormRoot>();
         }
 
-        if (environmentContext == null)
+        if (levelController == null)
         {
-            environmentContext = GetComponent<PlayerEnvironmentContext>();
+            levelController = GameLevelController.GetOrCreateInstance();
+        }
+
+        if (sessionController == null)
+        {
+            sessionController = GameSessionController.GetOrCreate();
         }
 
         if (hazardController == null)
         {
             hazardController = LevelHazardController.GetOrCreateInstance();
         }
+    }
 
-        if (tuningConfig == null)
+    private void OnEnable()
+    {
+        if (levelController == null)
         {
-            tuningConfig = PlayerTuningConfig.Load();
+            levelController = GameLevelController.GetOrCreateInstance();
         }
+
+        if (levelController != null)
+        {
+            levelController.LevelChanged += HandleLevelChanged;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (levelController != null)
+        {
+            levelController.LevelChanged -= HandleLevelChanged;
+        }
+    }
+
+    private void Update()
+    {
+        UpdateTransformCooldown();
+        HandleFormHotkeys();
+        ApplyForcedFormRules();
     }
 
     public bool IsInWater()
     {
-        return environmentContext != null && environmentContext.IsInEnvironment(EnvironmentType.Water);
+        return zoneSensor != null && zoneSensor.IsInEnvironment(EnvironmentType.Water);
     }
 
     public bool IsInFloodWater()
@@ -67,7 +119,6 @@ public class PlayerRuleController : MonoBehaviour
             return false;
         }
 
-        float floodBoatSupportHeight = tuningConfig != null ? tuningConfig.EnvironmentRules.FloodBoatSupportHeight : 1.5f;
         return transform.position.y <= waterSurfaceY + floodBoatSupportHeight;
     }
 
@@ -78,12 +129,12 @@ public class PlayerRuleController : MonoBehaviour
 
     public bool IsInCliff()
     {
-        return environmentContext != null && environmentContext.IsInEnvironment(EnvironmentType.Cliff);
+        return zoneSensor != null && zoneSensor.IsInEnvironment(EnvironmentType.Cliff);
     }
 
     public bool IsInBlizzard()
     {
-        return environmentContext != null && environmentContext.IsInEnvironment(EnvironmentType.Blizzard);
+        return zoneSensor != null && zoneSensor.IsInEnvironment(EnvironmentType.Blizzard);
     }
 
     public bool IsBoatSupportedSurface()
@@ -91,8 +142,84 @@ public class PlayerRuleController : MonoBehaviour
         return IsInWater() || IsBoatSupportedByFlood() || IsInBlizzard();
     }
 
-    public bool CanUseForm(PlayerFormType targetForm)
+    private void HandleFormHotkeys()
     {
+        if (sessionController == null || !sessionController.HasActiveRun)
+        {
+            return;
+        }
+
+        if (IsTransformOnCooldown)
+        {
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            TrySwitchForm(PlayerFormType.Human);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            TrySwitchForm(PlayerFormType.Car);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            TrySwitchForm(PlayerFormType.Plane);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            TrySwitchForm(PlayerFormType.Boat);
+        }
+    }
+
+    private void TrySwitchForm(PlayerFormType targetForm)
+    {
+        if (formRoot == null || !CanUseForm(targetForm))
+        {
+            return;
+        }
+
+        if (formRoot.CurrentForm == targetForm)
+        {
+            return;
+        }
+
+        formRoot.SetForm(targetForm);
+        StartTransformCooldown();
+    }
+
+    private void UpdateTransformCooldown()
+    {
+        if (transformCooldownRemaining <= 0f)
+        {
+            return;
+        }
+
+        transformCooldownRemaining -= Time.deltaTime;
+        if (transformCooldownRemaining < 0f)
+        {
+            transformCooldownRemaining = 0f;
+        }
+    }
+
+    private void StartTransformCooldown()
+    {
+        if (transformCooldown <= 0f)
+        {
+            transformCooldownRemaining = 0f;
+            return;
+        }
+
+        transformCooldownRemaining = transformCooldown;
+    }
+
+    private bool CanUseForm(PlayerFormType targetForm)
+    {
+        if (levelController != null && !levelController.IsFormUnlocked(targetForm))
+        {
+            return false;
+        }
+
         if (IsInCliff())
         {
             return targetForm != PlayerFormType.Boat;
@@ -111,9 +238,26 @@ public class PlayerRuleController : MonoBehaviour
         return true;
     }
 
-    public bool IsPlaneBlockedByEnvironment()
+    private void ApplyForcedFormRules()
     {
-        return IsInBlizzard() && !IsInCliff();
+        if (formRoot == null)
+        {
+            return;
+        }
+
+        if (levelController != null && !levelController.IsFormUnlocked(formRoot.CurrentForm))
+        {
+            formRoot.SetForm(levelController.GetFallbackUnlockedForm());
+            return;
+        }
+
+        if (formRoot.CurrentForm == PlayerFormType.Plane && IsInBlizzard() && !IsInCliff())
+        {
+            if (forceHumanWhenPlaneBlocked)
+            {
+                formRoot.SetForm(PlayerFormType.Human);
+            }
+        }
     }
 
     private bool IsInBlizzardAsHuman()
@@ -129,9 +273,8 @@ public class PlayerRuleController : MonoBehaviour
         }
 
         Vector2 origin = transform.position;
-        origin += tuningConfig != null ? tuningConfig.EnvironmentRules.BoatSwitchCheckOffset : GameConstants.DefaultBoatSwitchCheckOffset;
+        origin += boatSwitchCheckOffset;
 
-        float boatSwitchCheckRadius = tuningConfig != null ? tuningConfig.EnvironmentRules.BoatSwitchCheckRadius : GameConstants.DefaultBoatSwitchCheckRadius;
         int hitCount = Physics2D.OverlapCircleNonAlloc(origin, boatSwitchCheckRadius, boatSwitchResults);
         for (int i = 0; i < hitCount; i++)
         {
@@ -148,5 +291,18 @@ public class PlayerRuleController : MonoBehaviour
         }
 
         return false;
+    }
+
+    private void HandleLevelChanged(int _)
+    {
+        if (formRoot == null || levelController == null)
+        {
+            return;
+        }
+
+        if (!levelController.IsFormUnlocked(formRoot.CurrentForm))
+        {
+            formRoot.SetForm(levelController.GetFallbackUnlockedForm());
+        }
     }
 }

@@ -47,7 +47,7 @@ public class PlayerHintController : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private PlayerFormRoot playerFormRoot;
-    [SerializeField] private PlayerEnvironmentContext environmentContext;
+    [SerializeField] private PlayerZoneSensor zoneSensor;
     [SerializeField] private PlayerHintUI hintUI;
     [SerializeField] private GameLevelController levelController;
 
@@ -107,14 +107,14 @@ public class PlayerHintController : MonoBehaviour
             playerFormRoot = FindObjectOfType<PlayerFormRoot>();
         }
 
-        if (environmentContext == null && playerFormRoot != null)
+        if (zoneSensor == null && playerFormRoot != null)
         {
-            environmentContext = playerFormRoot.GetComponent<PlayerEnvironmentContext>();
+            zoneSensor = playerFormRoot.GetComponent<PlayerZoneSensor>();
         }
 
-        if (environmentContext == null)
+        if (zoneSensor == null)
         {
-            environmentContext = FindObjectOfType<PlayerEnvironmentContext>();
+            zoneSensor = FindObjectOfType<PlayerZoneSensor>();
         }
 
         if (hintUI == null)
@@ -186,7 +186,7 @@ public class PlayerHintController : MonoBehaviour
 
     private void UpdateZoneHints()
     {
-        if (environmentContext == null)
+        if (zoneSensor == null)
         {
             return;
         }
@@ -234,7 +234,7 @@ public class PlayerHintController : MonoBehaviour
 
     private bool IsPlayerInEnvironment(EnvironmentType environmentType)
     {
-        return environmentContext != null && environmentContext.IsInEnvironment(environmentType);
+        return zoneSensor != null && zoneSensor.IsInEnvironment(environmentType);
     }
 
     private void ShowHint(string message, float duration)

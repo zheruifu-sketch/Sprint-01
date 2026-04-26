@@ -6,9 +6,13 @@ public class PlayerRespawnController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private PlayerFormRoot formRoot;
+    [SerializeField] private PlayerRuleController ruleController;
     [SerializeField] private PlayerHealthController healthController;
     [SerializeField] private PlayerEnergyController energyController;
-    [SerializeField] private PlayerHazardResolver hazardResolver;
+    [Header("Fall Death")]
+    [SerializeField] private bool useGlobalFallDeath = true;
+    [SerializeField] private float cliffGroundY = GameConstants.DefaultCliffGroundY;
+    [SerializeField] private float cliffDeathY = GameConstants.DefaultCliffDeathY;
 
     public FailureType LastFailureType { get; private set; } = FailureType.None;
     
@@ -17,9 +21,9 @@ public class PlayerRespawnController : MonoBehaviour
     private void Reset()
     {
         formRoot = GetComponent<PlayerFormRoot>();
+        ruleController = GetComponent<PlayerRuleController>();
         healthController = GetComponent<PlayerHealthController>();
         energyController = GetComponent<PlayerEnergyController>();
-        hazardResolver = GetComponent<PlayerHazardResolver>();
     }
 
     private void Awake()
@@ -27,11 +31,6 @@ public class PlayerRespawnController : MonoBehaviour
         if (formRoot == null)
         {
             formRoot = GetComponent<PlayerFormRoot>();
-        }
-
-        if (hazardResolver == null)
-        {
-            hazardResolver = GetComponent<PlayerHazardResolver>();
         }
 
         if (healthController == null)
@@ -118,12 +117,14 @@ public class PlayerRespawnController : MonoBehaviour
             return;
         }
 
-        if (hazardResolver != null && hazardResolver.IsProtectedBoatState())
+        if (ruleController != null
+            && formRoot.CurrentForm == PlayerFormType.Boat
+            && ruleController.IsBoatSupportedByFlood())
         {
             return;
         }
 
-        if (hazardResolver != null && hazardResolver.TryGetActiveHazard(out FailureType failureType))
+        if (TryGetActiveHazard(out FailureType failureType))
         {
             if (failureType == FailureType.FellFromCliff)
             {
@@ -137,5 +138,49 @@ public class PlayerRespawnController : MonoBehaviour
                 Respawn(failureType);
             }
         }
+    }
+
+    private bool TryGetActiveHazard(out FailureType failureType)
+    {
+        if (ruleController != null
+            && formRoot != null
+            && formRoot.CurrentForm == PlayerFormType.Boat
+            && ruleController.IsBoatSupportedByFlood())
+        {
+            failureType = FailureType.None;
+            return false;
+        }
+
+        if (useGlobalFallDeath && transform.position.y <= cliffDeathY)
+        {
+            failureType = FailureType.FellFromCliff;
+            return true;
+        }
+
+        if (ruleController != null && formRoot.CurrentForm != PlayerFormType.Boat && ruleController.IsInWater())
+        {
+            failureType = FailureType.FellIntoWater;
+            return true;
+        }
+
+        bool isInCliffDanger = ruleController != null
+                              && formRoot.CurrentForm != PlayerFormType.Plane
+                              && ruleController.IsInCliff()
+                              && transform.position.y <= cliffGroundY
+                              && transform.position.y <= cliffDeathY;
+        if (isInCliffDanger)
+        {
+            failureType = FailureType.FellFromCliff;
+            return true;
+        }
+
+        if (ruleController != null && formRoot.CurrentForm == PlayerFormType.Boat && !ruleController.IsBoatSupportedSurface())
+        {
+            failureType = FailureType.InvalidForm;
+            return true;
+        }
+
+        failureType = FailureType.None;
+        return false;
     }
 }

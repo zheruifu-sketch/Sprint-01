@@ -41,11 +41,3 @@ public enum FailureType
     InvalidForm = 4,
     EnergyDepleted = 5
 }
-
-public enum GameRunState
-{
-    Idle = 0,
-    Running = 1,
-    Transitioning = 2,
-    Completed = 3
-}
