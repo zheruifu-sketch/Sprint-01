@@ -7,6 +7,13 @@
 [Uu]ser[Ss]ettings/
 [Mm]emoryCaptures/
 
+# By default, only source/config directories are allowed as new commit scope.
+/*
+!/.gitignore
+!/Assets/
+!/Packages/
+!/ProjectSettings/
+
 # IDE
 .idea/
 .vscode/
