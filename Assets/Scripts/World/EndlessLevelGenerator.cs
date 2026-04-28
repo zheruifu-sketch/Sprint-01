@@ -722,8 +722,28 @@ public class EndlessLevelGenerator : MonoBehaviour
             return;
         }
 
-        List<GameProgressionConfig.ZoneGenerationRule> configRules = levelDefinition.ZoneGenerationRules;
-        if (configRules == null || configRules.Count == 0)
+        List<LevelPatternDefinition.EnvironmentGenerationRule> configRules = new List<LevelPatternDefinition.EnvironmentGenerationRule>(levelDefinition.EnumerateEnvironmentRules());
+        if (configRules.Count == 0 && levelDefinition.ZoneGenerationRules != null)
+        {
+            for (int i = 0; i < levelDefinition.ZoneGenerationRules.Count; i++)
+            {
+                GameProgressionConfig.ZoneGenerationRule legacyRule = levelDefinition.ZoneGenerationRules[i];
+                if (legacyRule == null)
+                {
+                    continue;
+                }
+
+                configRules.Add(new LevelPatternDefinition.EnvironmentGenerationRule(
+                    legacyRule.EnvironmentType,
+                    legacyRule.Weight,
+                    legacyRule.MinConsecutiveCount,
+                    legacyRule.MaxConsecutiveCount,
+                    legacyRule.CanBeFirstRandomSegment,
+                    legacyRule.AllowedPreviousEnvironments));
+            }
+        }
+
+        if (configRules.Count == 0)
         {
             return;
         }
@@ -738,7 +758,7 @@ public class EndlessLevelGenerator : MonoBehaviour
         randomRules.Clear();
         for (int i = 0; i < configRules.Count; i++)
         {
-            GameProgressionConfig.ZoneGenerationRule configRule = configRules[i];
+            LevelPatternDefinition.EnvironmentGenerationRule configRule = configRules[i];
             if (configRule == null)
             {
                 continue;
@@ -879,4 +899,5 @@ public class EndlessLevelGenerator : MonoBehaviour
         ClearGeneratedSegments();
         ApplyConfiguredRules();
     }
+
 }
