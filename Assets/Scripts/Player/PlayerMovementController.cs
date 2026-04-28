@@ -9,27 +9,7 @@ public class PlayerMovementController : MonoBehaviour
     [SerializeField] private PlayerRuleController ruleController;
     [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private LevelHazardController hazardController;
-
-    [Header("Move Settings")]
-    [SerializeField] private float humanMoveSpeed = 4f;
-    [SerializeField] private float carMoveSpeed = 7f;
-    [SerializeField] private float planeMoveSpeed = 6f;
-    [SerializeField] private float planeVerticalSpeed = 5f;
-    [SerializeField] private float boatMoveSpeed = 4.5f;
-    [SerializeField] private float boatFloatHeightOffset = 0.85f;
-    [SerializeField] private float boatFloatVerticalSpeed = 8f;
-    [SerializeField] private float boatFloatSnapDeadZone = 0.08f;
-    [SerializeField] private float boatFloatActivationMargin = 0.35f;
-    [SerializeField] private float sprintMultiplier = 1.6f;
-    [SerializeField] private float humanJumpForce = 9f;
-    [SerializeField] private float humanGravityScale = 3f;
-    [SerializeField] private float carGravityScale = 4f;
-    [SerializeField] private float planeGravityScale = 0f;
-    [SerializeField] private float boatGravityScale = 3f;
-    [SerializeField] private float jumpBufferTime = GameConstants.DefaultJumpBufferTime;
-    [SerializeField] private float coyoteTime = GameConstants.DefaultCoyoteTime;
-    [SerializeField] private int maxHumanJumpCount = 2;
-    [SerializeField] private float groundedVelocityThreshold = 0.1f;
+    [SerializeField] private PlayerTuningConfig tuningConfig;
 
     private float horizontalInput;
     private float verticalInput;
@@ -46,6 +26,7 @@ public class PlayerMovementController : MonoBehaviour
         ruleController = GetComponent<PlayerRuleController>();
         inputReader = GetComponent<PlayerInputReader>();
         hazardController = FindObjectOfType<LevelHazardController>();
+        tuningConfig = PlayerTuningConfig.Load();
     }
 
     private void Awake()
@@ -63,6 +44,11 @@ public class PlayerMovementController : MonoBehaviour
         if (hazardController == null)
         {
             hazardController = LevelHazardController.GetOrCreateInstance();
+        }
+
+        if (tuningConfig == null)
+        {
+            tuningConfig = PlayerTuningConfig.Load();
         }
     }
 
@@ -93,13 +79,14 @@ public class PlayerMovementController : MonoBehaviour
         sprintHeld = inputReader.SprintHeld;
         if (inputReader.JumpPressedThisFrame)
         {
-            jumpBufferCounter = jumpBufferTime;
+            jumpBufferCounter = tuningConfig != null ? tuningConfig.Movement.JumpBufferTime : GameConstants.DefaultJumpBufferTime;
         }
     }
 
     private void UpdateGroundTimers()
     {
         bool grounded = IsStableGrounded();
+        float coyoteTime = tuningConfig != null ? tuningConfig.Movement.CoyoteTime : GameConstants.DefaultCoyoteTime;
         if (grounded)
         {
             coyoteTimeCounter = coyoteTime;
@@ -123,22 +110,23 @@ public class PlayerMovementController : MonoBehaviour
             return;
         }
 
+        PlayerTuningConfig.MovementSettings movement = tuningConfig != null ? tuningConfig.Movement : null;
         bool shouldUseBoatFloatMode = ShouldUseBoatFloatMode();
         UpdateBoatFloatSimulationState(shouldUseBoatFloatMode);
 
         switch (formRoot.CurrentForm)
         {
             case PlayerFormType.Human:
-                formRoot.PlayerRigidbody.gravityScale = humanGravityScale;
+                formRoot.PlayerRigidbody.gravityScale = movement != null ? movement.HumanGravityScale : 3f;
                 break;
             case PlayerFormType.Car:
-                formRoot.PlayerRigidbody.gravityScale = carGravityScale;
+                formRoot.PlayerRigidbody.gravityScale = movement != null ? movement.CarGravityScale : 4f;
                 break;
             case PlayerFormType.Plane:
-                formRoot.PlayerRigidbody.gravityScale = planeGravityScale;
+                formRoot.PlayerRigidbody.gravityScale = movement != null ? movement.PlaneGravityScale : 0f;
                 break;
             case PlayerFormType.Boat:
-                formRoot.PlayerRigidbody.gravityScale = shouldUseBoatFloatMode ? 0f : boatGravityScale;
+                formRoot.PlayerRigidbody.gravityScale = shouldUseBoatFloatMode ? 0f : (movement != null ? movement.BoatGravityScale : 3f);
                 break;
         }
     }
@@ -152,7 +140,8 @@ public class PlayerMovementController : MonoBehaviour
 
         Rigidbody2D rb = formRoot.PlayerRigidbody;
         Vector2 velocity = rb.velocity;
-        float speedMultiplier = sprintHeld ? sprintMultiplier : 1f;
+        PlayerTuningConfig.MovementSettings movement = tuningConfig != null ? tuningConfig.Movement : null;
+        float speedMultiplier = sprintHeld ? (movement != null ? movement.SprintMultiplier : 1.6f) : 1f;
         bool isRunning = false;
         bool shouldUseBoatFloatMode = ShouldUseBoatFloatMode();
 
@@ -160,15 +149,16 @@ public class PlayerMovementController : MonoBehaviour
         {
             case PlayerFormType.Human:
                 float humanZoneMultiplier = ruleController != null ? ruleController.HumanSpeedMultiplier : 1f;
-                velocity.x = horizontalInput * humanMoveSpeed * speedMultiplier * humanZoneMultiplier;
+                velocity.x = horizontalInput * (movement != null ? movement.HumanMoveSpeed : 4f) * speedMultiplier * humanZoneMultiplier;
                 bool isGrounded = IsStableGrounded();
+                int maxHumanJumpCount = movement != null ? movement.MaxHumanJumpCount : 2;
                 bool canUseGroundJump = jumpBufferCounter > 0f && coyoteTimeCounter > 0f;
                 bool canUseAirJump = jumpBufferCounter > 0f && !isGrounded && humanJumpCount > 0 && humanJumpCount < maxHumanJumpCount;
                 if (canUseGroundJump || canUseAirJump)
                 {
                     velocity.y = 0f;
                     rb.velocity = velocity;
-                    rb.AddForce(Vector2.up * humanJumpForce, ForceMode2D.Impulse);
+                    rb.AddForce(Vector2.up * (movement != null ? movement.HumanJumpForce : 9f), ForceMode2D.Impulse);
                     humanJumpCount = Mathf.Min(maxHumanJumpCount, humanJumpCount + 1);
                     jumpBufferCounter = 0f;
                     coyoteTimeCounter = 0f;
@@ -181,23 +171,23 @@ public class PlayerMovementController : MonoBehaviour
                 break;
 
             case PlayerFormType.Car:
-                velocity.x = horizontalInput * carMoveSpeed * speedMultiplier;
+                velocity.x = horizontalInput * (movement != null ? movement.CarMoveSpeed : 7f) * speedMultiplier;
                 rb.velocity = velocity;
                 isRunning = Mathf.Abs(horizontalInput) > 0.01f;
                 break;
 
             case PlayerFormType.Plane:
-                velocity.x = horizontalInput * planeMoveSpeed * speedMultiplier;
-                velocity.y = verticalInput * planeVerticalSpeed * speedMultiplier;
+                velocity.x = horizontalInput * (movement != null ? movement.PlaneMoveSpeed : 6f) * speedMultiplier;
+                velocity.y = verticalInput * (movement != null ? movement.PlaneVerticalSpeed : 5f) * speedMultiplier;
                 rb.velocity = velocity;
                 isRunning = Mathf.Abs(horizontalInput) > 0.01f || Mathf.Abs(verticalInput) > 0.01f;
                 break;
 
             case PlayerFormType.Boat:
-                float boatSpeed = boatMoveSpeed;
+                float boatSpeed = movement != null ? movement.BoatMoveSpeed : 4.5f;
                 if (ruleController != null && ruleController.IsInBlizzard())
                 {
-                    boatSpeed = humanMoveSpeed * ruleController.BlizzardSlowMultiplier;
+                    boatSpeed = (movement != null ? movement.HumanMoveSpeed : 4f) * ruleController.BlizzardSlowMultiplier;
                 }
 
                 if (shouldUseBoatFloatMode)
@@ -237,7 +227,7 @@ public class PlayerMovementController : MonoBehaviour
             return true;
         }
 
-        return Mathf.Abs(rb.velocity.y) <= groundedVelocityThreshold;
+        return Mathf.Abs(rb.velocity.y) <= (tuningConfig != null ? tuningConfig.Movement.GroundedVelocityThreshold : 0.1f);
     }
 
     private void ApplyBoatFloatTransformMovement(float horizontalSpeed)
@@ -260,10 +250,13 @@ public class PlayerMovementController : MonoBehaviour
 
         Vector3 position = transform.position;
         position.x += horizontalInput * horizontalSpeed * Time.fixedDeltaTime;
-        float targetY = waterSurfaceY + boatFloatHeightOffset;
-        position.y = Mathf.Abs(targetY - position.y) <= boatFloatSnapDeadZone
+        float floatHeightOffset = tuningConfig != null ? tuningConfig.Movement.BoatFloatHeightOffset : 0.85f;
+        float snapDeadZone = tuningConfig != null ? tuningConfig.Movement.BoatFloatSnapDeadZone : 0.08f;
+        float verticalSpeed = tuningConfig != null ? tuningConfig.Movement.BoatFloatVerticalSpeed : 8f;
+        float targetY = waterSurfaceY + floatHeightOffset;
+        position.y = Mathf.Abs(targetY - position.y) <= snapDeadZone
             ? targetY
-            : Mathf.MoveTowards(position.y, targetY, boatFloatVerticalSpeed * Time.fixedDeltaTime);
+            : Mathf.MoveTowards(position.y, targetY, verticalSpeed * Time.fixedDeltaTime);
         transform.position = position;
     }
 
@@ -279,7 +272,9 @@ public class PlayerMovementController : MonoBehaviour
             return false;
         }
 
-        float maxSupportedY = waterSurfaceY + boatFloatHeightOffset + boatFloatActivationMargin;
+        float floatHeightOffset = tuningConfig != null ? tuningConfig.Movement.BoatFloatHeightOffset : 0.85f;
+        float activationMargin = tuningConfig != null ? tuningConfig.Movement.BoatFloatActivationMargin : 0.35f;
+        float maxSupportedY = waterSurfaceY + floatHeightOffset + activationMargin;
         return transform.position.y <= maxSupportedY;
     }
 

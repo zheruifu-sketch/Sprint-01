@@ -3,19 +3,20 @@ using UnityEngine;
 
 public class PlayerEnergyController : MonoBehaviour
 {
-    [Header("Energy")]
-    [SerializeField] private float maxEnergy = GameConstants.DefaultMaxEnergy;
-    [SerializeField] private float carEnergyCostPerSecond = GameConstants.DefaultCarEnergyCostPerSecond;
-    [SerializeField] private float planeEnergyCostPerSecond = GameConstants.DefaultPlaneEnergyCostPerSecond;
-    [SerializeField] private float boatEnergyCostPerSecond = GameConstants.DefaultBoatEnergyCostPerSecond;
+    [SerializeField] private PlayerTuningConfig tuningConfig;
 
-    public float MaxEnergy => Mathf.Max(1f, maxEnergy);
+    public float MaxEnergy => tuningConfig != null ? tuningConfig.Survival.MaxEnergy : GameConstants.DefaultMaxEnergy;
     public float CurrentEnergy { get; private set; }
 
     public event Action<float, float> EnergyChanged;
 
     private void Awake()
     {
+        if (tuningConfig == null)
+        {
+            tuningConfig = PlayerTuningConfig.Load();
+        }
+
         CurrentEnergy = MaxEnergy;
         NotifyEnergyChanged();
     }
@@ -72,11 +73,11 @@ public class PlayerEnergyController : MonoBehaviour
         switch (currentForm)
         {
             case PlayerFormType.Car:
-                return Mathf.Max(0f, carEnergyCostPerSecond);
+                return tuningConfig != null ? tuningConfig.Survival.CarEnergyCostPerSecond : GameConstants.DefaultCarEnergyCostPerSecond;
             case PlayerFormType.Plane:
-                return Mathf.Max(0f, planeEnergyCostPerSecond);
+                return tuningConfig != null ? tuningConfig.Survival.PlaneEnergyCostPerSecond : GameConstants.DefaultPlaneEnergyCostPerSecond;
             case PlayerFormType.Boat:
-                return Mathf.Max(0f, boatEnergyCostPerSecond);
+                return tuningConfig != null ? tuningConfig.Survival.BoatEnergyCostPerSecond : GameConstants.DefaultBoatEnergyCostPerSecond;
             default:
                 return 0f;
         }

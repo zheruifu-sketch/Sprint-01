@@ -7,23 +7,19 @@ public class PlayerRuleController : MonoBehaviour
     [SerializeField] private PlayerFormRoot formRoot;
     [SerializeField] private PlayerEnvironmentContext environmentContext;
     [SerializeField] private LevelHazardController hazardController;
-
-    [Header("Rules")]
-    [SerializeField] private float blizzardHumanSpeedMultiplier = 0.3f;
-    [SerializeField] private Vector2 boatSwitchCheckOffset = GameConstants.DefaultBoatSwitchCheckOffset;
-    [SerializeField] private float boatSwitchCheckRadius = GameConstants.DefaultBoatSwitchCheckRadius;
-    [SerializeField] private float floodBoatSupportHeight = 1.5f;
+    [SerializeField] private PlayerTuningConfig tuningConfig;
 
     private readonly Collider2D[] boatSwitchResults = new Collider2D[16];
 
-    public float HumanSpeedMultiplier => IsInBlizzardAsHuman() ? blizzardHumanSpeedMultiplier : 1f;
-    public float BlizzardSlowMultiplier => blizzardHumanSpeedMultiplier;
+    public float HumanSpeedMultiplier => IsInBlizzardAsHuman() ? (tuningConfig != null ? tuningConfig.EnvironmentRules.BlizzardHumanSpeedMultiplier : 0.3f) : 1f;
+    public float BlizzardSlowMultiplier => tuningConfig != null ? tuningConfig.EnvironmentRules.BlizzardHumanSpeedMultiplier : 0.3f;
 
     private void Reset()
     {
         formRoot = GetComponent<PlayerFormRoot>();
         environmentContext = GetComponent<PlayerEnvironmentContext>();
         hazardController = FindObjectOfType<LevelHazardController>();
+        tuningConfig = PlayerTuningConfig.Load();
     }
 
     private void Awake()
@@ -41,6 +37,11 @@ public class PlayerRuleController : MonoBehaviour
         if (hazardController == null)
         {
             hazardController = LevelHazardController.GetOrCreateInstance();
+        }
+
+        if (tuningConfig == null)
+        {
+            tuningConfig = PlayerTuningConfig.Load();
         }
     }
 
@@ -66,6 +67,7 @@ public class PlayerRuleController : MonoBehaviour
             return false;
         }
 
+        float floodBoatSupportHeight = tuningConfig != null ? tuningConfig.EnvironmentRules.FloodBoatSupportHeight : 1.5f;
         return transform.position.y <= waterSurfaceY + floodBoatSupportHeight;
     }
 
@@ -127,8 +129,9 @@ public class PlayerRuleController : MonoBehaviour
         }
 
         Vector2 origin = transform.position;
-        origin += boatSwitchCheckOffset;
+        origin += tuningConfig != null ? tuningConfig.EnvironmentRules.BoatSwitchCheckOffset : GameConstants.DefaultBoatSwitchCheckOffset;
 
+        float boatSwitchCheckRadius = tuningConfig != null ? tuningConfig.EnvironmentRules.BoatSwitchCheckRadius : GameConstants.DefaultBoatSwitchCheckRadius;
         int hitCount = Physics2D.OverlapCircleNonAlloc(origin, boatSwitchCheckRadius, boatSwitchResults);
         for (int i = 0; i < hitCount; i++)
         {

@@ -3,18 +3,21 @@ using UnityEngine;
 
 public class PlayerHealthController : MonoBehaviour
 {
-    [Header("Health")]
-    [SerializeField] private float maxHealth = GameConstants.DefaultMaxHealth;
-    [SerializeField] private float hazardDamagePerSecond = GameConstants.DefaultHazardDamagePerSecond;
+    [SerializeField] private PlayerTuningConfig tuningConfig;
 
-    public float MaxHealth => Mathf.Max(1f, maxHealth);
-    public float HazardDamagePerSecond => Mathf.Max(0f, hazardDamagePerSecond);
+    public float MaxHealth => tuningConfig != null ? tuningConfig.Survival.MaxHealth : GameConstants.DefaultMaxHealth;
+    public float HazardDamagePerSecond => tuningConfig != null ? tuningConfig.Survival.HazardDamagePerSecond : GameConstants.DefaultHazardDamagePerSecond;
     public float CurrentHealth { get; private set; }
 
     public event Action<float, float> HealthChanged;
 
     private void Awake()
     {
+        if (tuningConfig == null)
+        {
+            tuningConfig = PlayerTuningConfig.Load();
+        }
+
         CurrentHealth = MaxHealth;
         NotifyHealthChanged();
     }

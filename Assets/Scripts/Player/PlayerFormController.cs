@@ -8,10 +8,7 @@ public class PlayerFormController : MonoBehaviour
     [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private PlayerRuleController ruleController;
     [SerializeField] private GameLevelController levelController;
-
-    [Header("Transform Rules")]
-    [SerializeField] private float transformCooldown = GameConstants.DefaultTransformCooldown;
-    [SerializeField] private bool forceHumanWhenPlaneBlocked = true;
+    [SerializeField] private PlayerTuningConfig tuningConfig;
 
     private float transformCooldownRemaining;
 
@@ -20,12 +17,13 @@ public class PlayerFormController : MonoBehaviour
     {
         get
         {
-            if (transformCooldown <= 0f)
+            float cooldown = tuningConfig != null ? tuningConfig.Form.TransformCooldown : GameConstants.DefaultTransformCooldown;
+            if (cooldown <= 0f)
             {
                 return 0f;
             }
 
-            return Mathf.Clamp01(transformCooldownRemaining / transformCooldown);
+            return Mathf.Clamp01(transformCooldownRemaining / cooldown);
         }
     }
 
@@ -35,6 +33,7 @@ public class PlayerFormController : MonoBehaviour
         inputReader = GetComponent<PlayerInputReader>();
         ruleController = GetComponent<PlayerRuleController>();
         levelController = GameLevelController.GetOrCreateInstance();
+        tuningConfig = PlayerTuningConfig.Load();
     }
 
     private void Awake()
@@ -57,6 +56,11 @@ public class PlayerFormController : MonoBehaviour
         if (levelController == null)
         {
             levelController = GameLevelController.GetOrCreateInstance();
+        }
+
+        if (tuningConfig == null)
+        {
+            tuningConfig = PlayerTuningConfig.Load();
         }
     }
 
@@ -135,13 +139,14 @@ public class PlayerFormController : MonoBehaviour
 
     private void StartTransformCooldown()
     {
-        if (transformCooldown <= 0f)
+        float cooldown = tuningConfig != null ? tuningConfig.Form.TransformCooldown : GameConstants.DefaultTransformCooldown;
+        if (cooldown <= 0f)
         {
             transformCooldownRemaining = 0f;
             return;
         }
 
-        transformCooldownRemaining = transformCooldown;
+        transformCooldownRemaining = cooldown;
     }
 
     private bool CanUseForm(PlayerFormType targetForm)
@@ -172,6 +177,7 @@ public class PlayerFormController : MonoBehaviour
             return;
         }
 
+        bool forceHumanWhenPlaneBlocked = tuningConfig != null ? tuningConfig.Form.ForceHumanWhenPlaneBlocked : true;
         if (!forceHumanWhenPlaneBlocked || ruleController == null)
         {
             return;
