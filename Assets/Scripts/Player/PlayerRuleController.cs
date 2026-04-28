@@ -6,43 +6,23 @@ public class PlayerRuleController : MonoBehaviour
     [Header("References")]
     [SerializeField] private PlayerFormRoot formRoot;
     [SerializeField] private PlayerEnvironmentContext environmentContext;
-    [SerializeField] private GameLevelController levelController;
-    [SerializeField] private GameSessionController sessionController;
     [SerializeField] private LevelHazardController hazardController;
 
     [Header("Rules")]
     [SerializeField] private float blizzardHumanSpeedMultiplier = 0.3f;
-    [SerializeField] private float transformCooldown = GameConstants.DefaultTransformCooldown;
-    [SerializeField] private bool forceHumanWhenPlaneBlocked = true;
     [SerializeField] private Vector2 boatSwitchCheckOffset = GameConstants.DefaultBoatSwitchCheckOffset;
     [SerializeField] private float boatSwitchCheckRadius = GameConstants.DefaultBoatSwitchCheckRadius;
     [SerializeField] private float floodBoatSupportHeight = 1.5f;
 
     private readonly Collider2D[] boatSwitchResults = new Collider2D[16];
-    private float transformCooldownRemaining;
 
     public float HumanSpeedMultiplier => IsInBlizzardAsHuman() ? blizzardHumanSpeedMultiplier : 1f;
     public float BlizzardSlowMultiplier => blizzardHumanSpeedMultiplier;
-    public bool IsTransformOnCooldown => transformCooldownRemaining > 0f;
-    public float TransformCooldownNormalizedRemaining
-    {
-        get
-        {
-            if (transformCooldown <= 0f)
-            {
-                return 0f;
-            }
-
-            return Mathf.Clamp01(transformCooldownRemaining / transformCooldown);
-        }
-    }
 
     private void Reset()
     {
         formRoot = GetComponent<PlayerFormRoot>();
         environmentContext = GetComponent<PlayerEnvironmentContext>();
-        levelController = GameLevelController.GetOrCreateInstance();
-        sessionController = FindObjectOfType<GameSessionController>();
         hazardController = FindObjectOfType<LevelHazardController>();
     }
 
@@ -58,48 +38,10 @@ public class PlayerRuleController : MonoBehaviour
             environmentContext = GetComponent<PlayerEnvironmentContext>();
         }
 
-        if (levelController == null)
-        {
-            levelController = GameLevelController.GetOrCreateInstance();
-        }
-
-        if (sessionController == null)
-        {
-            sessionController = GameSessionController.GetOrCreate();
-        }
-
         if (hazardController == null)
         {
             hazardController = LevelHazardController.GetOrCreateInstance();
         }
-    }
-
-    private void OnEnable()
-    {
-        if (levelController == null)
-        {
-            levelController = GameLevelController.GetOrCreateInstance();
-        }
-
-        if (levelController != null)
-        {
-            levelController.LevelChanged += HandleLevelChanged;
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (levelController != null)
-        {
-            levelController.LevelChanged -= HandleLevelChanged;
-        }
-    }
-
-    private void Update()
-    {
-        UpdateTransformCooldown();
-        HandleFormHotkeys();
-        ApplyForcedFormRules();
     }
 
     public bool IsInWater()
@@ -147,84 +89,8 @@ public class PlayerRuleController : MonoBehaviour
         return IsInWater() || IsBoatSupportedByFlood() || IsInBlizzard();
     }
 
-    private void HandleFormHotkeys()
+    public bool CanUseForm(PlayerFormType targetForm)
     {
-        if (sessionController == null || !sessionController.HasActiveRun)
-        {
-            return;
-        }
-
-        if (IsTransformOnCooldown)
-        {
-            return;
-        }
-
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            TrySwitchForm(PlayerFormType.Human);
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            TrySwitchForm(PlayerFormType.Car);
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            TrySwitchForm(PlayerFormType.Plane);
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            TrySwitchForm(PlayerFormType.Boat);
-        }
-    }
-
-    private void TrySwitchForm(PlayerFormType targetForm)
-    {
-        if (formRoot == null || !CanUseForm(targetForm))
-        {
-            return;
-        }
-
-        if (formRoot.CurrentForm == targetForm)
-        {
-            return;
-        }
-
-        formRoot.SetForm(targetForm);
-        StartTransformCooldown();
-    }
-
-    private void UpdateTransformCooldown()
-    {
-        if (transformCooldownRemaining <= 0f)
-        {
-            return;
-        }
-
-        transformCooldownRemaining -= Time.deltaTime;
-        if (transformCooldownRemaining < 0f)
-        {
-            transformCooldownRemaining = 0f;
-        }
-    }
-
-    private void StartTransformCooldown()
-    {
-        if (transformCooldown <= 0f)
-        {
-            transformCooldownRemaining = 0f;
-            return;
-        }
-
-        transformCooldownRemaining = transformCooldown;
-    }
-
-    private bool CanUseForm(PlayerFormType targetForm)
-    {
-        if (levelController != null && !levelController.IsFormUnlocked(targetForm))
-        {
-            return false;
-        }
-
         if (IsInCliff())
         {
             return targetForm != PlayerFormType.Boat;
@@ -243,26 +109,9 @@ public class PlayerRuleController : MonoBehaviour
         return true;
     }
 
-    private void ApplyForcedFormRules()
+    public bool IsPlaneBlockedByEnvironment()
     {
-        if (formRoot == null)
-        {
-            return;
-        }
-
-        if (levelController != null && !levelController.IsFormUnlocked(formRoot.CurrentForm))
-        {
-            formRoot.SetForm(levelController.GetFallbackUnlockedForm());
-            return;
-        }
-
-        if (formRoot.CurrentForm == PlayerFormType.Plane && IsInBlizzard() && !IsInCliff())
-        {
-            if (forceHumanWhenPlaneBlocked)
-            {
-                formRoot.SetForm(PlayerFormType.Human);
-            }
-        }
+        return IsInBlizzard() && !IsInCliff();
     }
 
     private bool IsInBlizzardAsHuman()
@@ -296,18 +145,5 @@ public class PlayerRuleController : MonoBehaviour
         }
 
         return false;
-    }
-
-    private void HandleLevelChanged(int _)
-    {
-        if (formRoot == null || levelController == null)
-        {
-            return;
-        }
-
-        if (!levelController.IsFormUnlocked(formRoot.CurrentForm))
-        {
-            formRoot.SetForm(levelController.GetFallbackUnlockedForm());
-        }
     }
 }

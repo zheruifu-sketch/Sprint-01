@@ -7,8 +7,8 @@ public class PlayerMovementController : MonoBehaviour
     [SerializeField] private PlayerFormRoot formRoot;
     [SerializeField] private PlayerGroundSensor groundSensor;
     [SerializeField] private PlayerRuleController ruleController;
+    [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private LevelHazardController hazardController;
-    [SerializeField] private GameSessionController sessionController;
 
     [Header("Move Settings")]
     [SerializeField] private float humanMoveSpeed = 4f;
@@ -44,7 +44,7 @@ public class PlayerMovementController : MonoBehaviour
         formRoot = GetComponent<PlayerFormRoot>();
         groundSensor = GetComponent<PlayerGroundSensor>();
         ruleController = GetComponent<PlayerRuleController>();
-        sessionController = FindObjectOfType<GameSessionController>();
+        inputReader = GetComponent<PlayerInputReader>();
         hazardController = FindObjectOfType<LevelHazardController>();
     }
 
@@ -55,9 +55,9 @@ public class PlayerMovementController : MonoBehaviour
             formRoot = GetComponent<PlayerFormRoot>();
         }
 
-        if (sessionController == null)
+        if (inputReader == null)
         {
-            sessionController = GameSessionController.GetOrCreate();
+            inputReader = GetComponent<PlayerInputReader>();
         }
 
         if (hazardController == null)
@@ -80,7 +80,7 @@ public class PlayerMovementController : MonoBehaviour
 
     private void ReadInput()
     {
-        if (sessionController == null || !sessionController.HasActiveRun)
+        if (inputReader == null)
         {
             horizontalInput = 0f;
             verticalInput = 0f;
@@ -88,30 +88,10 @@ public class PlayerMovementController : MonoBehaviour
             return;
         }
 
-        horizontalInput = 0f;
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-        {
-            horizontalInput -= 1f;
-        }
-
-        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-        {
-            horizontalInput += 1f;
-        }
-
-        verticalInput = 0f;
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
-        {
-            verticalInput += 1f;
-        }
-
-        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-        {
-            verticalInput -= 1f;
-        }
-
-        sprintHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-        if (Input.GetKeyDown(KeyCode.Space))
+        horizontalInput = inputReader.HorizontalInput;
+        verticalInput = inputReader.VerticalInput;
+        sprintHeld = inputReader.SprintHeld;
+        if (inputReader.JumpPressedThisFrame)
         {
             jumpBufferCounter = jumpBufferTime;
         }

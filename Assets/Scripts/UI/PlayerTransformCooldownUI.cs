@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class PlayerTransformCooldownUI : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private PlayerRuleController ruleController;
+    [SerializeField] private PlayerFormController formController;
     [SerializeField] private GameObject cooldownUiRoot;
     [SerializeField] private Image fillImage;
 
@@ -28,15 +28,15 @@ public class PlayerTransformCooldownUI : MonoBehaviour
 
     private void Update()
     {
-        if (ruleController == null || fillImage == null)
+        if (formController == null || fillImage == null)
         {
             return;
         }
 
-        bool onCooldown = ruleController.IsTransformOnCooldown;
+        bool onCooldown = formController.IsTransformOnCooldown;
         if (onCooldown)
         {
-            fillImage.fillAmount = ruleController.TransformCooldownNormalizedRemaining;
+            fillImage.fillAmount = formController.TransformCooldownNormalizedRemaining;
         }
 
         SetCooldownVisible(onCooldown);
@@ -44,9 +44,9 @@ public class PlayerTransformCooldownUI : MonoBehaviour
 
     private void TryAutoBind()
     {
-        if (ruleController == null)
+        if (formController == null)
         {
-            ruleController = FindObjectOfType<PlayerRuleController>();
+            formController = FindObjectOfType<PlayerFormController>();
         }
 
         if (cooldownUiRoot == null)
@@ -59,7 +59,7 @@ public class PlayerTransformCooldownUI : MonoBehaviour
             fillImage = GetComponent<Image>();
         }
 
-        SetCooldownVisible(ruleController != null && ruleController.IsTransformOnCooldown);
+        SetCooldownVisible(formController != null && formController.IsTransformOnCooldown);
     }
 
     private void SetCooldownVisible(bool visible)
