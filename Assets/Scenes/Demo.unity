@@ -3328,6 +3328,10 @@ GameObject:
   - component: {fileID: 1548789091}
   - component: {fileID: 1548789090}
   - component: {fileID: 1548789089}
+  - component: {fileID: 1548789104}
+  - component: {fileID: 1548789103}
+  - component: {fileID: 1548789102}
+  - component: {fileID: 1548789101}
   - component: {fileID: 1548789098}
   - component: {fileID: 1548789099}
   - component: {fileID: 1548789100}
@@ -3604,6 +3608,79 @@ MonoBehaviour:
     suppressWhenAlreadyUsingRecommendedForm: 0
     showOnlyOnce: 1
     duration: 3
+--- !u!114 &1548789101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1548789088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b8c69ec4f994ac4b57025aa67e4ddfb, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  formRoot: {fileID: 1548789095}
+  inputReader: {fileID: 1548789102}
+  movementController: {fileID: 1548789092}
+  formController: {fileID: 1548789103}
+  ruleController: {fileID: 1548789090}
+  environmentContext: {fileID: 1548789089}
+  groundSensor: {fileID: 1548789093}
+  hazardResolver: {fileID: 1548789104}
+  healthController: {fileID: 1548789098}
+  energyController: {fileID: 1548789099}
+  respawnController: {fileID: 1548789091}
+  tuningConfig: {fileID: 11400000, guid: c59de8ab7e7f4bf3a75ed7df87a611b2, type: 2}
+--- !u!114 &1548789102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1548789088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bb6a364bb2647ce86d0d94f3e58db29, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  sessionController: {fileID: 0}
+--- !u!114 &1548789103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1548789088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4eb0bdf5a5c460db0e13a72d863aa5f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  runtimeContext: {fileID: 1548789101}
+  formRoot: {fileID: 1548789095}
+  inputReader: {fileID: 1548789102}
+  ruleController: {fileID: 1548789090}
+  levelController: {fileID: 0}
+  tuningConfig: {fileID: 11400000, guid: c59de8ab7e7f4bf3a75ed7df87a611b2, type: 2}
+--- !u!114 &1548789104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1548789088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4b2a0cd89244589eab43e8d5148b59, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  runtimeContext: {fileID: 1548789101}
+  formRoot: {fileID: 1548789095}
+  ruleController: {fileID: 1548789090}
+  useGlobalFallDeath: 1
+  cliffGroundY: 0
+  cliffDeathY: -8
 --- !u!1 &1638105069
 GameObject:
   m_ObjectHideFlags: 0
