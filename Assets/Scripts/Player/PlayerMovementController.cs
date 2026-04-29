@@ -5,8 +5,6 @@ using Nenn.InspectorEnhancements.Runtime.Attributes;
 public class PlayerMovementController : MonoBehaviour
 {
     [Header("References")]
-    [LabelText("玩家运行时上下文")]
-    [SerializeField] private PlayerRuntimeContext runtimeContext;
     [LabelText("玩家形态根节点")]
     [SerializeField] private PlayerFormRoot formRoot;
     [LabelText("地面检测器")]
@@ -30,41 +28,32 @@ public class PlayerMovementController : MonoBehaviour
 
     private void Reset()
     {
-        runtimeContext = GetComponent<PlayerRuntimeContext>();
-        SyncFromContext();
+        CacheReferences();
         hazardController = FindObjectOfType<LevelHazardController>();
         tuningConfig = PlayerTuningConfig.Load();
     }
 
     private void Awake()
     {
-        runtimeContext = runtimeContext != null ? runtimeContext : GetComponent<PlayerRuntimeContext>();
-        SyncFromContext();
+        CacheReferences();
 
         if (hazardController == null)
         {
-            hazardController = LevelHazardController.GetOrCreateInstance();
+            hazardController = FindObjectOfType<LevelHazardController>();
         }
 
         if (tuningConfig == null)
         {
-            tuningConfig = runtimeContext != null ? runtimeContext.TuningConfig : PlayerTuningConfig.Load();
+            tuningConfig = PlayerTuningConfig.Load();
         }
     }
 
-    private void SyncFromContext()
+    private void CacheReferences()
     {
-        if (runtimeContext == null)
-        {
-            return;
-        }
-
-        runtimeContext.RefreshReferences();
-        formRoot = formRoot != null ? formRoot : runtimeContext.FormRoot;
-        groundSensor = groundSensor != null ? groundSensor : runtimeContext.GroundSensor;
-        ruleController = ruleController != null ? ruleController : runtimeContext.RuleController;
-        inputReader = inputReader != null ? inputReader : runtimeContext.InputReader;
-        tuningConfig = tuningConfig != null ? tuningConfig : runtimeContext.TuningConfig;
+        formRoot = formRoot != null ? formRoot : GetComponent<PlayerFormRoot>();
+        groundSensor = groundSensor != null ? groundSensor : GetComponent<PlayerGroundSensor>();
+        ruleController = ruleController != null ? ruleController : GetComponent<PlayerRuleController>();
+        inputReader = inputReader != null ? inputReader : GetComponent<PlayerInputReader>();
     }
 
     private void Update()

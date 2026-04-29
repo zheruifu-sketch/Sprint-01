@@ -74,7 +74,7 @@ public class FormStatusUI : HudUIBase
 
         if (levelController == null)
         {
-            levelController = GameLevelController.GetOrCreateInstance();
+            levelController = FindObjectOfType<GameLevelController>();
         }
 
         if (humanRoot == null)

@@ -200,7 +200,7 @@ public class EndlessLevelGenerator : MonoBehaviour
     {
         target = FindPlayerTransform();
         segmentParent = transform;
-        levelController = GameLevelController.GetOrCreateInstance();
+        levelController = FindObjectOfType<GameLevelController>();
         progressionConfig = GameProgressionConfig.Load();
         EnsureDefaultSegmentLibrary();
         EnsureDefaultRules();
@@ -220,7 +220,7 @@ public class EndlessLevelGenerator : MonoBehaviour
 
         if (levelController == null)
         {
-            levelController = GameLevelController.GetOrCreateInstance();
+            levelController = FindObjectOfType<GameLevelController>();
         }
 
         if (progressionConfig == null)
@@ -237,7 +237,7 @@ public class EndlessLevelGenerator : MonoBehaviour
     {
         if (levelController == null)
         {
-            levelController = GameLevelController.GetOrCreateInstance();
+            levelController = FindObjectOfType<GameLevelController>();
         }
 
         if (levelController != null)
@@ -889,28 +889,7 @@ public class EndlessLevelGenerator : MonoBehaviour
             return;
         }
 
-        List<LevelPatternDefinition.EnvironmentGenerationRule> configRules = new List<LevelPatternDefinition.EnvironmentGenerationRule>(levelDefinition.EnumerateEnvironmentRules());
-        if (configRules.Count == 0 && levelDefinition.ZoneGenerationRules != null)
-        {
-            for (int i = 0; i < levelDefinition.ZoneGenerationRules.Count; i++)
-            {
-                GameProgressionConfig.ZoneGenerationRule legacyRule = levelDefinition.ZoneGenerationRules[i];
-                if (legacyRule == null)
-                {
-                    continue;
-                }
-
-                configRules.Add(new LevelPatternDefinition.EnvironmentGenerationRule(
-                    legacyRule.EnvironmentType,
-                    legacyRule.Weight,
-                    legacyRule.MinConsecutiveCount,
-                    legacyRule.MaxConsecutiveCount,
-                    legacyRule.CanBeFirstRandomSegment,
-                    legacyRule.AllowedPreviousEnvironments));
-            }
-        }
-
-        if (configRules.Count == 0)
+        if (levelDefinition.ZoneGenerationRules == null || levelDefinition.ZoneGenerationRules.Count == 0)
         {
             return;
         }
@@ -923,9 +902,9 @@ public class EndlessLevelGenerator : MonoBehaviour
         }
 
         randomRules.Clear();
-        for (int i = 0; i < configRules.Count; i++)
+        for (int i = 0; i < levelDefinition.ZoneGenerationRules.Count; i++)
         {
-            LevelPatternDefinition.EnvironmentGenerationRule configRule = configRules[i];
+            GameProgressionConfig.ZoneGenerationRule configRule = levelDefinition.ZoneGenerationRules[i];
             if (configRule == null)
             {
                 continue;

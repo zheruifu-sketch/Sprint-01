@@ -1,10 +1,16 @@
 using System;
 using UnityEngine;
+using Nenn.InspectorEnhancements.Runtime.Attributes;
 
 [DisallowMultipleComponent]
 public class GameSessionController : MonoBehaviour
 {
+    private static GameRunState savedRunState = GameRunState.Idle;
+    private static int savedCurrentLevelNumber = 1;
+
+    [LabelText("当前跑局状态")]
     [SerializeField] private GameRunState runState;
+    [LabelText("当前关卡序号")]
     [SerializeField] private int currentLevelNumber = 1;
 
     public static GameSessionController Instance { get; private set; }
@@ -18,24 +24,6 @@ public class GameSessionController : MonoBehaviour
     public event Action<GameRunState> RunStateChanged;
     public event Action<int> RunLevelChanged;
 
-    public static GameSessionController GetOrCreate()
-    {
-        if (Instance != null)
-        {
-            return Instance;
-        }
-
-        GameSessionController existing = FindObjectOfType<GameSessionController>();
-        if (existing != null)
-        {
-            Instance = existing;
-            return existing;
-        }
-
-        GameObject controllerObject = new GameObject("GameSessionController");
-        return controllerObject.AddComponent<GameSessionController>();
-    }
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -45,7 +33,8 @@ public class GameSessionController : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
+        runState = savedRunState;
+        currentLevelNumber = Mathf.Max(1, savedCurrentLevelNumber);
     }
 
     private void OnDestroy()
@@ -108,6 +97,7 @@ public class GameSessionController : MonoBehaviour
         }
 
         runState = nextState;
+        savedRunState = runState;
         RunStateChanged?.Invoke(runState);
     }
 
@@ -120,6 +110,7 @@ public class GameSessionController : MonoBehaviour
         }
 
         currentLevelNumber = clampedLevelNumber;
+        savedCurrentLevelNumber = currentLevelNumber;
         RunLevelChanged?.Invoke(currentLevelNumber);
     }
 }

@@ -20,22 +20,9 @@ public class LevelHazardController : MonoBehaviour
     private readonly List<GameObject> activeHazards = new List<GameObject>();
     private readonly List<RisingWaterHazard> activeRisingWaterHazards = new List<RisingWaterHazard>();
 
-    public static LevelHazardController GetOrCreateInstance()
-    {
-        LevelHazardController existing = FindObjectOfType<LevelHazardController>();
-        if (existing != null)
-        {
-            Instance = existing;
-            return existing;
-        }
-
-        GameObject controllerObject = new GameObject("LevelHazardController");
-        return controllerObject.AddComponent<LevelHazardController>();
-    }
-
     private void Reset()
     {
-        levelController = GameLevelController.GetOrCreateInstance();
+        levelController = FindObjectOfType<GameLevelController>();
         progressionConfig = GameProgressionConfig.Load();
         playerTransform = FindPlayerTransform();
         hazardParent = transform;
@@ -50,7 +37,7 @@ public class LevelHazardController : MonoBehaviour
         }
 
         Instance = this;
-        levelController = levelController != null ? levelController : GameLevelController.GetOrCreateInstance();
+        levelController = levelController != null ? levelController : FindObjectOfType<GameLevelController>();
         progressionConfig = progressionConfig != null ? progressionConfig : GameProgressionConfig.Load();
         playerTransform = playerTransform != null ? playerTransform : FindPlayerTransform();
         hazardParent = hazardParent != null ? hazardParent : transform;
@@ -65,7 +52,7 @@ public class LevelHazardController : MonoBehaviour
     {
         if (levelController == null)
         {
-            levelController = GameLevelController.GetOrCreateInstance();
+            levelController = FindObjectOfType<GameLevelController>();
         }
 
         if (levelController != null)

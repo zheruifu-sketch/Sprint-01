@@ -2,10 +2,12 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(PlayerFormRoot))]
+[RequireComponent(typeof(PlayerHealthController))]
+[RequireComponent(typeof(PlayerEnergyController))]
+[RequireComponent(typeof(PlayerHazardResolver))]
 public class PlayerRespawnController : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private PlayerRuntimeContext runtimeContext;
     [SerializeField] private PlayerFormRoot formRoot;
     [SerializeField] private PlayerHealthController healthController;
     [SerializeField] private PlayerEnergyController energyController;
@@ -17,52 +19,20 @@ public class PlayerRespawnController : MonoBehaviour
 
     private void Reset()
     {
-        runtimeContext = GetComponent<PlayerRuntimeContext>();
-        SyncFromContext();
+        CacheReferences();
     }
 
     private void Awake()
     {
-        runtimeContext = runtimeContext != null ? runtimeContext : GetComponent<PlayerRuntimeContext>();
-        SyncFromContext();
-
-        if (healthController == null)
-        {
-            healthController = GetComponent<PlayerHealthController>();
-            if (healthController == null)
-            {
-                healthController = gameObject.AddComponent<PlayerHealthController>();
-            }
-        }
-
-        if (energyController == null)
-        {
-            energyController = GetComponent<PlayerEnergyController>();
-            if (energyController == null)
-            {
-                energyController = gameObject.AddComponent<PlayerEnergyController>();
-            }
-        }
-
-        if (runtimeContext != null)
-        {
-            runtimeContext.RefreshReferences();
-            SyncFromContext();
-        }
+        CacheReferences();
     }
 
-    private void SyncFromContext()
+    private void CacheReferences()
     {
-        if (runtimeContext == null)
-        {
-            return;
-        }
-
-        runtimeContext.RefreshReferences();
-        formRoot = formRoot != null ? formRoot : runtimeContext.FormRoot;
-        healthController = healthController != null ? healthController : runtimeContext.HealthController;
-        energyController = energyController != null ? energyController : runtimeContext.EnergyController;
-        hazardResolver = hazardResolver != null ? hazardResolver : runtimeContext.HazardResolver;
+        formRoot = formRoot != null ? formRoot : GetComponent<PlayerFormRoot>();
+        healthController = healthController != null ? healthController : GetComponent<PlayerHealthController>();
+        energyController = energyController != null ? energyController : GetComponent<PlayerEnergyController>();
+        hazardResolver = hazardResolver != null ? hazardResolver : GetComponent<PlayerHazardResolver>();
     }
 
     private void Update()

@@ -1,8 +1,10 @@
 using UnityEngine;
+using Nenn.InspectorEnhancements.Runtime.Attributes;
 
 [DisallowMultipleComponent]
 public class PlayerInputReader : MonoBehaviour
 {
+    [LabelText("跑局控制器")]
     [SerializeField] private GameSessionController sessionController;
 
     public float HorizontalInput { get; private set; }
@@ -20,7 +22,7 @@ public class PlayerInputReader : MonoBehaviour
     {
         if (sessionController == null)
         {
-            sessionController = GameSessionController.GetOrCreate();
+            sessionController = FindObjectOfType<GameSessionController>();
         }
     }
 

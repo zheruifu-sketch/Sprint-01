@@ -1,11 +1,14 @@
 using System;
 using UnityEngine;
+using Nenn.InspectorEnhancements.Runtime.Attributes;
 
 [DisallowMultipleComponent]
 public class GameLevelController : MonoBehaviour
 {
     [Header("Config")]
+    [LabelText("关卡流程配置")]
     [SerializeField] private GameProgressionConfig progressionConfig;
+    [LabelText("跑局控制器")]
     [SerializeField] private GameSessionController sessionController;
 
     public static GameLevelController Instance { get; private set; }
@@ -27,27 +30,10 @@ public class GameLevelController : MonoBehaviour
 
     public event Action<int> LevelChanged;
 
-    public static GameLevelController GetOrCreateInstance()
-    {
-        if (Instance != null)
-        {
-            return Instance;
-        }
-
-        GameLevelController existing = FindObjectOfType<GameLevelController>();
-        if (existing != null)
-        {
-            Instance = existing;
-            return existing;
-        }
-
-        GameObject controllerObject = new GameObject("GameLevelController");
-        return controllerObject.AddComponent<GameLevelController>();
-    }
-
     private void Reset()
     {
         progressionConfig = GameProgressionConfig.Load();
+        sessionController = FindObjectOfType<GameSessionController>();
     }
 
     private void Awake()
@@ -61,10 +47,7 @@ public class GameLevelController : MonoBehaviour
 
         Instance = this;
         progressionConfig = progressionConfig != null ? progressionConfig : GameProgressionConfig.Load();
-        GameFlowController.GetOrCreateInstance();
-        LevelHazardController.GetOrCreateInstance();
-        PickupSpawner.GetOrCreateInstance();
-        sessionController = sessionController != null ? sessionController : GameSessionController.GetOrCreate();
+        sessionController = sessionController != null ? sessionController : FindObjectOfType<GameSessionController>();
         int defaultStartingLevel = progressionConfig != null ? progressionConfig.DefaultStartingLevel : 1;
         int initialLevel = sessionController != null && sessionController.HasActiveRun
             ? sessionController.CurrentLevelNumber

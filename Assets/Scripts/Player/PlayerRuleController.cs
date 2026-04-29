@@ -5,8 +5,6 @@ using Nenn.InspectorEnhancements.Runtime.Attributes;
 public class PlayerRuleController : MonoBehaviour
 {
     [Header("References")]
-    [LabelText("玩家运行时上下文")]
-    [SerializeField] private PlayerRuntimeContext runtimeContext;
     [LabelText("玩家形态根节点")]
     [SerializeField] private PlayerFormRoot formRoot;
     [LabelText("环境感知上下文")]
@@ -23,39 +21,30 @@ public class PlayerRuleController : MonoBehaviour
 
     private void Reset()
     {
-        runtimeContext = GetComponent<PlayerRuntimeContext>();
-        SyncFromContext();
+        CacheReferences();
         hazardController = FindObjectOfType<LevelHazardController>();
         tuningConfig = PlayerTuningConfig.Load();
     }
 
     private void Awake()
     {
-        runtimeContext = runtimeContext != null ? runtimeContext : GetComponent<PlayerRuntimeContext>();
-        SyncFromContext();
+        CacheReferences();
 
         if (hazardController == null)
         {
-            hazardController = LevelHazardController.GetOrCreateInstance();
+            hazardController = FindObjectOfType<LevelHazardController>();
         }
 
         if (tuningConfig == null)
         {
-            tuningConfig = runtimeContext != null ? runtimeContext.TuningConfig : PlayerTuningConfig.Load();
+            tuningConfig = PlayerTuningConfig.Load();
         }
     }
 
-    private void SyncFromContext()
+    private void CacheReferences()
     {
-        if (runtimeContext == null)
-        {
-            return;
-        }
-
-        runtimeContext.RefreshReferences();
-        formRoot = formRoot != null ? formRoot : runtimeContext.FormRoot;
-        environmentContext = environmentContext != null ? environmentContext : runtimeContext.EnvironmentContext;
-        tuningConfig = tuningConfig != null ? tuningConfig : runtimeContext.TuningConfig;
+        formRoot = formRoot != null ? formRoot : GetComponent<PlayerFormRoot>();
+        environmentContext = environmentContext != null ? environmentContext : GetComponent<PlayerEnvironmentContext>();
     }
 
     public bool IsInWater()

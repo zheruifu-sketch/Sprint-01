@@ -31,24 +31,6 @@ public class GameFlowController : MonoBehaviour
 
     public static GameFlowController Instance { get; private set; }
 
-    public static GameFlowController GetOrCreateInstance()
-    {
-        if (Instance != null)
-        {
-            return Instance;
-        }
-
-        GameFlowController existing = FindObjectOfType<GameFlowController>();
-        if (existing != null)
-        {
-            Instance = existing;
-            return existing;
-        }
-
-        GameObject flowObject = new GameObject("GameFlowController");
-        return flowObject.AddComponent<GameFlowController>();
-    }
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -58,8 +40,8 @@ public class GameFlowController : MonoBehaviour
         }
 
         Instance = this;
-        levelController = levelController != null ? levelController : GameLevelController.GetOrCreateInstance();
-        sessionController = sessionController != null ? sessionController : GameSessionController.GetOrCreate();
+        levelController = levelController != null ? levelController : FindObjectOfType<GameLevelController>();
+        sessionController = sessionController != null ? sessionController : FindObjectOfType<GameSessionController>();
         player = player != null ? player : FindPlayerTransform();
         uiManager = uiManager != null ? uiManager : FindObjectOfType<UIManager>(true);
         BindUiEvents();
@@ -85,7 +67,7 @@ public class GameFlowController : MonoBehaviour
     {
         if (levelController == null)
         {
-            levelController = GameLevelController.GetOrCreateInstance();
+            levelController = FindObjectOfType<GameLevelController>();
         }
 
         if (levelController != null)
@@ -95,7 +77,7 @@ public class GameFlowController : MonoBehaviour
 
         if (sessionController == null)
         {
-            sessionController = GameSessionController.GetOrCreate();
+            sessionController = FindObjectOfType<GameSessionController>();
         }
 
         if (sessionController != null)

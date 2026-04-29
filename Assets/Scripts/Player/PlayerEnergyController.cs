@@ -1,9 +1,10 @@
 using System;
 using UnityEngine;
+using Nenn.InspectorEnhancements.Runtime.Attributes;
 
 public class PlayerEnergyController : MonoBehaviour
 {
-    [SerializeField] private PlayerRuntimeContext runtimeContext;
+    [LabelText("玩家调参配置")]
     [SerializeField] private PlayerTuningConfig tuningConfig;
 
     public float MaxEnergy => tuningConfig != null ? tuningConfig.Survival.MaxEnergy : GameConstants.DefaultMaxEnergy;
@@ -13,10 +14,9 @@ public class PlayerEnergyController : MonoBehaviour
 
     private void Awake()
     {
-        runtimeContext = runtimeContext != null ? runtimeContext : GetComponent<PlayerRuntimeContext>();
         if (tuningConfig == null)
         {
-            tuningConfig = runtimeContext != null ? runtimeContext.TuningConfig : PlayerTuningConfig.Load();
+            tuningConfig = PlayerTuningConfig.Load();
         }
 
         CurrentEnergy = MaxEnergy;

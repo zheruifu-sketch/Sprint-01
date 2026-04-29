@@ -173,8 +173,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Navigation:
     m_Mode: 3
     m_WrapAround: 0
@@ -217,8 +217,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Material: {fileID: 0}
   m_Color: {r: 0.12, g: 0.62, b: 0.98, a: 1}
   m_RaycastTarget: 1
@@ -550,8 +550,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Material: {fileID: 0}
   m_Color: {r: 0.5471698, g: 0.45167318, b: 0.45167318, a: 1}
   m_RaycastTarget: 1
@@ -813,8 +813,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0.35}
   m_RaycastTarget: 1
@@ -851,8 +851,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fab8868ab0624cac92d92c33b8cdbcc4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   levelText: {fileID: 1996049714}
   progressText: {fileID: 712127520}
 --- !u!1 &252764241
@@ -969,8 +969,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_IgnoreReversedGraphics: 1
   m_BlockingObjects: 0
   m_BlockingMask:
@@ -986,8 +986,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
@@ -1058,8 +1058,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2073c3d3134b4032b5ae55a2de2bc4b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   autoRegisterChildren: 1
 --- !u!1 &263368843
 GameObject:
@@ -1109,8 +1109,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
@@ -1244,8 +1244,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name: ""
+  m_EditorClassIdentifier: ""
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
@@ -1320,8 +1320,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name: ""
+  m_EditorClassIdentifier: ""
   m_Material: {fileID: 0}
   m_Color: {r: 0.5471698, g: 0.45167318, b: 0.45167318, a: 1}
   m_RaycastTarget: 1
@@ -1396,8 +1396,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 233f34f5069f4425b04fa32787c93978, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name: ""
+  m_EditorClassIdentifier: ""
   runtimeContext: {fileID: 1548789101}
   formController: {fileID: 1548789103}
   cooldownUiRoot: {fileID: 1413496097}
@@ -3710,7 +3710,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bb6a364bb2647ce86d0d94f3e58db29, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  sessionController: {fileID: 0}
+  sessionController: {fileID: 1841644010}
 --- !u!114 &1548789103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4631,6 +4631,9 @@ GameObject:
   - component: {fileID: 1841644006}
   - component: {fileID: 1841644008}
   - component: {fileID: 1841644009}
+  - component: {fileID: 1841644010}
+  - component: {fileID: 1841644011}
+  - component: {fileID: 1841644012}
   m_Layer: 0
   m_Name: Level
   m_TagString: Untagged
@@ -4652,8 +4655,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 1548789097}
   segmentParent: {fileID: 1841644007}
-  levelController: {fileID: 0}
-  progressionConfig: {fileID: 0}
+  levelController: {fileID: 1841644008}
+  progressionConfig: {fileID: 11400000, guid: c311a9a9ef5d4a84bb9356b46ef70011, type: 2}
   initialLeftEdgeX: 0.5
   spawnAheadDistance: 60
   destroyBehindDistance: 35
@@ -4751,8 +4754,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0eadd50301688743b779b5bff9133da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  progressionConfig: {fileID: 0}
-  sessionController: {fileID: 0}
+  progressionConfig: {fileID: 11400000, guid: c311a9a9ef5d4a84bb9356b46ef70011, type: 2}
+  sessionController: {fileID: 1841644010}
 --- !u!114 &1841644009
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4766,10 +4769,58 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   levelController: {fileID: 1841644008}
-  sessionController: {fileID: 0}
+  sessionController: {fileID: 1841644010}
   player: {fileID: 1548789097}
   uiManager: {fileID: 259790566}
   startButtonText: Start
+--- !u!114 &1841644010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1841644005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6a43a3624274cf4aa6b61c6e7a35c8b, type: 3}
+  m_Name: ""
+  m_EditorClassIdentifier: ""
+  runState: 0
+  currentLevelNumber: 1
+--- !u!114 &1841644011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1841644005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72b1d2ea29d649df82f5b506db02f64b, type: 3}
+  m_Name: ""
+  m_EditorClassIdentifier: ""
+  levelController: {fileID: 1841644008}
+  progressionConfig: {fileID: 11400000, guid: c311a9a9ef5d4a84bb9356b46ef70011, type: 2}
+  playerTransform: {fileID: 1548789097}
+  hazardParent: {fileID: 1841644007}
+--- !u!114 &1841644012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1841644005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 876032fe96d141d58233234b6bf8b54a, type: 3}
+  m_Name: ""
+  m_EditorClassIdentifier: ""
+  levelController: {fileID: 1841644008}
+  sessionController: {fileID: 1841644010}
+  progressionConfig: {fileID: 11400000, guid: c311a9a9ef5d4a84bb9356b46ef70011, type: 2}
+  levelGenerator: {fileID: 1841644006}
+  playerTransform: {fileID: 1548789097}
+  pickupParent: {fileID: 1841644007}
 --- !u!1 &1842531541
 GameObject:
   m_ObjectHideFlags: 0

@@ -26,28 +26,10 @@ public class PickupSpawner : MonoBehaviour
     private bool hasSpawnBaseline;
     private PlayerRuntimeContext playerRuntimeContext;
 
-    public static PickupSpawner GetOrCreateInstance()
-    {
-        if (Instance != null)
-        {
-            return Instance;
-        }
-
-        PickupSpawner existing = FindObjectOfType<PickupSpawner>();
-        if (existing != null)
-        {
-            Instance = existing;
-            return existing;
-        }
-
-        GameObject controllerObject = new GameObject("PickupSpawner");
-        return controllerObject.AddComponent<PickupSpawner>();
-    }
-
     private void Reset()
     {
-        levelController = GameLevelController.GetOrCreateInstance();
-        sessionController = GameSessionController.GetOrCreate();
+        levelController = FindObjectOfType<GameLevelController>();
+        sessionController = FindObjectOfType<GameSessionController>();
         progressionConfig = GameProgressionConfig.Load();
         levelGenerator = FindObjectOfType<EndlessLevelGenerator>();
         playerTransform = FindPlayerTransform();
@@ -63,12 +45,12 @@ public class PickupSpawner : MonoBehaviour
         }
 
         Instance = this;
-        levelController = levelController != null ? levelController : GameLevelController.GetOrCreateInstance();
-        sessionController = sessionController != null ? sessionController : GameSessionController.GetOrCreate();
+        levelController = levelController != null ? levelController : FindObjectOfType<GameLevelController>();
+        sessionController = sessionController != null ? sessionController : FindObjectOfType<GameSessionController>();
         progressionConfig = progressionConfig != null ? progressionConfig : GameProgressionConfig.Load();
         levelGenerator = levelGenerator != null ? levelGenerator : FindObjectOfType<EndlessLevelGenerator>();
         playerTransform = playerTransform != null ? playerTransform : FindPlayerTransform();
-        playerRuntimeContext = PlayerRuntimeContext.ResolveFromComponent(playerTransform);
+        playerRuntimeContext = playerTransform != null ? playerTransform.GetComponent<PlayerRuntimeContext>() : null;
         pickupParent = pickupParent != null ? pickupParent : transform;
     }
 
@@ -76,7 +58,7 @@ public class PickupSpawner : MonoBehaviour
     {
         if (levelController == null)
         {
-            levelController = GameLevelController.GetOrCreateInstance();
+            levelController = FindObjectOfType<GameLevelController>();
         }
 
         if (levelController != null)
@@ -110,7 +92,7 @@ public class PickupSpawner : MonoBehaviour
                 return;
             }
 
-            playerRuntimeContext = PlayerRuntimeContext.ResolveFromComponent(playerTransform);
+            playerRuntimeContext = playerTransform.GetComponent<PlayerRuntimeContext>();
         }
 
         if (levelGenerator == null)
@@ -259,7 +241,7 @@ public class PickupSpawner : MonoBehaviour
             return null;
         }
 
-        playerRuntimeContext = playerRuntimeContext != null ? playerRuntimeContext : PlayerRuntimeContext.ResolveFromComponent(playerTransform);
+        playerRuntimeContext = playerRuntimeContext != null ? playerRuntimeContext : (playerTransform != null ? playerTransform.GetComponent<PlayerRuntimeContext>() : null);
         PlayerHealthController healthController = playerRuntimeContext != null ? playerRuntimeContext.HealthController : null;
         PlayerEnergyController energyController = playerRuntimeContext != null ? playerRuntimeContext.EnergyController : null;
 

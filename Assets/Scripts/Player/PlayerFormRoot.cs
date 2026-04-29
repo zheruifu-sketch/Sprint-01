@@ -26,11 +26,6 @@ public class PlayerFormRoot : MonoBehaviour
     {
         playerRigidbody = GetComponent<Rigidbody2D>();
         formView = GetComponentInChildren<PlayerFormView>(true);
-        PlayerRuntimeContext context = GetComponent<PlayerRuntimeContext>();
-        if (context != null)
-        {
-            context.RefreshReferences();
-        }
     }
 
     private void Awake()
@@ -38,12 +33,6 @@ public class PlayerFormRoot : MonoBehaviour
         if (playerRigidbody == null)
         {
             playerRigidbody = GetComponent<Rigidbody2D>();
-        }
-
-        PlayerRuntimeContext context = GetComponent<PlayerRuntimeContext>();
-        if (context != null)
-        {
-            context.RefreshReferences();
         }
 
         CurrentForm = startingForm;

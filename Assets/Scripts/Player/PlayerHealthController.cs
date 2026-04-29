@@ -1,9 +1,10 @@
 using System;
 using UnityEngine;
+using Nenn.InspectorEnhancements.Runtime.Attributes;
 
 public class PlayerHealthController : MonoBehaviour
 {
-    [SerializeField] private PlayerRuntimeContext runtimeContext;
+    [LabelText("玩家调参配置")]
     [SerializeField] private PlayerTuningConfig tuningConfig;
 
     public float MaxHealth => tuningConfig != null ? tuningConfig.Survival.MaxHealth : GameConstants.DefaultMaxHealth;
@@ -14,10 +15,9 @@ public class PlayerHealthController : MonoBehaviour
 
     private void Awake()
     {
-        runtimeContext = runtimeContext != null ? runtimeContext : GetComponent<PlayerRuntimeContext>();
         if (tuningConfig == null)
         {
-            tuningConfig = runtimeContext != null ? runtimeContext.TuningConfig : PlayerTuningConfig.Load();
+            tuningConfig = PlayerTuningConfig.Load();
         }
 
         CurrentHealth = MaxHealth;
