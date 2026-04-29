@@ -23,6 +23,7 @@ public class RisingWaterHazard : LevelHazardBehaviour
 
     private HazardProfile hazardProfile;
     private Transform playerTransform;
+    private PlayerRuntimeContext playerRuntimeContext;
     private PlayerFormRoot playerFormRoot;
     private PlayerRespawnController playerRespawnController;
     private PlayerHealthController playerHealthController;
@@ -36,9 +37,10 @@ public class RisingWaterHazard : LevelHazardBehaviour
     {
         this.hazardProfile = hazardProfile;
         this.playerTransform = playerTransform;
-        playerFormRoot = playerTransform != null ? playerTransform.GetComponent<PlayerFormRoot>() : null;
-        playerRespawnController = playerTransform != null ? playerTransform.GetComponent<PlayerRespawnController>() : null;
-        playerHealthController = playerTransform != null ? playerTransform.GetComponent<PlayerHealthController>() : null;
+        playerRuntimeContext = PlayerRuntimeContext.ResolveFromComponent(playerTransform);
+        playerFormRoot = playerRuntimeContext != null ? playerRuntimeContext.FormRoot : null;
+        playerRespawnController = playerRuntimeContext != null ? playerRuntimeContext.RespawnController : null;
+        playerHealthController = playerRuntimeContext != null ? playerRuntimeContext.HealthController : null;
 
         currentWaterY = hazardProfile != null ? hazardProfile.RisingWater.StartY : transform.position.y;
         currentWaterX = playerTransform != null
@@ -139,7 +141,8 @@ public class RisingWaterHazard : LevelHazardBehaviour
 
         if (playerFormRoot == null)
         {
-            playerFormRoot = playerTransform.GetComponent<PlayerFormRoot>();
+            playerRuntimeContext = playerRuntimeContext != null ? playerRuntimeContext : PlayerRuntimeContext.ResolveFromComponent(playerTransform);
+            playerFormRoot = playerRuntimeContext != null ? playerRuntimeContext.FormRoot : null;
         }
 
         float playerY = playerTransform.position.y + playerClearanceOffset;

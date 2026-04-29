@@ -27,6 +27,7 @@ public class FallingRocksHazard : LevelHazardBehaviour
 
     private HazardProfile hazardProfile;
     private Transform playerTransform;
+    private PlayerRuntimeContext playerRuntimeContext;
     private PlayerRespawnController playerRespawnController;
     private PlayerHealthController playerHealthController;
     private Collider2D[] playerColliders;
@@ -37,8 +38,9 @@ public class FallingRocksHazard : LevelHazardBehaviour
     {
         this.hazardProfile = hazardProfile;
         this.playerTransform = playerTransform;
-        playerRespawnController = playerTransform != null ? playerTransform.GetComponent<PlayerRespawnController>() : null;
-        playerHealthController = playerTransform != null ? playerTransform.GetComponent<PlayerHealthController>() : null;
+        playerRuntimeContext = PlayerRuntimeContext.ResolveFromComponent(playerTransform);
+        playerRespawnController = playerRuntimeContext != null ? playerRuntimeContext.RespawnController : null;
+        playerHealthController = playerRuntimeContext != null ? playerRuntimeContext.HealthController : null;
         playerColliders = playerTransform != null ? playerTransform.GetComponentsInChildren<Collider2D>(true) : null;
         spawnTimer = 0f;
         initialized = true;

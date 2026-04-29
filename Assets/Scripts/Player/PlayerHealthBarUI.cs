@@ -4,6 +4,7 @@ using UnityEngine.UI;
 public class PlayerHealthBarUI : MonoBehaviour
 {
     [Header("References")]
+    [SerializeField] private PlayerRuntimeContext runtimeContext;
     [SerializeField] private PlayerHealthController healthController;
     [SerializeField] private Image fillImage;
 
@@ -39,6 +40,13 @@ public class PlayerHealthBarUI : MonoBehaviour
 
     private void TryAutoBind()
     {
+        runtimeContext = runtimeContext != null ? runtimeContext : PlayerRuntimeContext.FindInScene();
+        if (runtimeContext != null)
+        {
+            runtimeContext.RefreshReferences();
+            healthController = healthController != null ? healthController : runtimeContext.HealthController;
+        }
+
         if (healthController == null)
         {
             healthController = FindObjectOfType<PlayerHealthController>();

@@ -46,6 +46,7 @@ public class PlayerHintController : MonoBehaviour
     }
 
     [Header("References")]
+    [SerializeField] private PlayerRuntimeContext runtimeContext;
     [SerializeField] private PlayerFormRoot playerFormRoot;
     [SerializeField] private PlayerEnvironmentContext environmentContext;
     [SerializeField] private PlayerHintUI hintUI;
@@ -102,6 +103,14 @@ public class PlayerHintController : MonoBehaviour
 
     private void AutoBind()
     {
+        runtimeContext = runtimeContext != null ? runtimeContext : PlayerRuntimeContext.FindInScene();
+        if (runtimeContext != null)
+        {
+            runtimeContext.RefreshReferences();
+            playerFormRoot = playerFormRoot != null ? playerFormRoot : runtimeContext.FormRoot;
+            environmentContext = environmentContext != null ? environmentContext : runtimeContext.EnvironmentContext;
+        }
+
         if (playerFormRoot == null)
         {
             playerFormRoot = FindObjectOfType<PlayerFormRoot>();
@@ -110,11 +119,6 @@ public class PlayerHintController : MonoBehaviour
         if (environmentContext == null && playerFormRoot != null)
         {
             environmentContext = playerFormRoot.GetComponent<PlayerEnvironmentContext>();
-        }
-
-        if (environmentContext == null)
-        {
-            environmentContext = FindObjectOfType<PlayerEnvironmentContext>();
         }
 
         if (hintUI == null)

@@ -29,7 +29,7 @@ public class PlayerInputReader : MonoBehaviour
         JumpPressedThisFrame = false;
         RequestedFormThisFrame = null;
 
-        if (sessionController == null || !sessionController.IsGameplayRunning)
+        if (sessionController == null || !sessionController.CanReceiveGameplayInput)
         {
             HorizontalInput = 0f;
             VerticalInput = 0f;

@@ -16,6 +16,7 @@ public class BoulderChaseHazard : LevelHazardBehaviour
 
     private HazardProfile hazardProfile;
     private Transform playerTransform;
+    private PlayerRuntimeContext playerRuntimeContext;
     private PlayerRespawnController playerRespawnController;
     private PlayerHealthController playerHealthController;
     private Collider2D[] playerColliders;
@@ -28,8 +29,9 @@ public class BoulderChaseHazard : LevelHazardBehaviour
     {
         this.hazardProfile = hazardProfile;
         this.playerTransform = playerTransform;
-        playerRespawnController = playerTransform != null ? playerTransform.GetComponent<PlayerRespawnController>() : null;
-        playerHealthController = playerTransform != null ? playerTransform.GetComponent<PlayerHealthController>() : null;
+        playerRuntimeContext = PlayerRuntimeContext.ResolveFromComponent(playerTransform);
+        playerRespawnController = playerRuntimeContext != null ? playerRuntimeContext.RespawnController : null;
+        playerHealthController = playerRuntimeContext != null ? playerRuntimeContext.HealthController : null;
         playerColliders = playerTransform != null ? playerTransform.GetComponentsInChildren<Collider2D>(true) : null;
 
         HazardProfile.BoulderChaseSettings settings = hazardProfile != null ? hazardProfile.BoulderChase : null;

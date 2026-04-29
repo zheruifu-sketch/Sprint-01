@@ -5,6 +5,8 @@ using Nenn.InspectorEnhancements.Runtime.Attributes;
 public class PlayerMovementController : MonoBehaviour
 {
     [Header("References")]
+    [LabelText("玩家运行时上下文")]
+    [SerializeField] private PlayerRuntimeContext runtimeContext;
     [LabelText("玩家形态根节点")]
     [SerializeField] private PlayerFormRoot formRoot;
     [LabelText("地面检测器")]
@@ -28,25 +30,16 @@ public class PlayerMovementController : MonoBehaviour
 
     private void Reset()
     {
-        formRoot = GetComponent<PlayerFormRoot>();
-        groundSensor = GetComponent<PlayerGroundSensor>();
-        ruleController = GetComponent<PlayerRuleController>();
-        inputReader = GetComponent<PlayerInputReader>();
+        runtimeContext = GetComponent<PlayerRuntimeContext>();
+        SyncFromContext();
         hazardController = FindObjectOfType<LevelHazardController>();
         tuningConfig = PlayerTuningConfig.Load();
     }
 
     private void Awake()
     {
-        if (formRoot == null)
-        {
-            formRoot = GetComponent<PlayerFormRoot>();
-        }
-
-        if (inputReader == null)
-        {
-            inputReader = GetComponent<PlayerInputReader>();
-        }
+        runtimeContext = runtimeContext != null ? runtimeContext : GetComponent<PlayerRuntimeContext>();
+        SyncFromContext();
 
         if (hazardController == null)
         {
@@ -55,8 +48,23 @@ public class PlayerMovementController : MonoBehaviour
 
         if (tuningConfig == null)
         {
-            tuningConfig = PlayerTuningConfig.Load();
+            tuningConfig = runtimeContext != null ? runtimeContext.TuningConfig : PlayerTuningConfig.Load();
         }
+    }
+
+    private void SyncFromContext()
+    {
+        if (runtimeContext == null)
+        {
+            return;
+        }
+
+        runtimeContext.RefreshReferences();
+        formRoot = formRoot != null ? formRoot : runtimeContext.FormRoot;
+        groundSensor = groundSensor != null ? groundSensor : runtimeContext.GroundSensor;
+        ruleController = ruleController != null ? ruleController : runtimeContext.RuleController;
+        inputReader = inputReader != null ? inputReader : runtimeContext.InputReader;
+        tuningConfig = tuningConfig != null ? tuningConfig : runtimeContext.TuningConfig;
     }
 
     private void Update()

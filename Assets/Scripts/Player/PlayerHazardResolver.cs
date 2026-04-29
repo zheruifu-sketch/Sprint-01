@@ -5,6 +5,8 @@ using Nenn.InspectorEnhancements.Runtime.Attributes;
 public class PlayerHazardResolver : MonoBehaviour
 {
     [Header("References")]
+    [LabelText("玩家运行时上下文")]
+    [SerializeField] private PlayerRuntimeContext runtimeContext;
     [LabelText("玩家形态根节点")]
     [SerializeField] private PlayerFormRoot formRoot;
     [LabelText("环境规则控制器")]
@@ -24,21 +26,26 @@ public class PlayerHazardResolver : MonoBehaviour
 
     private void Reset()
     {
-        formRoot = GetComponent<PlayerFormRoot>();
-        ruleController = GetComponent<PlayerRuleController>();
+        runtimeContext = GetComponent<PlayerRuntimeContext>();
+        SyncFromContext();
     }
 
     private void Awake()
     {
-        if (formRoot == null)
+        runtimeContext = runtimeContext != null ? runtimeContext : GetComponent<PlayerRuntimeContext>();
+        SyncFromContext();
+    }
+
+    private void SyncFromContext()
+    {
+        if (runtimeContext == null)
         {
-            formRoot = GetComponent<PlayerFormRoot>();
+            return;
         }
 
-        if (ruleController == null)
-        {
-            ruleController = GetComponent<PlayerRuleController>();
-        }
+        runtimeContext.RefreshReferences();
+        formRoot = formRoot != null ? formRoot : runtimeContext.FormRoot;
+        ruleController = ruleController != null ? ruleController : runtimeContext.RuleController;
     }
 
     public bool IsProtectedBoatState()

@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 public class PlayerRespawnController : MonoBehaviour
 {
     [Header("References")]
+    [SerializeField] private PlayerRuntimeContext runtimeContext;
     [SerializeField] private PlayerFormRoot formRoot;
     [SerializeField] private PlayerHealthController healthController;
     [SerializeField] private PlayerEnergyController energyController;
@@ -16,23 +17,14 @@ public class PlayerRespawnController : MonoBehaviour
 
     private void Reset()
     {
-        formRoot = GetComponent<PlayerFormRoot>();
-        healthController = GetComponent<PlayerHealthController>();
-        energyController = GetComponent<PlayerEnergyController>();
-        hazardResolver = GetComponent<PlayerHazardResolver>();
+        runtimeContext = GetComponent<PlayerRuntimeContext>();
+        SyncFromContext();
     }
 
     private void Awake()
     {
-        if (formRoot == null)
-        {
-            formRoot = GetComponent<PlayerFormRoot>();
-        }
-
-        if (hazardResolver == null)
-        {
-            hazardResolver = GetComponent<PlayerHazardResolver>();
-        }
+        runtimeContext = runtimeContext != null ? runtimeContext : GetComponent<PlayerRuntimeContext>();
+        SyncFromContext();
 
         if (healthController == null)
         {
@@ -51,6 +43,26 @@ public class PlayerRespawnController : MonoBehaviour
                 energyController = gameObject.AddComponent<PlayerEnergyController>();
             }
         }
+
+        if (runtimeContext != null)
+        {
+            runtimeContext.RefreshReferences();
+            SyncFromContext();
+        }
+    }
+
+    private void SyncFromContext()
+    {
+        if (runtimeContext == null)
+        {
+            return;
+        }
+
+        runtimeContext.RefreshReferences();
+        formRoot = formRoot != null ? formRoot : runtimeContext.FormRoot;
+        healthController = healthController != null ? healthController : runtimeContext.HealthController;
+        energyController = energyController != null ? energyController : runtimeContext.EnergyController;
+        hazardResolver = hazardResolver != null ? hazardResolver : runtimeContext.HazardResolver;
     }
 
     private void Update()

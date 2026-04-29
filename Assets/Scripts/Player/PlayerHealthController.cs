@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class PlayerHealthController : MonoBehaviour
 {
+    [SerializeField] private PlayerRuntimeContext runtimeContext;
     [SerializeField] private PlayerTuningConfig tuningConfig;
 
     public float MaxHealth => tuningConfig != null ? tuningConfig.Survival.MaxHealth : GameConstants.DefaultMaxHealth;
@@ -13,9 +14,10 @@ public class PlayerHealthController : MonoBehaviour
 
     private void Awake()
     {
+        runtimeContext = runtimeContext != null ? runtimeContext : GetComponent<PlayerRuntimeContext>();
         if (tuningConfig == null)
         {
-            tuningConfig = PlayerTuningConfig.Load();
+            tuningConfig = runtimeContext != null ? runtimeContext.TuningConfig : PlayerTuningConfig.Load();
         }
 
         CurrentHealth = MaxHealth;

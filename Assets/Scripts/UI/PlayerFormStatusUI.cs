@@ -3,6 +3,7 @@ using UnityEngine;
 public class PlayerFormStatusUI : MonoBehaviour
 {
     [Header("References")]
+    [SerializeField] private PlayerRuntimeContext runtimeContext;
     [SerializeField] private PlayerFormRoot playerFormRoot;
     [SerializeField] private GameLevelController levelController;
 
@@ -41,6 +42,13 @@ public class PlayerFormStatusUI : MonoBehaviour
 
     private void AutoBind()
     {
+        runtimeContext = runtimeContext != null ? runtimeContext : PlayerRuntimeContext.FindInScene();
+        if (runtimeContext != null)
+        {
+            runtimeContext.RefreshReferences();
+            playerFormRoot = playerFormRoot != null ? playerFormRoot : runtimeContext.FormRoot;
+        }
+
         if (playerFormRoot == null)
         {
             playerFormRoot = FindObjectOfType<PlayerFormRoot>();

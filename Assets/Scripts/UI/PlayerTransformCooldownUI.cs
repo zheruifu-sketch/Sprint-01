@@ -4,6 +4,7 @@ using UnityEngine.UI;
 public class PlayerTransformCooldownUI : MonoBehaviour
 {
     [Header("References")]
+    [SerializeField] private PlayerRuntimeContext runtimeContext;
     [SerializeField] private PlayerFormController formController;
     [SerializeField] private GameObject cooldownUiRoot;
     [SerializeField] private Image fillImage;
@@ -44,6 +45,13 @@ public class PlayerTransformCooldownUI : MonoBehaviour
 
     private void TryAutoBind()
     {
+        runtimeContext = runtimeContext != null ? runtimeContext : PlayerRuntimeContext.FindInScene();
+        if (runtimeContext != null)
+        {
+            runtimeContext.RefreshReferences();
+            formController = formController != null ? formController : runtimeContext.FormController;
+        }
+
         if (formController == null)
         {
             formController = FindObjectOfType<PlayerFormController>();

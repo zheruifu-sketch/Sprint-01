@@ -5,6 +5,8 @@ using Nenn.InspectorEnhancements.Runtime.Attributes;
 public class PlayerFormController : MonoBehaviour
 {
     [Header("References")]
+    [LabelText("玩家运行时上下文")]
+    [SerializeField] private PlayerRuntimeContext runtimeContext;
     [LabelText("玩家形态根节点")]
     [SerializeField] private PlayerFormRoot formRoot;
     [LabelText("输入读取器")]
@@ -35,29 +37,16 @@ public class PlayerFormController : MonoBehaviour
 
     private void Reset()
     {
-        formRoot = GetComponent<PlayerFormRoot>();
-        inputReader = GetComponent<PlayerInputReader>();
-        ruleController = GetComponent<PlayerRuleController>();
+        runtimeContext = GetComponent<PlayerRuntimeContext>();
+        SyncFromContext();
         levelController = GameLevelController.GetOrCreateInstance();
         tuningConfig = PlayerTuningConfig.Load();
     }
 
     private void Awake()
     {
-        if (formRoot == null)
-        {
-            formRoot = GetComponent<PlayerFormRoot>();
-        }
-
-        if (inputReader == null)
-        {
-            inputReader = GetComponent<PlayerInputReader>();
-        }
-
-        if (ruleController == null)
-        {
-            ruleController = GetComponent<PlayerRuleController>();
-        }
+        runtimeContext = runtimeContext != null ? runtimeContext : GetComponent<PlayerRuntimeContext>();
+        SyncFromContext();
 
         if (levelController == null)
         {
@@ -66,8 +55,22 @@ public class PlayerFormController : MonoBehaviour
 
         if (tuningConfig == null)
         {
-            tuningConfig = PlayerTuningConfig.Load();
+            tuningConfig = runtimeContext != null ? runtimeContext.TuningConfig : PlayerTuningConfig.Load();
         }
+    }
+
+    private void SyncFromContext()
+    {
+        if (runtimeContext == null)
+        {
+            return;
+        }
+
+        runtimeContext.RefreshReferences();
+        formRoot = formRoot != null ? formRoot : runtimeContext.FormRoot;
+        inputReader = inputReader != null ? inputReader : runtimeContext.InputReader;
+        ruleController = ruleController != null ? ruleController : runtimeContext.RuleController;
+        tuningConfig = tuningConfig != null ? tuningConfig : runtimeContext.TuningConfig;
     }
 
     private void OnEnable()

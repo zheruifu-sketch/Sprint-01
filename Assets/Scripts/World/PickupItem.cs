@@ -46,10 +46,13 @@ public class PickupItem : MonoBehaviour
             return false;
         }
 
+        PlayerRuntimeContext runtimeContext = playerObject.GetComponent<PlayerRuntimeContext>();
         switch (pickupProfile.PickupType)
         {
             case PickupType.Health:
-                PlayerHealthController healthController = playerObject.GetComponent<PlayerHealthController>();
+                PlayerHealthController healthController = runtimeContext != null
+                    ? runtimeContext.HealthController
+                    : playerObject.GetComponent<PlayerHealthController>();
                 if (healthController == null || healthController.IsDead() || healthController.IsFull())
                 {
                     return false;
@@ -59,7 +62,9 @@ public class PickupItem : MonoBehaviour
                 return true;
 
             case PickupType.Energy:
-                PlayerEnergyController energyController = playerObject.GetComponent<PlayerEnergyController>();
+                PlayerEnergyController energyController = runtimeContext != null
+                    ? runtimeContext.EnergyController
+                    : playerObject.GetComponent<PlayerEnergyController>();
                 if (energyController == null || energyController.IsFull())
                 {
                     return false;

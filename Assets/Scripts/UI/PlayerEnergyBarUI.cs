@@ -4,6 +4,7 @@ using UnityEngine.UI;
 public class PlayerEnergyBarUI : MonoBehaviour
 {
     [Header("References")]
+    [SerializeField] private PlayerRuntimeContext runtimeContext;
     [SerializeField] private PlayerEnergyController energyController;
     [SerializeField] private Image fillImage;
 
@@ -39,6 +40,13 @@ public class PlayerEnergyBarUI : MonoBehaviour
 
     private void TryAutoBind()
     {
+        runtimeContext = runtimeContext != null ? runtimeContext : PlayerRuntimeContext.FindInScene();
+        if (runtimeContext != null)
+        {
+            runtimeContext.RefreshReferences();
+            energyController = energyController != null ? energyController : runtimeContext.EnergyController;
+        }
+
         if (energyController == null)
         {
             energyController = FindObjectOfType<PlayerEnergyController>();
