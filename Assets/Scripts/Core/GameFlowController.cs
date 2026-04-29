@@ -7,6 +7,13 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public class GameFlowController : MonoBehaviour
 {
+    private enum FlowUiState
+    {
+        Start = 0,
+        Gameplay = 1,
+        Completed = 2
+    }
+
     [Header("References")]
     [SerializeField] private GameLevelController levelController;
     [SerializeField] private GameSessionController sessionController;
@@ -68,7 +75,7 @@ public class GameFlowController : MonoBehaviour
     private void Start()
     {
         levelStartX = GetPlayerX();
-        RefreshHeader();
+        RefreshLevelPresentation();
 
         if (sessionController != null && sessionController.HasActiveRun)
         {
@@ -90,6 +97,17 @@ public class GameFlowController : MonoBehaviour
         if (levelController != null)
         {
             levelController.LevelChanged += HandleLevelChanged;
+        }
+
+        if (sessionController == null)
+        {
+            sessionController = GameSessionController.GetOrCreate();
+        }
+
+        if (sessionController != null)
+        {
+            sessionController.RunStateChanged += HandleRunStateChanged;
+            sessionController.RunLevelChanged += HandleRunLevelChanged;
         }
     }
 
@@ -116,6 +134,12 @@ public class GameFlowController : MonoBehaviour
         {
             levelController.LevelChanged -= HandleLevelChanged;
         }
+
+        if (sessionController != null)
+        {
+            sessionController.RunStateChanged -= HandleRunStateChanged;
+            sessionController.RunLevelChanged -= HandleRunLevelChanged;
+        }
     }
 
     private void OnDestroy()
@@ -130,20 +154,7 @@ public class GameFlowController : MonoBehaviour
     {
         Time.timeScale = 0f;
         isTransitioning = false;
-        if (startPanel != null)
-        {
-            startPanel.SetActive(true);
-        }
-
-        if (startDescriptionText != null)
-        {
-            startDescriptionText.text = BuildStartDescription();
-        }
-
-        if (endPanel != null)
-        {
-            endPanel.SetActive(false);
-        }
+        ApplyUiState(FlowUiState.Start);
     }
 
     private void ResumeGameplay()
@@ -151,15 +162,7 @@ public class GameFlowController : MonoBehaviour
         Time.timeScale = 1f;
         isTransitioning = false;
         levelStartX = GetPlayerX();
-        if (startPanel != null)
-        {
-            startPanel.SetActive(false);
-        }
-
-        if (endPanel != null)
-        {
-            endPanel.SetActive(false);
-        }
+        ApplyUiState(FlowUiState.Gameplay);
     }
 
     private void BeginNewRun()
@@ -282,7 +285,8 @@ public class GameFlowController : MonoBehaviour
         }
 
         float targetDistance = GetCurrentTargetDistance();
-        return $"Level 1 starts with Human and Car.\nReach {targetDistance:0}m to clear the level.";
+        string levelName = levelController != null ? levelController.CurrentLevelName : "Level";
+        return $"{levelName} 准备开始。\n到达 {targetDistance:0}m 即可过关。";
     }
 
     private void BindUi()
@@ -329,8 +333,36 @@ public class GameFlowController : MonoBehaviour
         }
     }
 
+    private void RefreshLevelPresentation()
+    {
+        RefreshHeader();
+        RefreshProgressText();
+
+        if (startTitleText != null && levelController != null)
+        {
+            startTitleText.text = levelController.CurrentLevelName;
+        }
+
+        if (startDescriptionText != null)
+        {
+            startDescriptionText.text = BuildStartDescription();
+        }
+    }
+
+    private void ApplyUiState(FlowUiState uiState)
+    {
+        SetActive(startPanel, uiState == FlowUiState.Start);
+        SetActive(endPanel, uiState == FlowUiState.Completed);
+    }
+
     private static Transform FindPlayerTransform()
     {
+        PlayerRuntimeContext runtimeContext = PlayerRuntimeContext.FindInScene();
+        if (runtimeContext != null && runtimeContext.FormRoot != null)
+        {
+            return runtimeContext.FormRoot.transform;
+        }
+
         PlayerFormRoot formRoot = FindObjectOfType<PlayerFormRoot>();
         return formRoot != null ? formRoot.transform : null;
     }
@@ -356,8 +388,13 @@ public class GameFlowController : MonoBehaviour
     private void HandleLevelChanged(int _)
     {
         levelStartX = GetPlayerX();
-        RefreshHeader();
-        RefreshProgressText();
+        RefreshLevelPresentation();
+    }
+
+    private void HandleRunLevelChanged(int _)
+    {
+        levelStartX = GetPlayerX();
+        RefreshLevelPresentation();
     }
 
     private void ShowEndScreen()
@@ -368,16 +405,7 @@ public class GameFlowController : MonoBehaviour
         {
             sessionController.CompleteRun();
         }
-
-        if (startPanel != null)
-        {
-            startPanel.SetActive(false);
-        }
-
-        if (endPanel != null)
-        {
-            endPanel.SetActive(true);
-        }
+        ApplyUiState(FlowUiState.Completed);
     }
 
     private void HandleEndConfirmClicked()
@@ -393,5 +421,32 @@ public class GameFlowController : MonoBehaviour
         }
 
         ReloadActiveScene();
+    }
+
+    private void HandleRunStateChanged(GameRunState runState)
+    {
+        switch (runState)
+        {
+            case GameRunState.Running:
+            case GameRunState.Transitioning:
+                ApplyUiState(FlowUiState.Gameplay);
+                break;
+
+            case GameRunState.Completed:
+                ApplyUiState(FlowUiState.Completed);
+                break;
+
+            default:
+                ApplyUiState(FlowUiState.Start);
+                break;
+        }
+    }
+
+    private static void SetActive(GameObject target, bool active)
+    {
+        if (target != null && target.activeSelf != active)
+        {
+            target.SetActive(active);
+        }
     }
 }

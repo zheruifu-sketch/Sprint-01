@@ -13,11 +13,12 @@ public class GameLevelController : MonoBehaviour
     public int LevelCount => progressionConfig != null ? progressionConfig.LevelCount : 0;
     public int CurrentLevelIndex { get; private set; }
     public int CurrentLevelNumber => CurrentLevelIndex + 1;
+    public GameProgressionConfig.LevelDefinition CurrentLevelConfig => progressionConfig != null ? progressionConfig.GetLevel(CurrentLevelIndex) : null;
     public string CurrentLevelName
     {
         get
         {
-            GameProgressionConfig.LevelDefinition config = GetCurrentLevelConfig();
+            GameProgressionConfig.LevelDefinition config = CurrentLevelConfig;
             return config != null && !string.IsNullOrWhiteSpace(config.LevelName)
                 ? config.LevelName
                 : $"Level {CurrentLevelNumber}";
@@ -166,7 +167,7 @@ public class GameLevelController : MonoBehaviour
 
     public float GetCurrentTargetDistance()
     {
-        GameProgressionConfig.LevelDefinition config = GetCurrentLevelConfig();
+        GameProgressionConfig.LevelDefinition config = CurrentLevelConfig;
         return config != null ? config.TargetDistance : 60f;
     }
 
@@ -177,7 +178,7 @@ public class GameLevelController : MonoBehaviour
 
     public string GetCurrentLevelDescription()
     {
-        GameProgressionConfig.LevelDefinition config = GetCurrentLevelConfig();
+        GameProgressionConfig.LevelDefinition config = CurrentLevelConfig;
         if (config == null)
         {
             return string.Empty;
@@ -188,7 +189,7 @@ public class GameLevelController : MonoBehaviour
 
     public string GetCurrentLevelStartHint()
     {
-        GameProgressionConfig.LevelDefinition config = GetCurrentLevelConfig();
+        GameProgressionConfig.LevelDefinition config = CurrentLevelConfig;
         if (config == null || string.IsNullOrWhiteSpace(config.StartHint))
         {
             return $"{CurrentLevelName} Start";
@@ -199,17 +200,12 @@ public class GameLevelController : MonoBehaviour
 
     public string GetCurrentLevelClearHint()
     {
-        GameProgressionConfig.LevelDefinition config = GetCurrentLevelConfig();
+        GameProgressionConfig.LevelDefinition config = CurrentLevelConfig;
         if (config == null || string.IsNullOrWhiteSpace(config.ClearHint))
         {
             return $"{CurrentLevelName} Clear";
         }
 
         return config.ClearHint;
-    }
-
-    private GameProgressionConfig.LevelDefinition GetCurrentLevelConfig()
-    {
-        return progressionConfig != null ? progressionConfig.GetLevel(CurrentLevelIndex) : null;
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -6,16 +7,28 @@ public class GameSessionController : MonoBehaviour
     [SerializeField] private GameRunState runState;
     [SerializeField] private int currentLevelNumber = 1;
 
+    public static GameSessionController Instance { get; private set; }
+
     public bool HasActiveRun => runState != GameRunState.Idle;
     public bool IsGameplayRunning => runState == GameRunState.Running;
+    public bool CanReceiveGameplayInput => runState == GameRunState.Running;
     public GameRunState RunState => runState;
     public int CurrentLevelNumber => currentLevelNumber < 1 ? 1 : currentLevelNumber;
 
+    public event Action<GameRunState> RunStateChanged;
+    public event Action<int> RunLevelChanged;
+
     public static GameSessionController GetOrCreate()
     {
+        if (Instance != null)
+        {
+            return Instance;
+        }
+
         GameSessionController existing = FindObjectOfType<GameSessionController>();
         if (existing != null)
         {
+            Instance = existing;
             return existing;
         }
 
@@ -25,31 +38,34 @@ public class GameSessionController : MonoBehaviour
 
     private void Awake()
     {
-        GameSessionController[] controllers = FindObjectsOfType<GameSessionController>();
-        for (int i = 0; i < controllers.Length; i++)
+        if (Instance != null && Instance != this)
         {
-            if (controllers[i] == this)
-            {
-                continue;
-            }
-
             Destroy(gameObject);
             return;
         }
 
+        Instance = this;
         DontDestroyOnLoad(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 
     public void StartNewRun()
     {
-        runState = GameRunState.Running;
-        currentLevelNumber = 1;
+        SetCurrentLevelNumber(1);
+        SetRunState(GameRunState.Running);
     }
 
     public void ResumeLevel(int levelNumber)
     {
-        runState = GameRunState.Running;
-        currentLevelNumber = Mathf.Max(1, levelNumber);
+        SetCurrentLevelNumber(levelNumber);
+        SetRunState(GameRunState.Running);
     }
 
     public void BeginTransition()
@@ -59,13 +75,13 @@ public class GameSessionController : MonoBehaviour
             return;
         }
 
-        runState = GameRunState.Transitioning;
+        SetRunState(GameRunState.Transitioning);
     }
 
     public void AdvanceLevel(int maxLevelNumber)
     {
-        runState = GameRunState.Running;
-        currentLevelNumber = Mathf.Clamp(currentLevelNumber + 1, 1, Mathf.Max(1, maxLevelNumber));
+        SetCurrentLevelNumber(Mathf.Clamp(currentLevelNumber + 1, 1, Mathf.Max(1, maxLevelNumber)));
+        SetRunState(GameRunState.Running);
     }
 
     public void CompleteRun()
@@ -75,12 +91,35 @@ public class GameSessionController : MonoBehaviour
             return;
         }
 
-        runState = GameRunState.Completed;
+        SetRunState(GameRunState.Completed);
     }
 
     public void ResetRun()
     {
-        runState = GameRunState.Idle;
-        currentLevelNumber = 1;
+        SetCurrentLevelNumber(1);
+        SetRunState(GameRunState.Idle);
+    }
+
+    private void SetRunState(GameRunState nextState)
+    {
+        if (runState == nextState)
+        {
+            return;
+        }
+
+        runState = nextState;
+        RunStateChanged?.Invoke(runState);
+    }
+
+    private void SetCurrentLevelNumber(int levelNumber)
+    {
+        int clampedLevelNumber = Mathf.Max(1, levelNumber);
+        if (currentLevelNumber == clampedLevelNumber)
+        {
+            return;
+        }
+
+        currentLevelNumber = clampedLevelNumber;
+        RunLevelChanged?.Invoke(currentLevelNumber);
     }
 }
