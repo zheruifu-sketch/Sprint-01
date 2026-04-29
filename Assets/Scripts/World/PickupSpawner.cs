@@ -24,6 +24,7 @@ public class PickupSpawner : MonoBehaviour
     private readonly List<GameObject> activePickups = new List<GameObject>();
     private float lastSpawnCheckX;
     private bool hasSpawnBaseline;
+    private PlayerRuntimeContext playerRuntimeContext;
 
     public static PickupSpawner GetOrCreateInstance()
     {
@@ -67,6 +68,7 @@ public class PickupSpawner : MonoBehaviour
         progressionConfig = progressionConfig != null ? progressionConfig : GameProgressionConfig.Load();
         levelGenerator = levelGenerator != null ? levelGenerator : FindObjectOfType<EndlessLevelGenerator>();
         playerTransform = playerTransform != null ? playerTransform : FindPlayerTransform();
+        playerRuntimeContext = PlayerRuntimeContext.ResolveFromComponent(playerTransform);
         pickupParent = pickupParent != null ? pickupParent : transform;
     }
 
@@ -107,6 +109,8 @@ public class PickupSpawner : MonoBehaviour
             {
                 return;
             }
+
+            playerRuntimeContext = PlayerRuntimeContext.ResolveFromComponent(playerTransform);
         }
 
         if (levelGenerator == null)
@@ -255,8 +259,9 @@ public class PickupSpawner : MonoBehaviour
             return null;
         }
 
-        PlayerHealthController healthController = playerTransform != null ? playerTransform.GetComponent<PlayerHealthController>() : null;
-        PlayerEnergyController energyController = playerTransform != null ? playerTransform.GetComponent<PlayerEnergyController>() : null;
+        playerRuntimeContext = playerRuntimeContext != null ? playerRuntimeContext : PlayerRuntimeContext.ResolveFromComponent(playerTransform);
+        PlayerHealthController healthController = playerRuntimeContext != null ? playerRuntimeContext.HealthController : null;
+        PlayerEnergyController energyController = playerRuntimeContext != null ? playerRuntimeContext.EnergyController : null;
 
         List<PickupProfile> validProfiles = new List<PickupProfile>();
         float totalWeight = 0f;
@@ -323,6 +328,12 @@ public class PickupSpawner : MonoBehaviour
 
     private static Transform FindPlayerTransform()
     {
+        PlayerRuntimeContext runtimeContext = PlayerRuntimeContext.FindInScene();
+        if (runtimeContext != null && runtimeContext.FormRoot != null)
+        {
+            return runtimeContext.FormRoot.transform;
+        }
+
         PlayerFormRoot player = FindObjectOfType<PlayerFormRoot>();
         return player != null ? player.transform : null;
     }

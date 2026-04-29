@@ -252,6 +252,12 @@ public class LevelHazardController : MonoBehaviour
 
     private static Transform FindPlayerTransform()
     {
+        PlayerRuntimeContext runtimeContext = PlayerRuntimeContext.FindInScene();
+        if (runtimeContext != null && runtimeContext.FormRoot != null)
+        {
+            return runtimeContext.FormRoot.transform;
+        }
+
         PlayerFormRoot player = FindObjectOfType<PlayerFormRoot>();
         return player != null ? player.transform : null;
     }

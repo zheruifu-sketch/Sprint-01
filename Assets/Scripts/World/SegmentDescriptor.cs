@@ -30,17 +30,36 @@ public class SegmentDescriptor : MonoBehaviour
 
     public void CollectPickupAnchors(List<Transform> results)
     {
-        CollectAnchors(pickupAnchorRoot, results);
+        CollectAnchors(SegmentAnchorType.Pickup, results);
     }
 
     public void CollectPickupAnchorsInRange(float minX, float maxX, List<Transform> results)
     {
-        CollectAnchorsInRange(pickupAnchorRoot, minX, maxX, results);
+        CollectAnchorsInRange(SegmentAnchorType.Pickup, minX, maxX, results);
     }
 
     public void CollectObstacleAnchors(List<Transform> results)
     {
-        CollectAnchors(obstacleAnchorRoot, results);
+        CollectAnchors(SegmentAnchorType.Obstacle, results);
+    }
+
+    public void CollectAnchors(SegmentAnchorType anchorType, List<Transform> results)
+    {
+        CollectAnchors(GetAnchorRoot(anchorType), results);
+    }
+
+    public void CollectAnchorsInRange(SegmentAnchorType anchorType, float minX, float maxX, List<Transform> results)
+    {
+        CollectAnchorsInRange(GetAnchorRoot(anchorType), minX, maxX, results);
+    }
+
+    public Transform GetAnchorRoot(SegmentAnchorType anchorType)
+    {
+        return anchorType switch
+        {
+            SegmentAnchorType.Obstacle => obstacleAnchorRoot,
+            _ => pickupAnchorRoot
+        };
     }
 
     private Transform FindChildByName(params string[] candidates)

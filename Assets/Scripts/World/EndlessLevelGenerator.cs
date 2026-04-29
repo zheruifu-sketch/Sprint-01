@@ -188,7 +188,7 @@ public class EndlessLevelGenerator : MonoBehaviour
 
     private readonly List<ActiveSegment> activeSegments = new List<ActiveSegment>();
     private readonly Dictionary<GameObject, SegmentMeasurement> measurementCache = new Dictionary<GameObject, SegmentMeasurement>();
-    private readonly List<Transform> pickupAnchorBuffer = new List<Transform>();
+    private readonly List<Transform> anchorBuffer = new List<Transform>();
 
     private System.Random rng;
     private float nextLeftEdgeX;
@@ -443,10 +443,16 @@ public class EndlessLevelGenerator : MonoBehaviour
         nextLeftEdgeX += measurement.Width + template.ExtraSpacing;
     }
 
-    public bool TryGetRandomPickupSpawnPoint(EnvironmentType environmentType, float minX, float maxX, float yOffset, out Vector3 spawnPosition)
+    public bool TryGetRandomAnchorPoint(
+        SegmentAnchorType anchorType,
+        EnvironmentType environmentType,
+        float minX,
+        float maxX,
+        float yOffset,
+        out Vector3 spawnPosition)
     {
         spawnPosition = Vector3.zero;
-        pickupAnchorBuffer.Clear();
+        anchorBuffer.Clear();
 
         for (int i = 0; i < activeSegments.Count; i++)
         {
@@ -468,22 +474,22 @@ public class EndlessLevelGenerator : MonoBehaviour
 
             if (segment.Descriptor != null)
             {
-                segment.Descriptor.CollectPickupAnchorsInRange(minX, maxX, pickupAnchorBuffer);
+                segment.Descriptor.CollectAnchorsInRange(anchorType, minX, maxX, anchorBuffer);
             }
         }
 
-        if (pickupAnchorBuffer.Count > 0)
+        if (anchorBuffer.Count > 0)
         {
-            Transform selectedAnchor = pickupAnchorBuffer[UnityEngine.Random.Range(0, pickupAnchorBuffer.Count)];
+            Transform selectedAnchor = anchorBuffer[UnityEngine.Random.Range(0, anchorBuffer.Count)];
             if (selectedAnchor != null)
             {
                 spawnPosition = selectedAnchor.position + new Vector3(0f, yOffset, 0f);
-                pickupAnchorBuffer.Clear();
+                anchorBuffer.Clear();
                 return true;
             }
         }
 
-        pickupAnchorBuffer.Clear();
+        anchorBuffer.Clear();
 
         List<ActiveSegment> fallbackSegments = new List<ActiveSegment>();
         for (int i = 0; i < activeSegments.Count; i++)
@@ -530,6 +536,11 @@ public class EndlessLevelGenerator : MonoBehaviour
             bounds.max.y + yOffset,
             0f);
         return true;
+    }
+
+    public bool TryGetRandomPickupSpawnPoint(EnvironmentType environmentType, float minX, float maxX, float yOffset, out Vector3 spawnPosition)
+    {
+        return TryGetRandomAnchorPoint(SegmentAnchorType.Pickup, environmentType, minX, maxX, yOffset, out spawnPosition);
     }
 
     private SegmentMeasurement MeasurePrefabInstance(GameObject prefab, GameObject instance)
@@ -808,6 +819,12 @@ public class EndlessLevelGenerator : MonoBehaviour
 
     private static Transform FindPlayerTransform()
     {
+        PlayerRuntimeContext runtimeContext = PlayerRuntimeContext.FindInScene();
+        if (runtimeContext != null && runtimeContext.FormRoot != null)
+        {
+            return runtimeContext.FormRoot.transform;
+        }
+
         PlayerFormRoot player = FindObjectOfType<PlayerFormRoot>();
         return player != null ? player.transform : null;
     }
