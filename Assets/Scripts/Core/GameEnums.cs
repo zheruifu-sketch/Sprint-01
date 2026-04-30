@@ -37,9 +37,13 @@ public enum FailureType
     None = 0,
     FellIntoWater = 1,
     FellFromCliff = 2,
-    HitObstacle = 3,
+    PlaneCrash = 3,
     InvalidForm = 4,
-    EnergyDepleted = 5
+    EnergyDepleted = 5,
+    CrushedByBoulder = 6,
+    HitByFallingRock = 7,
+    HealthDepleted = 8,
+    TimeUp = 9
 }
 
 public enum GameRunState
@@ -47,5 +51,6 @@ public enum GameRunState
     Idle = 0,
     Running = 1,
     Transitioning = 2,
-    Completed = 3
+    Completed = 3,
+    Failed = 4
 }

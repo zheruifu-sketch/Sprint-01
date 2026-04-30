@@ -188,7 +188,7 @@ public class BoulderChaseHazard : LevelHazardBehaviour
 
             if (playerRespawnController != null)
             {
-                playerRespawnController.Respawn(FailureType.HitObstacle);
+                playerRespawnController.Respawn(FailureType.CrushedByBoulder);
             }
 
             return;
@@ -197,11 +197,17 @@ public class BoulderChaseHazard : LevelHazardBehaviour
         if (playerHealthController != null)
         {
             playerHealthController.ApplyHazardDamage(Time.deltaTime);
+            if (playerHealthController.IsDead() && playerRespawnController != null)
+            {
+                playerRespawnController.Respawn(FailureType.CrushedByBoulder);
+                return;
+            }
+
             hasTriggeredHit = false;
         }
         else if (playerRespawnController != null)
         {
-            playerRespawnController.Respawn(FailureType.HitObstacle);
+            playerRespawnController.Respawn(FailureType.CrushedByBoulder);
         }
     }
 }

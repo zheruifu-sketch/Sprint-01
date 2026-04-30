@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(PlayerFormRoot))]
 [RequireComponent(typeof(PlayerHealthController))]
@@ -15,7 +14,7 @@ public class PlayerRespawnController : MonoBehaviour
 
     public FailureType LastFailureType { get; private set; } = FailureType.None;
     
-    private bool isReloadingScene;
+    private bool hasTriggeredFailure;
 
     private void Reset()
     {
@@ -53,30 +52,28 @@ public class PlayerRespawnController : MonoBehaviour
         {
             if (healthController == null)
             {
-                Respawn(FailureType.HitObstacle);
+                Respawn(FailureType.PlaneCrash);
                 return;
             }
 
             healthController.ApplyDamage(healthController.MaxHealth);
             if (healthController.IsDead())
             {
-                Respawn(FailureType.HitObstacle);
+                Respawn(FailureType.PlaneCrash);
             }
         }
     }
 
     public void Respawn(FailureType failureType)
     {
-        if (isReloadingScene)
+        if (hasTriggeredFailure)
         {
             return;
         }
 
         LastFailureType = failureType;
-        isReloadingScene = true;
-
-        Scene activeScene = SceneManager.GetActiveScene();
-        SceneManager.LoadScene(activeScene.buildIndex);
+        hasTriggeredFailure = true;
+        GameFlowController.Instance.HandleRunFailed(failureType);
     }
 
     private void UpdateEnergyAndRespawn()
@@ -118,6 +115,11 @@ public class PlayerRespawnController : MonoBehaviour
             {
                 Respawn(failureType);
             }
+        }
+
+        if (!hasTriggeredFailure && healthController.IsDead())
+        {
+            Respawn(FailureType.HealthDepleted);
         }
     }
 }

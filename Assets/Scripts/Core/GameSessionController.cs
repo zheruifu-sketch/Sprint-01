@@ -83,6 +83,16 @@ public class GameSessionController : MonoBehaviour
         SetRunState(GameRunState.Completed);
     }
 
+    public void FailRun()
+    {
+        if (runState == GameRunState.Idle)
+        {
+            return;
+        }
+
+        SetRunState(GameRunState.Failed);
+    }
+
     public void ResetRun()
     {
         SetCurrentLevelNumber(1);

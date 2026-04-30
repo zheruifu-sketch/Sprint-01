@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -173,8 +173,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_Navigation:
     m_Mode: 3
     m_WrapAround: 0
@@ -217,8 +217,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0.12, g: 0.62, b: 0.98, a: 1}
   m_RaycastTarget: 1
@@ -550,8 +550,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0.5471698, g: 0.45167318, b: 0.45167318, a: 1}
   m_RaycastTarget: 1
@@ -813,8 +813,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0.35}
   m_RaycastTarget: 1
@@ -851,8 +851,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fab8868ab0624cac92d92c33b8cdbcc4, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
+  root: {fileID: 0}
   levelText: {fileID: 1996049714}
   progressText: {fileID: 712127520}
 --- !u!1 &252764241
@@ -969,8 +970,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_IgnoreReversedGraphics: 1
   m_BlockingObjects: 0
   m_BlockingMask:
@@ -986,8 +987,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
@@ -1058,8 +1059,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2073c3d3134b4032b5ae55a2de2bc4b1, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   autoRegisterChildren: 1
 --- !u!1 &263368843
 GameObject:
@@ -1109,8 +1110,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
@@ -1244,8 +1245,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: ""
-  m_EditorClassIdentifier: ""
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
@@ -1320,8 +1321,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: ""
-  m_EditorClassIdentifier: ""
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0.5471698, g: 0.45167318, b: 0.45167318, a: 1}
   m_RaycastTarget: 1
@@ -1396,8 +1397,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 233f34f5069f4425b04fa32787c93978, type: 3}
-  m_Name: ""
-  m_EditorClassIdentifier: ""
+  m_Name: 
+  m_EditorClassIdentifier: 
+  root: {fileID: 0}
   runtimeContext: {fileID: 1548789101}
   formController: {fileID: 1548789103}
   cooldownUiRoot: {fileID: 1413496097}
@@ -1492,6 +1494,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 305e873047b5448bbb9aed193a616d55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  root: {fileID: 0}
   titleText: {fileID: 860742493}
   descriptionText: {fileID: 591573173}
   startButton: {fileID: 3027413}
@@ -1725,6 +1728,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bbd206e7630a1547846ab6e6058d2eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  root: {fileID: 0}
   hintRoot: {fileID: 2064602339}
   tmpText: {fileID: 263368845}
   legacyText: {fileID: 0}
@@ -2971,10 +2975,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e49d326d715345cf9106daeacbb43e45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  root: {fileID: 0}
   titleText: {fileID: 962873617}
   descriptionText: {fileID: 1638105071}
   confirmButton: {fileID: 1682654985}
   confirmButtonText: {fileID: 954158494}
+  secondaryButton: {fileID: 2141201004}
+  secondaryButtonText: {fileID: 2141201007}
 --- !u!1001 &1165356121
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3373,6 +3380,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f0a88f9915846828e0eae71d9ec6d4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  root: {fileID: 0}
   runtimeContext: {fileID: 1548789101}
   energyController: {fileID: 1548789099}
   fillImage: {fileID: 503631613}
@@ -3433,16 +3441,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   formRoot: {fileID: 1548789095}
-  zoneSensor: {fileID: 1548789089}
-  levelController: {fileID: 0}
-  sessionController: {fileID: 0}
+  environmentContext: {fileID: 0}
   hazardController: {fileID: 0}
-  blizzardHumanSpeedMultiplier: 0.3
-  transformCooldown: 1
-  forceHumanWhenPlaneBlocked: 1
-  boatSwitchCheckOffset: {x: 0, y: -0.35}
-  boatSwitchCheckRadius: 0.2
-  floodBoatSupportHeight: 1.5
+  tuningConfig: {fileID: 0}
 --- !u!114 &1548789091
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3456,12 +3457,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   formRoot: {fileID: 1548789095}
-  ruleController: {fileID: 1548789090}
   healthController: {fileID: 0}
   energyController: {fileID: 0}
-  useGlobalFallDeath: 1
-  cliffGroundY: 0
-  cliffDeathY: -8
+  hazardResolver: {fileID: 0}
 --- !u!114 &1548789092
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3477,27 +3475,9 @@ MonoBehaviour:
   formRoot: {fileID: 1548789095}
   groundSensor: {fileID: 1548789093}
   ruleController: {fileID: 1548789090}
+  inputReader: {fileID: 0}
   hazardController: {fileID: 0}
-  sessionController: {fileID: 0}
-  humanMoveSpeed: 4
-  carMoveSpeed: 7
-  planeMoveSpeed: 6
-  planeVerticalSpeed: 5
-  boatMoveSpeed: 4.5
-  boatFloatHeightOffset: 1
-  boatFloatVerticalSpeed: 8
-  boatFloatSnapDeadZone: 0.08
-  boatFloatActivationMargin: 0.35
-  sprintMultiplier: 1.6
-  humanJumpForce: 9
-  humanGravityScale: 3
-  carGravityScale: 4
-  planeGravityScale: 0
-  boatGravityScale: 3
-  jumpBufferTime: 0.15
-  coyoteTime: 0.12
-  maxHumanJumpCount: 2
-  groundedVelocityThreshold: 0.1
+  tuningConfig: {fileID: 0}
 --- !u!114 &1548789093
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3610,8 +3590,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f9c22e4abf64474b17eb9e5302ed5b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
-  hazardDamagePerSecond: 20
+  tuningConfig: {fileID: 0}
 --- !u!114 &1548789099
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3624,10 +3603,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9496c919fc834e9c9d28b6adf862a1bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxEnergy: 100
-  carEnergyCostPerSecond: 0.5
-  planeEnergyCostPerSecond: 5
-  boatEnergyCostPerSecond: 1
+  tuningConfig: {fileID: 0}
 --- !u!114 &1548789100
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3640,6 +3616,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27797ef53fafb6342bdf8370901726de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  root: {fileID: 0}
   runtimeContext: {fileID: 1548789101}
   playerFormRoot: {fileID: 1548789095}
   environmentContext: {fileID: 1548789089}
@@ -3650,25 +3627,25 @@ MonoBehaviour:
   introHintDelay: 0.6
   introHintDuration: 3.5
   zoneHints:
-  - zoneType: 2
+  - environmentType: 2
     message: 'Water ahead: try Boat form'
     recommendedForm: 4
     suppressWhenAlreadyUsingRecommendedForm: 1
     showOnlyOnce: 1
     duration: 3
-  - zoneType: 3
+  - environmentType: 3
     message: 'Cliff ahead: try Plane form'
     recommendedForm: 3
     suppressWhenAlreadyUsingRecommendedForm: 1
     showOnlyOnce: 1
     duration: 3
-  - zoneType: 4
+  - environmentType: 4
     message: 'Blizzard ahead: use Human or Boat form'
     recommendedForm: 1
     suppressWhenAlreadyUsingRecommendedForm: 0
     showOnlyOnce: 1
     duration: 3
-  - zoneType: 5
+  - environmentType: 5
     message: 'Obstacle ahead: avoid it or switch form'
     recommendedForm: 1
     suppressWhenAlreadyUsingRecommendedForm: 0
@@ -3684,8 +3661,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8b8c69ec4f994ac4b57025aa67e4ddfb, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   formRoot: {fileID: 1548789095}
   inputReader: {fileID: 1548789102}
   movementController: {fileID: 1548789092}
@@ -3708,8 +3685,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bb6a364bb2647ce86d0d94f3e58db29, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   sessionController: {fileID: 1841644010}
 --- !u!114 &1548789103
 MonoBehaviour:
@@ -3721,12 +3698,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4eb0bdf5a5c460db0e13a72d863aa5f, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  runtimeContext: {fileID: 1548789101}
+  m_Name: 
+  m_EditorClassIdentifier: 
   formRoot: {fileID: 1548789095}
   inputReader: {fileID: 1548789102}
   ruleController: {fileID: 1548789090}
+  energyController: {fileID: 0}
   levelController: {fileID: 0}
   tuningConfig: {fileID: 11400000, guid: c59de8ab7e7f4bf3a75ed7df87a611b2, type: 2}
 --- !u!114 &1548789104
@@ -3739,9 +3716,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fd4b2a0cd89244589eab43e8d5148b59, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  runtimeContext: {fileID: 1548789101}
+  m_Name: 
+  m_EditorClassIdentifier: 
   formRoot: {fileID: 1548789095}
   ruleController: {fileID: 1548789090}
   useGlobalFallDeath: 1
@@ -4090,8 +4066,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: -130}
-  m_SizeDelta: {x: 240, y: 72}
+  m_AnchoredPosition: {x: -130, y: -130}
+  m_SizeDelta: {x: 220, y: 72}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &1682654985
 MonoBehaviour:
@@ -4295,6 +4271,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d695abc6e11410e90420f5f2fbcb6f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  root: {fileID: 0}
   runtimeContext: {fileID: 1548789101}
   playerFormRoot: {fileID: 1548789095}
   levelController: {fileID: 1841644008}
@@ -4667,64 +4644,65 @@ MonoBehaviour:
       prefab: {fileID: 5786679596210446977, guid: 816aa0486e51985469829dbad781dbd0, type: 3}
       extraSpacing: 0
       yOffset: 0
-      zoneType: 1
+      environmentType: 1
     repeatCount: 3
+  segmentLibrary: []
   randomRules:
   - template:
       label: Road
       prefab: {fileID: 5786679596210446977, guid: 816aa0486e51985469829dbad781dbd0, type: 3}
       extraSpacing: 0
       yOffset: 0
-      zoneType: 1
+      environmentType: 1
     weight: 0
     minConsecutiveCount: 2
     maxConsecutiveCount: 4
     canBeFirstRandomSegment: 1
-    allowedPreviousZones: 
+    allowedPreviousEnvironments: 
   - template:
       label: Water
       prefab: {fileID: 6462962553053882942, guid: 109a876000a256f4f82eaafd65df679b, type: 3}
       extraSpacing: 0
       yOffset: 0
-      zoneType: 2
+      environmentType: 2
     weight: 0
     minConsecutiveCount: 4
     maxConsecutiveCount: 7
     canBeFirstRandomSegment: 1
-    allowedPreviousZones: 
+    allowedPreviousEnvironments: 
   - template:
       label: Blizzard
       prefab: {fileID: 8080263092050496596, guid: a391438f6ac47a14bbf42f6395422884, type: 3}
       extraSpacing: 0
       yOffset: 0
-      zoneType: 4
+      environmentType: 4
     weight: 0
     minConsecutiveCount: 3
     maxConsecutiveCount: 7
     canBeFirstRandomSegment: 1
-    allowedPreviousZones: 
+    allowedPreviousEnvironments: 
   - template:
       label: Cliff
       prefab: {fileID: 4129112159835014063, guid: 503c353e54aa2e240ab2e435b5a7b8fd, type: 3}
       extraSpacing: 0
       yOffset: 0
-      zoneType: 3
+      environmentType: 3
     weight: 0
     minConsecutiveCount: 1
     maxConsecutiveCount: 1
     canBeFirstRandomSegment: 1
-    allowedPreviousZones: 
+    allowedPreviousEnvironments: 
   - template:
       label: Road
       prefab: {fileID: 5786679596210446977, guid: cc96f439e29fd4c4399e0e6ba4d6dad2, type: 3}
       extraSpacing: 0
       yOffset: 0
-      zoneType: 1
+      environmentType: 1
     weight: 0
     minConsecutiveCount: 1
     maxConsecutiveCount: 3
     canBeFirstRandomSegment: 1
-    allowedPreviousZones: 
+    allowedPreviousEnvironments: 
   randomSeed: 230
   randomizeSeedOnPlay: 0
 --- !u!4 &1841644007
@@ -4773,6 +4751,8 @@ MonoBehaviour:
   player: {fileID: 1548789097}
   uiManager: {fileID: 259790566}
   startButtonText: Start
+  restartButtonText: Restart
+  exitButtonText: Exit Run
 --- !u!114 &1841644010
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4783,8 +4763,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d6a43a3624274cf4aa6b61c6e7a35c8b, type: 3}
-  m_Name: ""
-  m_EditorClassIdentifier: ""
+  m_Name: 
+  m_EditorClassIdentifier: 
   runState: 0
   currentLevelNumber: 1
 --- !u!114 &1841644011
@@ -4797,8 +4777,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 72b1d2ea29d649df82f5b506db02f64b, type: 3}
-  m_Name: ""
-  m_EditorClassIdentifier: ""
+  m_Name: 
+  m_EditorClassIdentifier: 
   levelController: {fileID: 1841644008}
   progressionConfig: {fileID: 11400000, guid: c311a9a9ef5d4a84bb9356b46ef70011, type: 2}
   playerTransform: {fileID: 1548789097}
@@ -4813,8 +4793,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 876032fe96d141d58233234b6bf8b54a, type: 3}
-  m_Name: ""
-  m_EditorClassIdentifier: ""
+  m_Name: 
+  m_EditorClassIdentifier: 
   levelController: {fileID: 1841644008}
   sessionController: {fileID: 1841644010}
   progressionConfig: {fileID: 11400000, guid: c311a9a9ef5d4a84bb9356b46ef70011, type: 2}
@@ -5379,6 +5359,7 @@ RectTransform:
   - {fileID: 962873616}
   - {fileID: 1638105070}
   - {fileID: 1682654984}
+  - {fileID: 2141201001}
   m_Father: {fileID: 1163412233}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5477,9 +5458,267 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d8503de06c74f4e9f26efa8b66ef8cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  root: {fileID: 0}
   runtimeContext: {fileID: 1548789101}
   healthController: {fileID: 1548789098}
   fillImage: {fileID: 428095841}
+--- !u!1 &2141201000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2141201001}
+  - component: {fileID: 2141201003}
+  - component: {fileID: 2141201002}
+  - component: {fileID: 2141201004}
+  m_Layer: 0
+  m_Name: ExitButton
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2141201001
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141201000}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2141201005}
+  m_Father: {fileID: 2064994323}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: 130, y: -130}
+  m_SizeDelta: {x: 220, y: 72}
+  m_Pivot: {x: 0.5, y: 0}
+--- !u!114 &2141201002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141201000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.23921569, g: 0.27450982, b: 0.3372549, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &2141201003
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141201000}
+  m_CullTransparentMesh: 1
+--- !u!114 &2141201004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141201000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 0.23921569, g: 0.27450982, b: 0.3372549, a: 1}
+    m_HighlightedColor: {r: 0.32941177, g: 0.38039216, b: 0.46666667, a: 1}
+    m_PressedColor: {r: 0.1764706, g: 0.21176471, b: 0.27058825, a: 1}
+    m_SelectedColor: {r: 0.32941177, g: 0.38039216, b: 0.46666667, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 2141201002}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!224 &2141201005
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141201006}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2141201001}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &2141201006
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2141201005}
+  - component: {fileID: 2141201008}
+  - component: {fileID: 2141201007}
+  m_Layer: 0
+  m_Name: Label
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2141201007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141201006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: Exit
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 30
+  m_fontSizeBase: 30
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 1
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_enableWordWrapping: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 1
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &2141201008
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141201006}
+  m_CullTransparentMesh: 1
 --- !u!1001 &4689608496699062834
 PrefabInstance:
   m_ObjectHideFlags: 0

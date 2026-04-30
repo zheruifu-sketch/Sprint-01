@@ -16,8 +16,13 @@ public class ResultPanelUI : PanelUIBase
     [SerializeField] private Button confirmButton;
     [LabelText("按钮文本")]
     [SerializeField] private TMP_Text confirmButtonText;
+    [LabelText("次级按钮")]
+    [SerializeField] private Button secondaryButton;
+    [LabelText("次级按钮文本")]
+    [SerializeField] private TMP_Text secondaryButtonText;
 
     public event Action ConfirmRequested;
+    public event Action SecondaryRequested;
 
     protected override void Reset()
     {
@@ -38,7 +43,7 @@ public class ResultPanelUI : PanelUIBase
         BindButton();
     }
 
-    public void SetContent(string title, string description, string buttonLabel)
+    public void SetContent(string title, string description, string buttonLabel, string secondaryButtonLabel = null)
     {
         if (titleText != null)
         {
@@ -54,22 +59,42 @@ public class ResultPanelUI : PanelUIBase
         {
             confirmButtonText.text = buttonLabel;
         }
+
+        bool showSecondaryButton = !string.IsNullOrWhiteSpace(secondaryButtonLabel);
+        if (secondaryButton != null)
+        {
+            secondaryButton.gameObject.SetActive(showSecondaryButton);
+        }
+
+        if (secondaryButtonText != null && showSecondaryButton)
+        {
+            secondaryButtonText.text = secondaryButtonLabel;
+        }
     }
 
     private void BindButton()
     {
-        if (confirmButton == null)
+        if (confirmButton != null)
         {
-            return;
+            confirmButton.onClick.RemoveListener(HandleConfirmClicked);
+            confirmButton.onClick.AddListener(HandleConfirmClicked);
         }
 
-        confirmButton.onClick.RemoveListener(HandleConfirmClicked);
-        confirmButton.onClick.AddListener(HandleConfirmClicked);
+        if (secondaryButton != null)
+        {
+            secondaryButton.onClick.RemoveListener(HandleSecondaryClicked);
+            secondaryButton.onClick.AddListener(HandleSecondaryClicked);
+        }
     }
 
     private void HandleConfirmClicked()
     {
         ConfirmRequested?.Invoke();
+    }
+
+    private void HandleSecondaryClicked()
+    {
+        SecondaryRequested?.Invoke();
     }
 
     private void AutoBind()
@@ -78,6 +103,8 @@ public class ResultPanelUI : PanelUIBase
         descriptionText = descriptionText != null ? descriptionText : FindText("Card/Description");
         confirmButton = confirmButton != null ? confirmButton : FindButton("Card/StartButton");
         confirmButtonText = confirmButtonText != null ? confirmButtonText : FindText("Card/StartButton/Label");
+        secondaryButton = secondaryButton != null ? secondaryButton : FindButton("Card/ExitButton");
+        secondaryButtonText = secondaryButtonText != null ? secondaryButtonText : FindText("Card/ExitButton/Label");
     }
 
     private TMP_Text FindText(string path)

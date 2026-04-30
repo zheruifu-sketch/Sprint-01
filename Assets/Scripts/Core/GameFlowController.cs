@@ -6,11 +6,19 @@ using UnityEngine.SceneManagement;
 [DisallowMultipleComponent]
 public class GameFlowController : MonoBehaviour
 {
+    private enum PendingSceneAction
+    {
+        None = 0,
+        ReturnToStart = 1,
+        RestartRun = 2
+    }
+
     private enum FlowUiState
     {
         Start = 0,
         Gameplay = 1,
-        Completed = 2
+        Completed = 2,
+        Failed = 3
     }
 
     [Header("References")]
@@ -26,8 +34,15 @@ public class GameFlowController : MonoBehaviour
     [Header("Text")]
     [LabelText("开始按钮文本")]
     [SerializeField] private string startButtonText = "Start";
+    [LabelText("重开按钮文本")]
+    [SerializeField] private string restartButtonText = "Restart";
+    [LabelText("退出按钮文本")]
+    [SerializeField] private string exitButtonText = "Exit";
     private bool isTransitioning;
     private float levelStartX;
+    private FailureType currentFailureType;
+
+    private static PendingSceneAction pendingSceneAction = PendingSceneAction.None;
 
     public static GameFlowController Instance { get; private set; }
 
@@ -52,6 +67,18 @@ public class GameFlowController : MonoBehaviour
         BindUiEvents();
         levelStartX = GetPlayerX();
         RefreshLevelPresentation();
+
+        if (pendingSceneAction == PendingSceneAction.RestartRun)
+        {
+            pendingSceneAction = PendingSceneAction.None;
+            BeginNewRun();
+            return;
+        }
+
+        if (pendingSceneAction == PendingSceneAction.ReturnToStart)
+        {
+            pendingSceneAction = PendingSceneAction.None;
+        }
 
         if (sessionController != null && sessionController.HasActiveRun)
         {
@@ -302,7 +329,7 @@ public class GameFlowController : MonoBehaviour
 
         float targetDistance = GetCurrentTargetDistance();
         string levelName = levelController != null ? levelController.CurrentLevelName : "Level";
-        return $"{levelName} 准备开始。\n到达 {targetDistance:0}m 即可过关。";
+        return $"{levelName} is ready.\nReach {targetDistance:0}m to clear the level.";
     }
 
     private void BindUiEvents()
@@ -324,6 +351,8 @@ public class GameFlowController : MonoBehaviour
         {
             resultPanelUi.ConfirmRequested -= HandleEndConfirmClicked;
             resultPanelUi.ConfirmRequested += HandleEndConfirmClicked;
+            resultPanelUi.SecondaryRequested -= HandleEndSecondaryClicked;
+            resultPanelUi.SecondaryRequested += HandleEndSecondaryClicked;
         }
     }
 
@@ -361,9 +390,20 @@ public class GameFlowController : MonoBehaviour
         }
 
         ResultPanelUI resultPanelUi = uiManager.ShowOnly<ResultPanelUI>();
-        if (resultPanelUi != null)
+        if (resultPanelUi == null)
         {
-            resultPanelUi.SetContent("Run Complete", "本次流程已经结束。", "Restart");
+            return;
+        }
+
+        if (uiState == FlowUiState.Completed)
+        {
+            resultPanelUi.SetContent("Run Complete", "This run has ended.", restartButtonText, exitButtonText);
+            return;
+        }
+
+        if (uiState == FlowUiState.Failed)
+        {
+            resultPanelUi.SetContent("Run Failed", BuildFailureDescription(currentFailureType), restartButtonText, exitButtonText);
         }
     }
 
@@ -402,14 +442,26 @@ public class GameFlowController : MonoBehaviour
         ApplyUiState(FlowUiState.Completed);
     }
 
-    private void HandleEndConfirmClicked()
+    public void HandleRunFailed(FailureType failureType)
     {
+        currentFailureType = failureType;
+        Time.timeScale = 0f;
+        isTransitioning = false;
         if (sessionController != null)
         {
-            sessionController.ResetRun();
+            sessionController.FailRun();
         }
+        ApplyUiState(FlowUiState.Failed);
+    }
 
-        ReloadActiveScene();
+    private void HandleEndConfirmClicked()
+    {
+        ReloadForEndAction(PendingSceneAction.RestartRun);
+    }
+
+    private void HandleEndSecondaryClicked()
+    {
+        ReloadForEndAction(PendingSceneAction.ReturnToStart);
     }
 
     private void HandleRunStateChanged(GameRunState runState)
@@ -422,12 +474,50 @@ public class GameFlowController : MonoBehaviour
                 break;
 
             case GameRunState.Completed:
-                ApplyUiState(FlowUiState.Completed);
+            case GameRunState.Failed:
                 break;
 
             default:
                 ApplyUiState(FlowUiState.Start);
                 break;
+        }
+    }
+
+    private void ReloadForEndAction(PendingSceneAction sceneAction)
+    {
+        if (sessionController != null)
+        {
+            sessionController.ResetRun();
+        }
+
+        pendingSceneAction = sceneAction;
+        ReloadActiveScene();
+    }
+
+    private string BuildFailureDescription(FailureType failureType)
+    {
+        switch (failureType)
+        {
+            case FailureType.FellIntoWater:
+                return "You fell into the water before switching to a safe form.";
+            case FailureType.FellFromCliff:
+                return "You fell from a cliff. Watch the drop ahead.";
+            case FailureType.PlaneCrash:
+                return "Your plane crashed into an obstacle. Dodge earlier.";
+            case FailureType.InvalidForm:
+                return "You were using the wrong form for this terrain.";
+            case FailureType.EnergyDepleted:
+                return "Your fuel ran out before you reached safety.";
+            case FailureType.CrushedByBoulder:
+                return "A boulder caught up and crushed you.";
+            case FailureType.HitByFallingRock:
+                return "You were struck by a falling rock.";
+            case FailureType.HealthDepleted:
+                return "Your health was depleted after taking too much damage.";
+            case FailureType.TimeUp:
+                return "Time ran out before you completed the objective.";
+            default:
+                return "The run failed. Try again with a better route.";
         }
     }
     private StartPanelUI GetStartPanelUi()
