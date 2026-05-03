@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Text;
 using Nenn.InspectorEnhancements.Runtime.Attributes;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -31,6 +33,8 @@ public class GameFlowController : MonoBehaviour
     [SerializeField] private string restartButtonText = "Restart";
     [LabelText("退出按钮文本")]
     [SerializeField] private string exitButtonText = "Exit";
+    [LabelText("关卡卡片显示时长")]
+    [SerializeField] private float levelCardDuration = 2.25f;
     private bool isTransitioning;
     private float levelStartX;
     private FailureType currentFailureType;
@@ -53,7 +57,7 @@ public class GameFlowController : MonoBehaviour
         if (sessionController != null && sessionController.HasActiveRun)
         {
             ResumeGameplay();
-            ShowLevelHint();
+            TryShowLevelIntroCard();
             return;
         }
 
@@ -187,7 +191,7 @@ public class GameFlowController : MonoBehaviour
         }
 
         ResumeGameplay();
-        ShowLevelHint();
+        TryShowLevelIntroCard();
     }
 
     private IEnumerator HandleLevelCompleted()
@@ -206,8 +210,7 @@ public class GameFlowController : MonoBehaviour
         if (currentLevel < levelCount)
         {
             SoundEffectPlayback.Play(SoundEffectId.Success);
-            string clearHint = levelController != null ? levelController.GetCurrentLevelClearHint() : $"Level {currentLevel} Clear";
-            ShowHint(clearHint, transitionDelay);
+            ShowLevelClearCard(currentLevel, transitionDelay);
             yield return new WaitForSeconds(transitionDelay);
             if (sessionController != null)
             {
@@ -273,39 +276,9 @@ public class GameFlowController : MonoBehaviour
         SceneManager.LoadScene(activeScene.buildIndex);
     }
 
-    private void ShowLevelHint()
-    {
-        if (levelController == null)
-        {
-            return;
-        }
-
-        ShowHint(levelController.GetCurrentLevelStartHint(), 1.6f);
-    }
-
-    private void ShowHint(string message, float duration)
-    {
-        HintBarUI hintBarUi = GetHintBarUi();
-        if (hintBarUi != null)
-        {
-            hintBarUi.ShowHint(message, duration);
-        }
-    }
-
     private string BuildStartDescription()
     {
-        if (levelController != null)
-        {
-            string description = levelController.GetCurrentLevelDescription();
-            if (!string.IsNullOrWhiteSpace(description))
-            {
-                return description;
-            }
-        }
-
-        float targetDistance = GetCurrentTargetDistance();
-        string levelName = levelController != null ? levelController.CurrentLevelName : "Level";
-        return $"{levelName} is ready.\nReach {targetDistance:0}m to clear the level.";
+        return "Switch forms, manage health and fuel, and clear every level in one run.";
     }
 
     private void BindUiEvents()
@@ -340,9 +313,7 @@ public class GameFlowController : MonoBehaviour
         StartPanelUI startPanelUi = GetStartPanelUi();
         if (startPanelUi != null)
         {
-            string title = levelController != null ? levelController.CurrentLevelName : "Level";
-            string description = BuildStartDescription();
-            startPanelUi.SetContent(title, description, startButtonText);
+            startPanelUi.SetContent("Start Run", BuildStartDescription(), startButtonText);
         }
     }
 
@@ -507,6 +478,7 @@ public class GameFlowController : MonoBehaviour
                 return "The run failed. Try again with a better route.";
         }
     }
+
     private StartPanelUI GetStartPanelUi()
     {
         return uiManager != null ? uiManager.Get<StartPanelUI>() : null;
@@ -522,8 +494,179 @@ public class GameFlowController : MonoBehaviour
         return uiManager != null ? uiManager.Get<LevelProgressUI>() : null;
     }
 
-    private HintBarUI GetHintBarUi()
+    private void TryShowLevelIntroCard()
     {
-        return uiManager != null ? uiManager.Get<HintBarUI>() : null;
+        if (levelController == null || sessionController == null)
+        {
+            return;
+        }
+
+        int levelNumber = levelController.CurrentLevelNumber;
+        if (!sessionController.ShouldShowLevelIntro(levelNumber))
+        {
+            return;
+        }
+
+        ShowLevelCard(BuildLevelIntroTitle(levelNumber), BuildLevelIntroBody(levelNumber), levelCardDuration);
+        sessionController.MarkLevelIntroShown(levelNumber);
     }
+
+    private void ShowLevelClearCard(int clearedLevelNumber, float duration)
+    {
+        string title = $"Level {Mathf.Max(1, clearedLevelNumber)} Clear";
+        string body = "Get ready for the next level.";
+        ShowLevelCard(title, body, duration);
+    }
+
+    private void ShowLevelCard(string title, string body, float duration)
+    {
+        LevelCardUI levelCardUi = GetLevelCardUi();
+        if (levelCardUi == null)
+        {
+            return;
+        }
+
+        levelCardUi.ShowCard(title, body, duration);
+    }
+
+    private LevelCardUI GetLevelCardUi()
+    {
+        return uiManager != null ? uiManager.Get<LevelCardUI>() : null;
+    }
+
+    private string BuildLevelIntroTitle(int levelNumber)
+    {
+        return $"Level {Mathf.Max(1, levelNumber)}";
+    }
+
+    private string BuildLevelIntroBody(int levelNumber)
+    {
+        GameProgressionConfig.LevelDefinition levelConfig = GetLevelConfig(levelNumber);
+        if (levelConfig == null)
+        {
+            return "Goal\n0m";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        builder.Append($"Goal: {levelConfig.TargetDistance:0}m");
+        builder.AppendLine();
+        builder.Append($"Environments: {JoinEnvironmentNames(levelConfig.AllowedEnvironments)}");
+        builder.AppendLine();
+        builder.Append($"Forms: {JoinFormNames(levelConfig.UnlockedForms)}");
+        builder.AppendLine();
+        builder.Append($"Hazards: {JoinHazardNames(levelConfig.Hazards)}");
+        return builder.ToString();
+    }
+
+    private GameProgressionConfig.LevelDefinition GetLevelConfig(int levelNumber)
+    {
+        GameProgressionConfig progressionConfig = GameProgressionConfig.Load();
+        return progressionConfig != null ? progressionConfig.GetLevel(levelNumber - 1) : null;
+    }
+
+    private static string JoinEnvironmentNames(IReadOnlyList<EnvironmentType> environments)
+    {
+        if (environments == null || environments.Count == 0)
+        {
+            return "Mixed";
+        }
+
+        List<string> names = new List<string>();
+        for (int i = 0; i < environments.Count; i++)
+        {
+            names.Add(GetEnvironmentName(environments[i]));
+        }
+
+        return string.Join(", ", names);
+    }
+
+    private static string JoinFormNames(IReadOnlyList<PlayerFormType> forms)
+    {
+        if (forms == null || forms.Count == 0)
+        {
+            return "All";
+        }
+
+        List<string> names = new List<string>();
+        for (int i = 0; i < forms.Count; i++)
+        {
+            names.Add(GetFormName(forms[i]));
+        }
+
+        return string.Join(", ", names);
+    }
+
+    private static string JoinHazardNames(IReadOnlyList<HazardProfile> hazards)
+    {
+        if (hazards == null || hazards.Count == 0)
+        {
+            return "None";
+        }
+
+        List<string> names = new List<string>();
+        for (int i = 0; i < hazards.Count; i++)
+        {
+            HazardProfile profile = hazards[i];
+            if (profile == null)
+            {
+                continue;
+            }
+
+            names.Add(!string.IsNullOrWhiteSpace(profile.DisplayName)
+                ? profile.DisplayName
+                : GetHazardName(profile.HazardType));
+        }
+
+        return names.Count > 0 ? string.Join(", ", names) : "None";
+    }
+
+    private static string GetEnvironmentName(EnvironmentType environmentType)
+    {
+        switch (environmentType)
+        {
+            case EnvironmentType.Road:
+                return "Road";
+            case EnvironmentType.Water:
+                return "Water";
+            case EnvironmentType.Cliff:
+                return "Cliff";
+            case EnvironmentType.Blizzard:
+                return "Blizzard";
+            case EnvironmentType.Obstacle:
+                return "Obstacle";
+            default:
+                return "Unknown";
+        }
+    }
+
+    private static string GetFormName(PlayerFormType formType)
+    {
+        switch (formType)
+        {
+            case PlayerFormType.Human:
+                return "Human";
+            case PlayerFormType.Car:
+                return "Car";
+            case PlayerFormType.Plane:
+                return "Plane";
+            case PlayerFormType.Boat:
+                return "Boat";
+            default:
+                return "Unknown";
+        }
+    }
+
+    private static string GetHazardName(GameHazardType hazardType)
+    {
+        switch (hazardType)
+        {
+            case GameHazardType.BoulderChase:
+                return "Boulder";
+            case GameHazardType.FallingRocks:
+                return "Falling Rocks";
+            default:
+                return "None";
+        }
+    }
+
 }

@@ -18,10 +18,6 @@ MonoBehaviour:
     planeMoveSpeed: 6
     planeVerticalSpeed: 5
     boatMoveSpeed: 4.5
-    boatFloatHeightOffset: 0.85
-    boatFloatVerticalSpeed: 8
-    boatFloatSnapDeadZone: 0.08
-    boatFloatActivationMargin: 0.35
     defaultForwardMultiplier: 1.6
     forwardBoostMultiplier: 1.45
     forwardBrakeMultiplier: 0.55
@@ -45,7 +41,6 @@ MonoBehaviour:
     blizzardHumanSpeedMultiplier: 0.3
     boatSwitchCheckOffset: {x: 0, y: -0.35}
     boatSwitchCheckRadius: 0.2
-    floodBoatSupportHeight: 1.5
   survival:
     maxHealth: 100
     hazardDamagePerSecond: 20

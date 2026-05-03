@@ -18,7 +18,6 @@ public class LevelHazardController : MonoBehaviour
     [SerializeField] private Transform hazardParent;
 
     private readonly List<GameObject> activeHazards = new List<GameObject>();
-    private readonly List<RisingWaterHazard> activeRisingWaterHazards = new List<RisingWaterHazard>();
 
     private void Reset()
     {
@@ -119,60 +118,6 @@ public class LevelHazardController : MonoBehaviour
         }
 
         activeHazards.Clear();
-        activeRisingWaterHazards.Clear();
-    }
-
-    public bool IsPointInsideGlobalWater(Vector3 point)
-    {
-        for (int i = 0; i < activeRisingWaterHazards.Count; i++)
-        {
-            RisingWaterHazard risingWater = activeRisingWaterHazards[i];
-            if (risingWater != null && risingWater.IsPointBelowDangerLine(point))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public bool IsPointInsideGlobalWaterBody(Vector3 point, float tolerance = 0f)
-    {
-        for (int i = 0; i < activeRisingWaterHazards.Count; i++)
-        {
-            RisingWaterHazard risingWater = activeRisingWaterHazards[i];
-            if (risingWater != null && risingWater.IsPointInsideWaterBody(point, tolerance))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public bool TryGetGlobalWaterSurfaceY(out float waterSurfaceY)
-    {
-        bool found = false;
-        float highestSurfaceY = float.MinValue;
-
-        for (int i = 0; i < activeRisingWaterHazards.Count; i++)
-        {
-            RisingWaterHazard risingWater = activeRisingWaterHazards[i];
-            if (risingWater == null)
-            {
-                continue;
-            }
-
-            float surfaceY = risingWater.GetWaterSurfaceY();
-            if (!found || surfaceY > highestSurfaceY)
-            {
-                highestSurfaceY = surfaceY;
-                found = true;
-            }
-        }
-
-        waterSurfaceY = found ? highestSurfaceY : 0f;
-        return found;
     }
 
     private void SpawnHazard(HazardProfile hazardProfile)
@@ -199,11 +144,6 @@ public class LevelHazardController : MonoBehaviour
         for (int i = 0; i < behaviours.Length; i++)
         {
             behaviours[i].Initialize(hazardProfile, playerTransform, levelController);
-
-            if (behaviours[i] is RisingWaterHazard risingWaterHazard)
-            {
-                activeRisingWaterHazards.Add(risingWaterHazard);
-            }
         }
     }
 

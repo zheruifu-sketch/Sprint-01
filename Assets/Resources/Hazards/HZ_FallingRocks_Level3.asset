@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enabled: 1
   displayName: Falling Rocks
-  hazardType: 3
+  hazardType: 2
   hazardPrefab: {fileID: 1165821349952151377, guid: c256a4335937d054db0006671879dd93, type: 3}
   spawnPositionMode: 1
   spawnOffset: {x: 0, y: 0, z: 0}

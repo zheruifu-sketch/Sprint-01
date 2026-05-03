@@ -30,39 +30,6 @@ public class HazardProfile : ScriptableObject
     }
 
     [Serializable]
-    public class RisingWaterSettings
-    {
-        [LabelText("起始高度")]
-        [SerializeField] private float startY = -4f;
-        [LabelText("上升速度")]
-        [SerializeField] private float riseSpeed = 0.75f;
-        [LabelText("下降速度")]
-        [SerializeField] private float fallSpeed = 0.9f;
-        [LabelText("最高高度")]
-        [SerializeField] private float maxY = 8f;
-        [LabelText("高位最短停留时长")]
-        [SerializeField] private float minHoldAtHighDuration = 1.5f;
-        [LabelText("高位最长停留时长")]
-        [SerializeField] private float maxHoldAtHighDuration = 3.5f;
-        [LabelText("低位最短停留时长")]
-        [SerializeField] private float minHoldAtLowDuration = 2f;
-        [LabelText("低位最长停留时长")]
-        [SerializeField] private float maxHoldAtLowDuration = 5f;
-        [LabelText("低于水线即死")]
-        [SerializeField] private bool instantKillBelowWaterLine = false;
-
-        public float StartY => startY;
-        public float RiseSpeed => Mathf.Max(0f, riseSpeed);
-        public float FallSpeed => Mathf.Max(0f, fallSpeed);
-        public float MaxY => Mathf.Max(startY, maxY);
-        public float MinHoldAtHighDuration => Mathf.Max(0f, minHoldAtHighDuration);
-        public float MaxHoldAtHighDuration => Mathf.Max(MinHoldAtHighDuration, maxHoldAtHighDuration);
-        public float MinHoldAtLowDuration => Mathf.Max(0f, minHoldAtLowDuration);
-        public float MaxHoldAtLowDuration => Mathf.Max(MinHoldAtLowDuration, maxHoldAtLowDuration);
-        public bool InstantKillBelowWaterLine => instantKillBelowWaterLine;
-    }
-
-    [Serializable]
     public class FallingRocksSettings
     {
         [LabelText("生成间隔")]
@@ -118,8 +85,6 @@ public class HazardProfile : ScriptableObject
     [Header("Settings")]
     [LabelText("滚石追击参数")]
     [SerializeField] private BoulderChaseSettings boulderChase = new BoulderChaseSettings();
-    [LabelText("涨水参数")]
-    [SerializeField] private RisingWaterSettings risingWater = new RisingWaterSettings();
     [LabelText("落石参数")]
     [SerializeField] private FallingRocksSettings fallingRocks = new FallingRocksSettings();
 
@@ -130,6 +95,5 @@ public class HazardProfile : ScriptableObject
     public HazardSpawnPositionMode SpawnPositionMode => spawnPositionMode;
     public Vector3 SpawnOffset => spawnOffset;
     public BoulderChaseSettings BoulderChase => boulderChase;
-    public RisingWaterSettings RisingWater => risingWater;
     public FallingRocksSettings FallingRocks => fallingRocks;
 }

@@ -60,13 +60,13 @@ public class EnvironmentHintUI : HudUIBase
 
     [Header("Intro Hint")]
     [LabelText("启动时显示引导")]
-    [SerializeField] private bool showIntroHintOnStart = true;
+    [SerializeField] private bool showIntroHintOnStart;
     [LabelText("默认引导文本")]
-    [SerializeField] private string introHintMessage = "Press 1-4 to transform";
+    [SerializeField] private string introHintMessage = string.Empty;
     [LabelText("引导延迟")]
     [SerializeField] private float introHintDelay = 0.6f;
     [LabelText("引导持续时间")]
-    [SerializeField] private float introHintDuration = 3.5f;
+    [SerializeField] private float introHintDuration = 2f;
 
     [Header("Zone Hints")]
     [LabelText("环境提示列表")]
@@ -114,10 +114,10 @@ public class EnvironmentHintUI : HudUIBase
     private void ResetZoneHintsToDefaults()
     {
         zoneHints.Clear();
-        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Water, "Water ahead: try Boat form", PlayerFormType.Boat));
-        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Cliff, "Cliff ahead: try Plane form", PlayerFormType.Plane));
-        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Blizzard, "Blizzard ahead: use Human or Boat form", PlayerFormType.Human, false));
-        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Obstacle, "Obstacle ahead: avoid it or switch form", PlayerFormType.Human, false));
+        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Water, "Water ahead", PlayerFormType.Boat, true, true, 1.6f));
+        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Cliff, "Cliff ahead", PlayerFormType.Plane, true, true, 1.6f));
+        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Blizzard, "Blizzard ahead", PlayerFormType.Human, false, true, 1.6f));
+        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Obstacle, "Obstacle ahead", PlayerFormType.Human, false, true, 1.6f));
     }
 
     private void AutoBind()
@@ -274,7 +274,7 @@ public class EnvironmentHintUI : HudUIBase
 
     private string ResolveIntroHintMessage()
     {
-        if (levelController == null)
+        if (string.IsNullOrWhiteSpace(introHintMessage) || levelController == null)
         {
             return introHintMessage;
         }

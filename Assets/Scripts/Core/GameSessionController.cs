@@ -22,6 +22,8 @@ public class GameSessionController : MonoBehaviour
     [SerializeField] private bool hasActiveCheckpoint;
     [LabelText("当前检查点距离")]
     [SerializeField] private float activeCheckpointDistance;
+    [LabelText("已展示过开场卡片的关卡")]
+    [SerializeField] private int lastShownLevelIntroNumber;
 
     public bool HasActiveRun => runState != GameRunState.Idle;
     public bool IsGameplayRunning => runState == GameRunState.Running;
@@ -35,6 +37,7 @@ public class GameSessionController : MonoBehaviour
     public Vector3 RespawnPosition => respawnPosition;
     public bool HasActiveCheckpoint => hasActiveCheckpoint;
     public float ActiveCheckpointDistance => activeCheckpointDistance;
+    public int LastShownLevelIntroNumber => Mathf.Max(0, lastShownLevelIntroNumber);
 
     public event Action<GameRunState> RunStateChanged;
     public event Action<int> RunLevelChanged;
@@ -87,12 +90,14 @@ public class GameSessionController : MonoBehaviour
         respawnPosition = source.respawnPosition;
         hasActiveCheckpoint = source.hasActiveCheckpoint;
         activeCheckpointDistance = source.activeCheckpointDistance;
+        lastShownLevelIntroNumber = source.lastShownLevelIntroNumber;
     }
 
     public void StartNewRun()
     {
         SetCurrentLevelNumber(1);
         ClearCheckpointProgress();
+        lastShownLevelIntroNumber = 0;
         SetRunState(GameRunState.Running);
     }
 
@@ -149,9 +154,32 @@ public class GameSessionController : MonoBehaviour
     {
         SetCurrentLevelNumber(1);
         ClearCheckpointProgress();
+        lastShownLevelIntroNumber = 0;
         SetLevelStartPositionInternal(Vector3.zero, false);
         SetRespawnPositionInternal(Vector3.zero, false);
         SetRunState(GameRunState.Idle);
+    }
+
+    public void DebugEnterLevel(int levelNumber)
+    {
+        int resolvedLevelNumber = Mathf.Max(1, levelNumber);
+        SetCurrentLevelNumber(resolvedLevelNumber);
+        ClearCheckpointProgress();
+        lastShownLevelIntroNumber = resolvedLevelNumber - 1;
+        SetLevelStartPositionInternal(Vector3.zero, false);
+        SetRespawnPositionInternal(Vector3.zero, false);
+        SetRunState(GameRunState.Running);
+    }
+
+    public bool ShouldShowLevelIntro(int levelNumber)
+    {
+        int resolvedLevelNumber = Mathf.Max(1, levelNumber);
+        return lastShownLevelIntroNumber < resolvedLevelNumber;
+    }
+
+    public void MarkLevelIntroShown(int levelNumber)
+    {
+        lastShownLevelIntroNumber = Mathf.Max(lastShownLevelIntroNumber, Mathf.Max(1, levelNumber));
     }
 
     public void PrepareLevelSpawn(int levelNumber, Vector3 sceneLevelStartPosition)

@@ -13,8 +13,6 @@ public class PlayerMovementController : MonoBehaviour
     [SerializeField] private PlayerRuleController ruleController;
     [LabelText("输入读取器")]
     [SerializeField] private PlayerInputReader inputReader;
-    [LabelText("关卡灾害控制器")]
-    [SerializeField] private LevelHazardController hazardController;
     [LabelText("玩家调参配置")]
     [SerializeField] private PlayerTuningConfig tuningConfig;
 
@@ -23,25 +21,18 @@ public class PlayerMovementController : MonoBehaviour
     private float jumpBufferCounter;
     private float coyoteTimeCounter;
     private int humanJumpCount;
-    private bool boatFloatSimulationActive;
     private bool jumpHeld;
     private bool jumpCutConsumed;
 
     private void Reset()
     {
         CacheReferences();
-        hazardController = FindObjectOfType<LevelHazardController>();
         tuningConfig = PlayerTuningConfig.Load();
     }
 
     private void Awake()
     {
         CacheReferences();
-
-        if (hazardController == null)
-        {
-            hazardController = FindObjectOfType<LevelHazardController>();
-        }
 
         if (tuningConfig == null)
         {
@@ -122,9 +113,6 @@ public class PlayerMovementController : MonoBehaviour
         }
 
         PlayerTuningConfig.MovementSettings movement = tuningConfig != null ? tuningConfig.Movement : null;
-        bool shouldUseBoatFloatMode = ShouldUseBoatFloatMode();
-        UpdateBoatFloatSimulationState(shouldUseBoatFloatMode);
-
         switch (formRoot.CurrentForm)
         {
             case PlayerFormType.Human:
@@ -137,7 +125,7 @@ public class PlayerMovementController : MonoBehaviour
                 formRoot.PlayerRigidbody.gravityScale = movement != null ? movement.PlaneGravityScale : 0f;
                 break;
             case PlayerFormType.Boat:
-                formRoot.PlayerRigidbody.gravityScale = shouldUseBoatFloatMode ? 0f : (movement != null ? movement.BoatGravityScale : 3f);
+                formRoot.PlayerRigidbody.gravityScale = movement != null ? movement.BoatGravityScale : 3f;
                 break;
         }
     }
@@ -154,7 +142,6 @@ public class PlayerMovementController : MonoBehaviour
         PlayerTuningConfig.MovementSettings movement = tuningConfig != null ? tuningConfig.Movement : null;
         float speedMultiplier = ResolveForwardSpeedMultiplier(movement);
         bool isRunning = false;
-        bool shouldUseBoatFloatMode = ShouldUseBoatFloatMode();
 
         if (groundSensor != null)
         {
@@ -221,17 +208,8 @@ public class PlayerMovementController : MonoBehaviour
                     boatSpeed = (movement != null ? movement.HumanMoveSpeed : 4f) * ruleController.BlizzardSlowMultiplier;
                 }
 
-                if (shouldUseBoatFloatMode)
-                {
-                    ApplyBoatFloatTransformMovement(boatSpeed * speedMultiplier);
-                }
-                else
-                {
-                    velocity.x = boatSpeed * speedMultiplier;
-                    velocity.y = 0f;
-                    rb.velocity = velocity;
-                }
-
+                velocity.x = boatSpeed * speedMultiplier;
+                rb.velocity = velocity;
                 isRunning = true;
                 break;
         }
@@ -291,73 +269,5 @@ public class PlayerMovementController : MonoBehaviour
         }
 
         return Mathf.Abs(rb.velocity.y) <= (tuningConfig != null ? tuningConfig.Movement.GroundedVelocityThreshold : 0.1f);
-    }
-
-    private void ApplyBoatFloatTransformMovement(float horizontalSpeed)
-    {
-        if (formRoot == null || hazardController == null)
-        {
-            return;
-        }
-
-        if (!hazardController.TryGetGlobalWaterSurfaceY(out float waterSurfaceY))
-        {
-            return;
-        }
-
-        Rigidbody2D rb = formRoot.PlayerRigidbody;
-        if (rb != null)
-        {
-            rb.velocity = Vector2.zero;
-        }
-
-        Vector3 position = transform.position;
-        position.x += horizontalSpeed * Time.fixedDeltaTime;
-        float floatHeightOffset = tuningConfig != null ? tuningConfig.Movement.BoatFloatHeightOffset : 0.85f;
-        float snapDeadZone = tuningConfig != null ? tuningConfig.Movement.BoatFloatSnapDeadZone : 0.08f;
-        float verticalSpeed = tuningConfig != null ? tuningConfig.Movement.BoatFloatVerticalSpeed : 8f;
-        float targetY = waterSurfaceY + floatHeightOffset;
-        position.y = Mathf.Abs(targetY - position.y) <= snapDeadZone
-            ? targetY
-            : Mathf.MoveTowards(position.y, targetY, verticalSpeed * Time.fixedDeltaTime);
-        transform.position = position;
-    }
-
-    private bool ShouldUseBoatFloatMode()
-    {
-        if (formRoot == null || formRoot.CurrentForm != PlayerFormType.Boat || hazardController == null)
-        {
-            return false;
-        }
-
-        if (!hazardController.TryGetGlobalWaterSurfaceY(out float waterSurfaceY))
-        {
-            return false;
-        }
-
-        float floatHeightOffset = tuningConfig != null ? tuningConfig.Movement.BoatFloatHeightOffset : 0.85f;
-        float activationMargin = tuningConfig != null ? tuningConfig.Movement.BoatFloatActivationMargin : 0.35f;
-        float maxSupportedY = waterSurfaceY + floatHeightOffset + activationMargin;
-        return transform.position.y <= maxSupportedY;
-    }
-
-    private void UpdateBoatFloatSimulationState(bool shouldUseBoatFloatMode)
-    {
-        if (formRoot == null || formRoot.PlayerRigidbody == null)
-        {
-            return;
-        }
-
-        if (boatFloatSimulationActive == shouldUseBoatFloatMode)
-        {
-            return;
-        }
-
-        boatFloatSimulationActive = shouldUseBoatFloatMode;
-        formRoot.PlayerRigidbody.simulated = !shouldUseBoatFloatMode;
-        if (!shouldUseBoatFloatMode)
-        {
-            formRoot.PlayerRigidbody.velocity = Vector2.zero;
-        }
     }
 }

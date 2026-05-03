@@ -9,8 +9,6 @@ public class PlayerRuleController : MonoBehaviour
     [SerializeField] private PlayerFormRoot formRoot;
     [LabelText("环境感知上下文")]
     [SerializeField] private PlayerEnvironmentContext environmentContext;
-    [LabelText("关卡灾害控制器")]
-    [SerializeField] private LevelHazardController hazardController;
     [LabelText("玩家调参配置")]
     [SerializeField] private PlayerTuningConfig tuningConfig;
 
@@ -22,18 +20,12 @@ public class PlayerRuleController : MonoBehaviour
     private void Reset()
     {
         CacheReferences();
-        hazardController = FindObjectOfType<LevelHazardController>();
         tuningConfig = PlayerTuningConfig.Load();
     }
 
     private void Awake()
     {
         CacheReferences();
-
-        if (hazardController == null)
-        {
-            hazardController = FindObjectOfType<LevelHazardController>();
-        }
 
         if (tuningConfig == null)
         {
@@ -52,30 +44,9 @@ public class PlayerRuleController : MonoBehaviour
         return environmentContext != null && environmentContext.IsInEnvironment(EnvironmentType.Water);
     }
 
-    public bool IsInFloodWater()
-    {
-        return hazardController != null && hazardController.IsPointInsideGlobalWaterBody(transform.position, 0.35f);
-    }
-
-    public bool IsBoatSupportedByFlood()
-    {
-        if (formRoot == null || formRoot.CurrentForm != PlayerFormType.Boat || hazardController == null)
-        {
-            return false;
-        }
-
-        if (!hazardController.TryGetGlobalWaterSurfaceY(out float waterSurfaceY))
-        {
-            return false;
-        }
-
-        float floodBoatSupportHeight = tuningConfig != null ? tuningConfig.EnvironmentRules.FloodBoatSupportHeight : 1.5f;
-        return transform.position.y <= waterSurfaceY + floodBoatSupportHeight;
-    }
-
     public bool IsInWaterEnvironment()
     {
-        return IsInWater() || IsInFloodWater();
+        return IsInWater();
     }
 
     public bool IsInCliff()
@@ -90,7 +61,7 @@ public class PlayerRuleController : MonoBehaviour
 
     public bool IsBoatSupportedSurface()
     {
-        return IsInWater() || IsBoatSupportedByFlood() || IsInBlizzard();
+        return IsInWater() || IsInBlizzard();
     }
 
     public bool CanUseForm(PlayerFormType targetForm)
@@ -125,11 +96,6 @@ public class PlayerRuleController : MonoBehaviour
 
     private bool CanSwitchBoatFromNearbyWater()
     {
-        if (IsInFloodWater())
-        {
-            return true;
-        }
-
         Vector2 origin = transform.position;
         origin += tuningConfig != null ? tuningConfig.EnvironmentRules.BoatSwitchCheckOffset : GameConstants.DefaultBoatSwitchCheckOffset;
 

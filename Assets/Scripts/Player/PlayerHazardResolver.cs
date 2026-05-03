@@ -40,10 +40,7 @@ public class PlayerHazardResolver : MonoBehaviour
 
     public bool IsProtectedBoatState()
     {
-        return ruleController != null
-               && formRoot != null
-               && formRoot.CurrentForm == PlayerFormType.Boat
-               && ruleController.IsBoatSupportedByFlood();
+        return false;
     }
 
     public bool TryGetActiveHazard(out FailureType failureType)

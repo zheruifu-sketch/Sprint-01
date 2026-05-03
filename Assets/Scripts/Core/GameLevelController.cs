@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Nenn.InspectorEnhancements.Runtime.Attributes;
+using UnityEngine.SceneManagement;
 
 [DisallowMultipleComponent]
 public class GameLevelController : MonoBehaviour
@@ -77,15 +78,15 @@ public class GameLevelController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.LeftBracket))
         {
-            PreviousLevel();
+            DebugLoadLevel(CurrentLevelIndex);
         }
         else if (Input.GetKeyDown(KeyCode.RightBracket))
         {
-            NextLevel();
+            DebugLoadLevel(CurrentLevelIndex + 2);
         }
         else if (Input.GetKeyDown(KeyCode.Home))
         {
-            SetLevel(0);
+            DebugLoadLevel(1);
         }
 
         for (int i = 0; i < Mathf.Min(9, LevelCount); i++)
@@ -93,7 +94,7 @@ public class GameLevelController : MonoBehaviour
             KeyCode levelHotkey = (KeyCode)((int)KeyCode.F1 + i);
             if (Input.GetKeyDown(levelHotkey))
             {
-                SetLevel(i);
+                DebugLoadLevel(i + 1);
                 break;
             }
         }
@@ -129,6 +130,19 @@ public class GameLevelController : MonoBehaviour
     public void PreviousLevel()
     {
         SetLevel(CurrentLevelIndex - 1);
+    }
+
+    private void DebugLoadLevel(int levelNumber)
+    {
+        int clampedLevelNumber = Mathf.Clamp(levelNumber, 1, Mathf.Max(1, LevelCount));
+
+        if (sessionController != null)
+        {
+            sessionController.DebugEnterLevel(clampedLevelNumber);
+        }
+
+        Scene activeScene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(activeScene.buildIndex);
     }
 
     public bool IsFormUnlocked(PlayerFormType formType)

@@ -18,14 +18,6 @@ public class PlayerTuningConfig : ScriptableObject
         [SerializeField] private float planeVerticalSpeed = 5f;
         [LabelText("船移动速度")]
         [SerializeField] private float boatMoveSpeed = 4.5f;
-        [LabelText("船漂浮高度偏移")]
-        [SerializeField] private float boatFloatHeightOffset = 0.85f;
-        [LabelText("船漂浮垂直速度")]
-        [SerializeField] private float boatFloatVerticalSpeed = 8f;
-        [LabelText("船漂浮吸附死区")]
-        [SerializeField] private float boatFloatSnapDeadZone = 0.08f;
-        [LabelText("船漂浮激活余量")]
-        [SerializeField] private float boatFloatActivationMargin = 0.35f;
         [LabelText("默认前进倍率")]
         [SerializeField] private float defaultForwardMultiplier = 1.6f;
         [LabelText("自动前进加速倍率")]
@@ -66,10 +58,6 @@ public class PlayerTuningConfig : ScriptableObject
         public float PlaneMoveSpeed => planeMoveSpeed;
         public float PlaneVerticalSpeed => planeVerticalSpeed;
         public float BoatMoveSpeed => boatMoveSpeed;
-        public float BoatFloatHeightOffset => boatFloatHeightOffset;
-        public float BoatFloatVerticalSpeed => boatFloatVerticalSpeed;
-        public float BoatFloatSnapDeadZone => boatFloatSnapDeadZone;
-        public float BoatFloatActivationMargin => boatFloatActivationMargin;
         public float DefaultForwardMultiplier => Mathf.Max(0.1f, defaultForwardMultiplier);
         public float ForwardBoostMultiplier => forwardBoostMultiplier > 0f
             ? Mathf.Max(1f, forwardBoostMultiplier)
@@ -113,13 +101,10 @@ public class PlayerTuningConfig : ScriptableObject
         [SerializeField] private Vector2 boatSwitchCheckOffset = GameConstants.DefaultBoatSwitchCheckOffset;
         [LabelText("切船检测半径")]
         [SerializeField] private float boatSwitchCheckRadius = GameConstants.DefaultBoatSwitchCheckRadius;
-        [LabelText("洪水可支撑船的高度")]
-        [SerializeField] private float floodBoatSupportHeight = 1.5f;
 
         public float BlizzardHumanSpeedMultiplier => blizzardHumanSpeedMultiplier;
         public Vector2 BoatSwitchCheckOffset => boatSwitchCheckOffset;
         public float BoatSwitchCheckRadius => boatSwitchCheckRadius;
-        public float FloodBoatSupportHeight => floodBoatSupportHeight;
     }
 
     [Serializable]

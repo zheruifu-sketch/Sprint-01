@@ -197,8 +197,7 @@ MonoBehaviour:
       maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
       allowedPreviousZones: 
-    hazards:
-    - {fileID: 11400000, guid: 8d4b14e359be4885a5532489a10cd7d9, type: 2}
+    hazards: []
     pickups:
       enabled: 0
       minSpawnDistance: 15
@@ -256,8 +255,7 @@ MonoBehaviour:
       maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
       allowedPreviousZones: 
-    hazards:
-    - {fileID: 11400000, guid: d361f22f1c51490291cdca2d768429c2, type: 2}
+    hazards: []
     pickups:
       enabled: 0
       minSpawnDistance: 14
