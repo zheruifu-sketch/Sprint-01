@@ -152,7 +152,7 @@ public class PlayerMovementController : MonoBehaviour
         Rigidbody2D rb = formRoot.PlayerRigidbody;
         Vector2 velocity = rb.velocity;
         PlayerTuningConfig.MovementSettings movement = tuningConfig != null ? tuningConfig.Movement : null;
-        float speedMultiplier = movement != null ? movement.SprintMultiplier : 1.6f;
+        float speedMultiplier = ResolveForwardSpeedMultiplier(movement);
         bool isRunning = false;
         bool shouldUseBoatFloatMode = ShouldUseBoatFloatMode();
 
@@ -168,7 +168,7 @@ public class PlayerMovementController : MonoBehaviour
                 bool isGrounded = IsStableGrounded();
                 velocity.x = GetSmoothedHorizontalVelocity(
                     velocity.x,
-                    horizontalInput * (movement != null ? movement.HumanMoveSpeed : 4f) * speedMultiplier * humanZoneMultiplier,
+                    (movement != null ? movement.HumanMoveSpeed : 4f) * speedMultiplier * humanZoneMultiplier,
                     isGrounded,
                     movement);
                 int maxHumanJumpCount = movement != null ? movement.MaxHumanJumpCount : 2;
@@ -194,24 +194,24 @@ public class PlayerMovementController : MonoBehaviour
 
                     rb.velocity = velocity;
                 }
-                isRunning = Mathf.Abs(horizontalInput) > 0.01f && isGrounded;
+                isRunning = velocity.x > 0.05f && isGrounded;
                 break;
 
             case PlayerFormType.Car:
                 velocity.x = GetSmoothedHorizontalVelocity(
                     velocity.x,
-                    horizontalInput * (movement != null ? movement.CarMoveSpeed : 7f) * speedMultiplier,
+                    (movement != null ? movement.CarMoveSpeed : 7f) * speedMultiplier,
                     IsStableGrounded(),
                     movement);
                 rb.velocity = velocity;
-                isRunning = Mathf.Abs(horizontalInput) > 0.01f;
+                isRunning = velocity.x > 0.05f;
                 break;
 
             case PlayerFormType.Plane:
-                velocity.x = horizontalInput * (movement != null ? movement.PlaneMoveSpeed : 6f) * speedMultiplier;
+                velocity.x = (movement != null ? movement.PlaneMoveSpeed : 6f) * speedMultiplier;
                 velocity.y = verticalInput * (movement != null ? movement.PlaneVerticalSpeed : 5f) * speedMultiplier;
                 rb.velocity = velocity;
-                isRunning = Mathf.Abs(horizontalInput) > 0.01f || Mathf.Abs(verticalInput) > 0.01f;
+                isRunning = velocity.x > 0.05f || Mathf.Abs(verticalInput) > 0.01f;
                 break;
 
             case PlayerFormType.Boat:
@@ -227,17 +227,39 @@ public class PlayerMovementController : MonoBehaviour
                 }
                 else
                 {
-                    velocity.x = horizontalInput * boatSpeed * speedMultiplier;
+                    velocity.x = boatSpeed * speedMultiplier;
                     velocity.y = 0f;
                     rb.velocity = velocity;
                 }
 
-                isRunning = false;
+                isRunning = true;
                 break;
         }
 
-        formRoot.SetFacingFromHorizontal(horizontalInput);
+        formRoot.SetFacingFromHorizontal(1f);
         formRoot.SetRunState(isRunning);
+    }
+
+    private float ResolveForwardSpeedMultiplier(PlayerTuningConfig.MovementSettings movement)
+    {
+        float baseForwardMultiplier = movement != null ? movement.DefaultForwardMultiplier : 1.6f;
+
+        if (inputReader != null)
+        {
+            if (inputReader.IsForwardBoostHeld)
+            {
+                float boostMultiplier = movement != null ? movement.ForwardBoostMultiplier : GameConstants.DefaultForwardBoostMultiplier;
+                return baseForwardMultiplier * boostMultiplier;
+            }
+
+            if (inputReader.IsForwardBrakeHeld)
+            {
+                float brakeMultiplier = movement != null ? movement.ForwardBrakeMultiplier : GameConstants.DefaultForwardBrakeMultiplier;
+                return baseForwardMultiplier * brakeMultiplier;
+            }
+        }
+
+        return baseForwardMultiplier;
     }
 
     private float GetSmoothedHorizontalVelocity(float currentVelocityX, float targetVelocityX, bool isGrounded, PlayerTuningConfig.MovementSettings movement)
@@ -290,7 +312,7 @@ public class PlayerMovementController : MonoBehaviour
         }
 
         Vector3 position = transform.position;
-        position.x += horizontalInput * horizontalSpeed * Time.fixedDeltaTime;
+        position.x += horizontalSpeed * Time.fixedDeltaTime;
         float floatHeightOffset = tuningConfig != null ? tuningConfig.Movement.BoatFloatHeightOffset : 0.85f;
         float snapDeadZone = tuningConfig != null ? tuningConfig.Movement.BoatFloatSnapDeadZone : 0.08f;
         float verticalSpeed = tuningConfig != null ? tuningConfig.Movement.BoatFloatVerticalSpeed : 8f;

@@ -14,6 +14,9 @@ public static class GameConstants
     public const float DefaultPlaneEnergyCostPerSecond = 5f;
     public const float DefaultBoatEnergyCostPerSecond = 1f;
     public const float DefaultTransformEnergyCost = 8f;
+    public const float DefaultForwardBoostMultiplier = 1.45f;
+    public const float DefaultForwardBrakeMultiplier = 0.55f;
+    public const float DefaultForwardBoostEnergyCostPerSecond = 3f;
     public const float DefaultCliffGroundY = 0f;
     public const float DefaultCliffDeathY = -8f;
     public const float DefaultCameraSmoothTime = 0.12f;

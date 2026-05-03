@@ -56,6 +56,24 @@ public class PlayerEnergyController : MonoBehaviour
         Consume(transformCost);
     }
 
+    public void ConsumeForForwardBoost(float deltaTime)
+    {
+        if (deltaTime <= 0f || IsEmpty())
+        {
+            return;
+        }
+
+        float consumeRate = tuningConfig != null
+            ? tuningConfig.Movement.ForwardBoostEnergyCostPerSecond
+            : GameConstants.DefaultForwardBoostEnergyCostPerSecond;
+        if (consumeRate <= 0f)
+        {
+            return;
+        }
+
+        Consume(consumeRate * deltaTime);
+    }
+
     public bool IsEmpty()
     {
         return CurrentEnergy <= 0f;

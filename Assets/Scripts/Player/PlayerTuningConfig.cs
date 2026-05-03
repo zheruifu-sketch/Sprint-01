@@ -26,8 +26,14 @@ public class PlayerTuningConfig : ScriptableObject
         [SerializeField] private float boatFloatSnapDeadZone = 0.08f;
         [LabelText("船漂浮激活余量")]
         [SerializeField] private float boatFloatActivationMargin = 0.35f;
-        [LabelText("冲刺倍率")]
-        [SerializeField] private float sprintMultiplier = 1.6f;
+        [LabelText("默认前进倍率")]
+        [SerializeField] private float defaultForwardMultiplier = 1.6f;
+        [LabelText("自动前进加速倍率")]
+        [SerializeField] private float forwardBoostMultiplier = GameConstants.DefaultForwardBoostMultiplier;
+        [LabelText("自动前进减速倍率")]
+        [SerializeField] private float forwardBrakeMultiplier = GameConstants.DefaultForwardBrakeMultiplier;
+        [LabelText("加速前进每秒额外耗能")]
+        [SerializeField] private float forwardBoostEnergyCostPerSecond = GameConstants.DefaultForwardBoostEnergyCostPerSecond;
         [LabelText("人形跳跃力度")]
         [SerializeField] private float humanJumpForce = 9f;
         [LabelText("人形重力")]
@@ -64,7 +70,16 @@ public class PlayerTuningConfig : ScriptableObject
         public float BoatFloatVerticalSpeed => boatFloatVerticalSpeed;
         public float BoatFloatSnapDeadZone => boatFloatSnapDeadZone;
         public float BoatFloatActivationMargin => boatFloatActivationMargin;
-        public float SprintMultiplier => sprintMultiplier;
+        public float DefaultForwardMultiplier => Mathf.Max(0.1f, defaultForwardMultiplier);
+        public float ForwardBoostMultiplier => forwardBoostMultiplier > 0f
+            ? Mathf.Max(1f, forwardBoostMultiplier)
+            : GameConstants.DefaultForwardBoostMultiplier;
+        public float ForwardBrakeMultiplier => forwardBrakeMultiplier > 0f
+            ? Mathf.Clamp(forwardBrakeMultiplier, 0.1f, 1f)
+            : GameConstants.DefaultForwardBrakeMultiplier;
+        public float ForwardBoostEnergyCostPerSecond => forwardBoostEnergyCostPerSecond > 0f
+            ? forwardBoostEnergyCostPerSecond
+            : GameConstants.DefaultForwardBoostEnergyCostPerSecond;
         public float HumanJumpForce => humanJumpForce;
         public float HumanGravityScale => humanGravityScale;
         public float CarGravityScale => carGravityScale;

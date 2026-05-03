@@ -12,6 +12,7 @@ public class PlayerRespawnController : MonoBehaviour
     [SerializeField] private PlayerEnergyController energyController;
     [SerializeField] private PlayerHazardResolver hazardResolver;
     [SerializeField] private GameFlowController flowController;
+    [SerializeField] private PlayerInputReader inputReader;
 
     public FailureType LastFailureType { get; private set; } = FailureType.None;
     
@@ -34,6 +35,7 @@ public class PlayerRespawnController : MonoBehaviour
         energyController = energyController != null ? energyController : GetComponent<PlayerEnergyController>();
         hazardResolver = hazardResolver != null ? hazardResolver : GetComponent<PlayerHazardResolver>();
         flowController = flowController != null ? flowController : FindObjectOfType<GameFlowController>();
+        inputReader = inputReader != null ? inputReader : GetComponent<PlayerInputReader>();
     }
 
     private void Update()
@@ -90,6 +92,11 @@ public class PlayerRespawnController : MonoBehaviour
         }
 
         energyController.ConsumeByForm(formRoot.CurrentForm, Time.deltaTime);
+        if (inputReader != null && inputReader.IsForwardBoostHeld)
+        {
+            energyController.ConsumeForForwardBoost(Time.deltaTime);
+        }
+
         if (energyController.IsEmpty())
         {
             Respawn(FailureType.EnergyDepleted);

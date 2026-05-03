@@ -22,7 +22,7 @@ MonoBehaviour:
     boatFloatVerticalSpeed: 8
     boatFloatSnapDeadZone: 0.08
     boatFloatActivationMargin: 0.35
-    sprintMultiplier: 1.6
+    defaultForwardMultiplier: 1.6
     humanJumpForce: 12
     humanGravityScale: 3
     carGravityScale: 4
