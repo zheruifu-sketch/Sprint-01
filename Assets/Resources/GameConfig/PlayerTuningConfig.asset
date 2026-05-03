@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: PlayerTuningConfig
   m_EditorClassIdentifier: 
   movement:
-    humanMoveSpeed: 4
-    carMoveSpeed: 7
-    planeMoveSpeed: 6
-    planeVerticalSpeed: 5
-    boatMoveSpeed: 4.5
+    humanMoveSpeed: 5
+    carMoveSpeed: 9
+    planeMoveSpeed: 8
+    planeVerticalSpeed: 7
+    boatMoveSpeed: 6
     defaultForwardMultiplier: 1.6
     forwardBoostMultiplier: 1.45
     forwardBrakeMultiplier: 0.55

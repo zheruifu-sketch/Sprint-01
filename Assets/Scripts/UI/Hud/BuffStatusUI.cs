@@ -18,16 +18,16 @@ public class BuffStatusUI : HudUIBase
     [SerializeField] private int maxVisibleSlots = 5;
 
     [Header("Colors")]
-    [LabelText("无敌颜色")]
-    [SerializeField] private Color invulnerabilityColor = new Color(1f, 0.9f, 0.25f, 1f);
-    [LabelText("加速颜色")]
-    [SerializeField] private Color speedBoostColor = new Color(0.4f, 1f, 0.45f, 1f);
     [LabelText("护盾颜色")]
     [SerializeField] private Color shieldColor = new Color(0.3f, 0.8f, 1f, 1f);
-    [LabelText("减速颜色")]
-    [SerializeField] private Color slowColor = new Color(1f, 0.45f, 0.45f, 1f);
-    [LabelText("省油颜色")]
-    [SerializeField] private Color fuelEfficiencyColor = new Color(1f, 0.6f, 0.2f, 1f);
+    [LabelText("加速颜色")]
+    [SerializeField] private Color speedBoostColor = new Color(0.4f, 1f, 0.45f, 1f);
+
+    [Header("Icons")]
+    [LabelText("护盾图标")]
+    [SerializeField] private Sprite shieldIcon;
+    [LabelText("加速图标")]
+    [SerializeField] private Sprite speedBoostIcon;
 
     private readonly List<BuffStatusSlotUI> slotInstances = new List<BuffStatusSlotUI>(5);
 
@@ -152,7 +152,7 @@ public class BuffStatusUI : HudUIBase
             }
 
             PlayerBuffController.BuffSnapshot snapshot = buffController.GetBuffSnapshot(i);
-            slot.Apply(ResolveBuffColor(snapshot.BuffType), snapshot.NormalizedRemaining);
+            slot.Apply(ResolveBuffIcon(snapshot.BuffType), ResolveBuffColor(snapshot.BuffType), snapshot.NormalizedRemaining);
         }
     }
 
@@ -160,12 +160,19 @@ public class BuffStatusUI : HudUIBase
     {
         return buffType switch
         {
-            PlayerBuffType.Invulnerability => invulnerabilityColor,
-            PlayerBuffType.SpeedBoost => speedBoostColor,
             PlayerBuffType.Shield => shieldColor,
-            PlayerBuffType.Slow => slowColor,
-            PlayerBuffType.FuelEfficiency => fuelEfficiencyColor,
+            PlayerBuffType.SpeedBoost => speedBoostColor,
             _ => Color.white
+        };
+    }
+
+    private Sprite ResolveBuffIcon(PlayerBuffType buffType)
+    {
+        return buffType switch
+        {
+            PlayerBuffType.Shield => shieldIcon,
+            PlayerBuffType.SpeedBoost => speedBoostIcon,
+            _ => null
         };
     }
 }

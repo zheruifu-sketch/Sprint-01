@@ -52,7 +52,7 @@ public class PlayerHealthController : MonoBehaviour
             return;
         }
 
-        if (buffController != null && buffController.HasBuff(PlayerBuffType.Invulnerability))
+        if (buffController != null && buffController.HasBuff(PlayerBuffType.Shield))
         {
             return;
         }

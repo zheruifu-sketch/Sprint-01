@@ -14,17 +14,13 @@ public class PlayerFlashEffectController : MonoBehaviour
 
     [Header("Flash")]
     [LabelText("出生闪烁时长")]
-    [SerializeField] private float spawnFlashDuration = 2f;
+    [SerializeField] private float spawnFlashDuration = 0.5f;
     [LabelText("受伤闪烁时长")]
-    [SerializeField] private float damageFlashDuration = 0.18f;
-    [LabelText("出生闪烁间隔")]
-    [SerializeField] private float spawnFlashInterval = 0.12f;
-    [LabelText("受伤闪烁间隔")]
-    [SerializeField] private float damageFlashInterval = 0.06f;
-    [LabelText("出生最低透明度")]
-    [SerializeField] private float spawnFlashAlpha = 0.35f;
-    [LabelText("受伤最低透明度")]
-    [SerializeField] private float damageFlashAlpha = 0.15f;
+    [SerializeField] private float damageFlashDuration = 0.5f;
+    [LabelText("闪烁次数")]
+    [SerializeField] private int flashPulseCount = 2;
+    [LabelText("闪烁最低透明度")]
+    [SerializeField] private float flashAlpha = 0.25f;
 
     private SpriteRenderer[] renderers;
     private Color[] baseColors;
@@ -135,14 +131,14 @@ public class PlayerFlashEffectController : MonoBehaviour
         }
 
         float targetAlpha = 1f;
-        if (IsFlashHidden(spawnFlashRemaining, spawnFlashInterval))
+        if (IsFlashHidden(spawnFlashRemaining, spawnFlashDuration))
         {
-            targetAlpha = Mathf.Min(targetAlpha, spawnFlashAlpha);
+            targetAlpha = Mathf.Min(targetAlpha, flashAlpha);
         }
 
-        if (IsFlashHidden(damageFlashRemaining, damageFlashInterval))
+        if (IsFlashHidden(damageFlashRemaining, damageFlashDuration))
         {
-            targetAlpha = Mathf.Min(targetAlpha, damageFlashAlpha);
+            targetAlpha = Mathf.Min(targetAlpha, flashAlpha);
         }
 
         for (int i = 0; i < renderers.Length; i++)
@@ -192,15 +188,18 @@ public class PlayerFlashEffectController : MonoBehaviour
         }
     }
 
-    private static bool IsFlashHidden(float remaining, float interval)
+    private bool IsFlashHidden(float remaining, float totalDuration)
     {
-        if (remaining <= 0f || interval <= 0f)
+        if (remaining <= 0f || totalDuration <= 0f)
         {
             return false;
         }
 
-        float cycleDuration = interval * 2f;
-        float cycleTime = Mathf.Repeat(remaining, cycleDuration);
-        return cycleTime >= interval;
+        int pulseCount = Mathf.Max(1, flashPulseCount);
+        float elapsed = totalDuration - remaining;
+        float normalizedProgress = Mathf.Clamp01(elapsed / totalDuration);
+        float cycleProgress = normalizedProgress * pulseCount;
+        float phase = cycleProgress - Mathf.Floor(cycleProgress);
+        return phase >= 0.5f;
     }
 }

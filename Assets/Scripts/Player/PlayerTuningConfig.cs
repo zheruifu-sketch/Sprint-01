@@ -9,15 +9,15 @@ public class PlayerTuningConfig : ScriptableObject
     public class MovementSettings
     {
         [LabelText("人形移动速度")]
-        [SerializeField] private float humanMoveSpeed = 4f;
+        [SerializeField] private float humanMoveSpeed = 5f;
         [LabelText("汽车移动速度")]
-        [SerializeField] private float carMoveSpeed = 7f;
+        [SerializeField] private float carMoveSpeed = 9f;
         [LabelText("飞机移动速度")]
-        [SerializeField] private float planeMoveSpeed = 6f;
+        [SerializeField] private float planeMoveSpeed = 8f;
         [LabelText("飞机垂直速度")]
-        [SerializeField] private float planeVerticalSpeed = 5f;
+        [SerializeField] private float planeVerticalSpeed = 7f;
         [LabelText("船移动速度")]
-        [SerializeField] private float boatMoveSpeed = 4.5f;
+        [SerializeField] private float boatMoveSpeed = 6f;
         [LabelText("默认前进倍率")]
         [SerializeField] private float defaultForwardMultiplier = 1.6f;
         [LabelText("自动前进加速倍率")]

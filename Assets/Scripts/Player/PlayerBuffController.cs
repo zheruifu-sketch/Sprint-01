@@ -118,9 +118,6 @@ public class PlayerBuffController : MonoBehaviour
 
 public enum PlayerBuffType
 {
-    Invulnerability = 0,
-    SpeedBoost = 1,
-    Shield = 2,
-    Slow = 3,
-    FuelEfficiency = 4
+    Shield = 0,
+    SpeedBoost = 1
 }

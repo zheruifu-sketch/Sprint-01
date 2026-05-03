@@ -178,6 +178,6 @@ public class PlayerFormController : MonoBehaviour
             return;
         }
 
-        buffController.ApplyTimedBuff(PlayerBuffType.Invulnerability, duration);
+        buffController.ApplyTimedBuff(PlayerBuffType.Shield, duration);
     }
 }

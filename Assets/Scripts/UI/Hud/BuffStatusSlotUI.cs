@@ -26,8 +26,18 @@ public class BuffStatusSlotUI : MonoBehaviour
 
     public void Apply(Color color, float normalizedRemaining)
     {
+        Apply(null, color, normalizedRemaining);
+    }
+
+    public void Apply(Sprite iconSprite, Color color, float normalizedRemaining)
+    {
         if (iconImage != null)
         {
+            if (iconSprite != null)
+            {
+                iconImage.sprite = iconSprite;
+            }
+
             iconImage.color = color;
         }
 
