@@ -2,6 +2,7 @@ using System.Collections;
 using Nenn.InspectorEnhancements.Runtime.Attributes;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 [DisallowMultipleComponent]
 public class LevelCardUI : HudUIBase
@@ -15,8 +16,11 @@ public class LevelCardUI : HudUIBase
     [SerializeField] private TMP_Text bodyText;
 
     private Coroutine hideCoroutine;
+    private CanvasGroup canvasGroup;
 
-    public bool IsShowing => cardRoot != null && cardRoot.activeSelf;
+    public bool IsShowing => canvasGroup != null
+        ? canvasGroup.alpha > 0.01f
+        : cardRoot != null && cardRoot.activeSelf;
 
     protected override void Reset()
     {
@@ -28,12 +32,14 @@ public class LevelCardUI : HudUIBase
     {
         base.Awake();
         AutoBind();
+        EnsureCanvasGroup();
         HideImmediate();
     }
 
     public override void Initialize()
     {
         AutoBind();
+        EnsureCanvasGroup();
         HideImmediate();
     }
 
@@ -89,6 +95,11 @@ public class LevelCardUI : HudUIBase
             cardRoot = cardTransform != null ? cardTransform.gameObject : null;
         }
 
+        if (cardRoot != null && !cardRoot.activeSelf)
+        {
+            cardRoot.SetActive(true);
+        }
+
         if (titleText == null && cardRoot != null)
         {
             Transform titleTransform = cardRoot.transform.Find("Title");
@@ -102,13 +113,44 @@ public class LevelCardUI : HudUIBase
         }
     }
 
+    private void EnsureCanvasGroup()
+    {
+        if (cardRoot == null)
+        {
+            canvasGroup = null;
+            return;
+        }
+
+        canvasGroup = cardRoot.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = cardRoot.AddComponent<CanvasGroup>();
+        }
+    }
+
     private void SetVisible(bool visible)
     {
-        if (cardRoot == null || cardRoot.activeSelf == visible)
+        if (cardRoot == null)
         {
             return;
         }
 
-        cardRoot.SetActive(visible);
+        if (canvasGroup == null)
+        {
+            EnsureCanvasGroup();
+        }
+
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = visible ? 1f : 0f;
+            canvasGroup.interactable = visible;
+            canvasGroup.blocksRaycasts = visible;
+            return;
+        }
+
+        if (cardRoot.activeSelf != visible)
+        {
+            cardRoot.SetActive(visible);
+        }
     }
 }

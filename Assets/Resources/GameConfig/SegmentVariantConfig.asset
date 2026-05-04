@@ -54,6 +54,11 @@ MonoBehaviour:
   - environmentType: 3
     normalVariants:
     - label: Cliff
+      prefab: {fileID: 4129112159835014063, guid: 5ef412a0d53357d47b2060dcf00ff507, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      environmentType: 3
+    - label: Cliff
       prefab: {fileID: 4129112159835014063, guid: 503c353e54aa2e240ab2e435b5a7b8fd, type: 3}
       extraSpacing: 0
       yOffset: 0

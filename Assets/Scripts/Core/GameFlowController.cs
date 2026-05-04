@@ -36,6 +36,8 @@ public class GameFlowController : MonoBehaviour
     [SerializeField] private string exitButtonText = "Exit";
     [LabelText("关卡卡片显示时长")]
     [SerializeField] private float levelCardDuration = 2.25f;
+    [LabelText("启用关卡提示卡")]
+    [SerializeField] private bool enableLevelCards;
     private bool isTransitioning;
     private float levelStartX;
     private FailureType currentFailureType;
@@ -573,6 +575,11 @@ public class GameFlowController : MonoBehaviour
 
     private void ShowLevelCard(string title, string body, float duration)
     {
+        if (!enableLevelCards)
+        {
+            return;
+        }
+
         LevelCardUI levelCardUi = GetLevelCardUi();
         if (levelCardUi == null)
         {
