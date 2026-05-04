@@ -11,9 +11,10 @@ public class GameFlowController : MonoBehaviour
     private enum FlowUiState
     {
         Start = 0,
-        Gameplay = 1,
-        Completed = 2,
-        Failed = 3
+        Tutorial = 1,
+        Gameplay = 2,
+        Completed = 3,
+        Failed = 4
     }
 
     [Header("References")]
@@ -38,6 +39,7 @@ public class GameFlowController : MonoBehaviour
     private bool isTransitioning;
     private float levelStartX;
     private FailureType currentFailureType;
+    private FlowUiState currentUiState;
 
     private void Awake()
     {
@@ -119,6 +121,12 @@ public class GameFlowController : MonoBehaviour
         }
 
         if (isTransitioning)
+        {
+            return false;
+        }
+
+        TutorialPanelUI tutorialPanelUi = GetTutorialPanelUi();
+        if (tutorialPanelUi != null && tutorialPanelUi.IsVisible)
         {
             return false;
         }
@@ -293,6 +301,15 @@ public class GameFlowController : MonoBehaviour
         {
             startPanelUi.StartRequested -= BeginNewRun;
             startPanelUi.StartRequested += BeginNewRun;
+            startPanelUi.HelpRequested -= HandleTutorialRequested;
+            startPanelUi.HelpRequested += HandleTutorialRequested;
+        }
+
+        TutorialPanelUI tutorialPanelUi = uiManager.Get<TutorialPanelUI>();
+        if (tutorialPanelUi != null)
+        {
+            tutorialPanelUi.CloseRequested -= HandleTutorialClosed;
+            tutorialPanelUi.CloseRequested += HandleTutorialClosed;
         }
 
         ResultPanelUI resultPanelUi = uiManager.Get<ResultPanelUI>();
@@ -324,6 +341,8 @@ public class GameFlowController : MonoBehaviour
             return;
         }
 
+        currentUiState = uiState;
+
         if (uiState == FlowUiState.Gameplay)
         {
             uiManager.HideAllPanels();
@@ -333,6 +352,12 @@ public class GameFlowController : MonoBehaviour
         if (uiState == FlowUiState.Start)
         {
             uiManager.ShowOnly<StartPanelUI>();
+            return;
+        }
+
+        if (uiState == FlowUiState.Tutorial)
+        {
+            uiManager.ShowOnly<TutorialPanelUI>();
             return;
         }
 
@@ -452,6 +477,29 @@ public class GameFlowController : MonoBehaviour
         }
     }
 
+    private void HandleTutorialRequested()
+    {
+        if (sessionController != null && sessionController.HasActiveRun)
+        {
+            return;
+        }
+
+        Time.timeScale = 0f;
+        isTransitioning = false;
+        ApplyUiState(FlowUiState.Tutorial);
+    }
+
+    private void HandleTutorialClosed()
+    {
+        if (sessionController != null && sessionController.HasActiveRun)
+        {
+            ResumeGameplay();
+            return;
+        }
+
+        PauseForStartScreen();
+    }
+
     private string BuildFailureDescription(FailureType failureType)
     {
         switch (failureType)
@@ -487,6 +535,11 @@ public class GameFlowController : MonoBehaviour
     private ResultPanelUI GetResultPanelUi()
     {
         return uiManager != null ? uiManager.Get<ResultPanelUI>() : null;
+    }
+
+    private TutorialPanelUI GetTutorialPanelUi()
+    {
+        return uiManager != null ? uiManager.Get<TutorialPanelUI>() : null;
     }
 
     private LevelProgressUI GetLevelProgressUi()

@@ -16,8 +16,13 @@ public class StartPanelUI : PanelUIBase
     [SerializeField] private Button startButton;
     [LabelText("按钮文本")]
     [SerializeField] private TMP_Text startButtonText;
+    [LabelText("说明按钮")]
+    [SerializeField] private Button helpButton;
+    [LabelText("说明按钮文本")]
+    [SerializeField] private TMP_Text helpButtonText;
 
     public event Action StartRequested;
+    public event Action HelpRequested;
 
     protected override void Reset()
     {
@@ -58,13 +63,17 @@ public class StartPanelUI : PanelUIBase
 
     private void BindButton()
     {
-        if (startButton == null)
+        if (startButton != null)
         {
-            return;
+            startButton.onClick.RemoveListener(HandleStartClicked);
+            startButton.onClick.AddListener(HandleStartClicked);
         }
 
-        startButton.onClick.RemoveListener(HandleStartClicked);
-        startButton.onClick.AddListener(HandleStartClicked);
+        if (helpButton != null)
+        {
+            helpButton.onClick.RemoveListener(HandleHelpClicked);
+            helpButton.onClick.AddListener(HandleHelpClicked);
+        }
     }
 
     private void HandleStartClicked()
@@ -73,23 +82,55 @@ public class StartPanelUI : PanelUIBase
         StartRequested?.Invoke();
     }
 
+    private void HandleHelpClicked()
+    {
+        SoundEffectPlayback.Play(SoundEffectId.Click);
+        HelpRequested?.Invoke();
+    }
+
     private void AutoBind()
     {
-        titleText = titleText != null ? titleText : FindText("Card/Title");
-        descriptionText = descriptionText != null ? descriptionText : FindText("Card/Description");
-        startButton = startButton != null ? startButton : FindButton("Card/StartButton");
-        startButtonText = startButtonText != null ? startButtonText : FindText("Card/StartButton/Label");
+        titleText = titleText != null ? titleText : FindText("Card/Title", "Title");
+        descriptionText = descriptionText != null ? descriptionText : FindText("Card/Description", "Description");
+        startButton = startButton != null ? startButton : FindButton("Card/StartButton", "StartButton");
+        startButtonText = startButtonText != null ? startButtonText : FindText("Card/StartButton/Label", "StartButton/Label");
+        helpButton = helpButton != null ? helpButton : FindButton("Card/HelpButton", "HelpButton");
+        helpButtonText = helpButtonText != null ? helpButtonText : FindText("Card/HelpButton/Label", "HelpButton/Label");
     }
 
-    private TMP_Text FindText(string path)
+    private TMP_Text FindText(params string[] paths)
     {
-        Transform child = transform.Find(path);
-        return child != null ? child.GetComponent<TMP_Text>() : null;
+        for (int i = 0; i < paths.Length; i++)
+        {
+            Transform child = transform.Find(paths[i]);
+            if (child != null)
+            {
+                TMP_Text text = child.GetComponent<TMP_Text>();
+                if (text != null)
+                {
+                    return text;
+                }
+            }
+        }
+
+        return null;
     }
 
-    private Button FindButton(string path)
+    private Button FindButton(params string[] paths)
     {
-        Transform child = transform.Find(path);
-        return child != null ? child.GetComponent<Button>() : null;
+        for (int i = 0; i < paths.Length; i++)
+        {
+            Transform child = transform.Find(paths[i]);
+            if (child != null)
+            {
+                Button button = child.GetComponent<Button>();
+                if (button != null)
+                {
+                    return button;
+                }
+            }
+        }
+
+        return null;
     }
 }
