@@ -67,16 +67,10 @@ MonoBehaviour:
     clearHint: Level 2 Clear
     openingRoadRepeatCount: 2
     unlockedForms: 010000000200000004000000
-    allowedZones: 0100000002000000
+    allowedZones: 04000000
     zoneGenerationRules:
-    - zoneType: 1
-      weight: 1.8
-      minConsecutiveCount: 1
-      maxConsecutiveCount: 2
-      canBeFirstRandomSegment: 1
-      allowedPreviousZones: 
-    - zoneType: 2
-      weight: 1.8
+    - zoneType: 4
+      weight: 1
       minConsecutiveCount: 1
       maxConsecutiveCount: 2
       canBeFirstRandomSegment: 1
@@ -113,27 +107,9 @@ MonoBehaviour:
     clearHint: Level 3 Clear
     openingRoadRepeatCount: 1
     unlockedForms: 01000000020000000400000003000000
-    allowedZones: 01000000020000000300000004000000
+    allowedZones: 02000000
     zoneGenerationRules:
-    - zoneType: 1
-      weight: 1.4
-      minConsecutiveCount: 1
-      maxConsecutiveCount: 2
-      canBeFirstRandomSegment: 1
-      allowedPreviousZones: 
     - zoneType: 2
-      weight: 1.6
-      minConsecutiveCount: 1
-      maxConsecutiveCount: 2
-      canBeFirstRandomSegment: 1
-      allowedPreviousZones: 
-    - zoneType: 4
-      weight: 1
-      minConsecutiveCount: 1
-      maxConsecutiveCount: 2
-      canBeFirstRandomSegment: 1
-      allowedPreviousZones: 
-    - zoneType: 3
       weight: 1
       minConsecutiveCount: 1
       maxConsecutiveCount: 2

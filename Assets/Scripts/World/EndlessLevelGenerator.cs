@@ -8,67 +8,10 @@ using Nenn.InspectorEnhancements.Runtime.Attributes;
 public class EndlessLevelGenerator : MonoBehaviour
 {
     [Serializable]
-    private class SegmentTemplate
-    {
-        [LabelText("名称")]
-        [SerializeField] private string label = "Segment";
-        [LabelText("预制体")]
-        [SerializeField] private GameObject prefab;
-        [LabelText("额外间距")]
-        [SerializeField] private float extraSpacing;
-        [LabelText("纵向偏移")]
-        [SerializeField] private float yOffset;
-        [FormerlySerializedAs("zoneType")]
-        [LabelText("环境类型")]
-        [SerializeField] private EnvironmentType environmentType = EnvironmentType.None;
-
-        public SegmentTemplate()
-        {
-        }
-
-        public SegmentTemplate(string label, GameObject prefab, EnvironmentType environmentType, float extraSpacing = 0f, float yOffset = 0f)
-        {
-            this.label = label;
-            this.prefab = prefab;
-            this.environmentType = environmentType;
-            this.extraSpacing = extraSpacing;
-            this.yOffset = yOffset;
-        }
-
-        public string Label => string.IsNullOrWhiteSpace(label) && prefab != null ? prefab.name : label;
-        public GameObject Prefab => prefab;
-        public float ExtraSpacing => extraSpacing;
-        public float YOffset => yOffset;
-        public EnvironmentType EnvironmentType => environmentType;
-    }
-
-    [Serializable]
-    private class EnvironmentSegmentEntry
-    {
-        [LabelText("环境类型")]
-        [SerializeField] private EnvironmentType environmentType = EnvironmentType.None;
-        [LabelText("预制体")]
-        [SerializeField] private GameObject prefab;
-
-        public EnvironmentSegmentEntry()
-        {
-        }
-
-        public EnvironmentSegmentEntry(EnvironmentType environmentType, GameObject prefab)
-        {
-            this.environmentType = environmentType;
-            this.prefab = prefab;
-        }
-
-        public EnvironmentType EnvironmentType => environmentType;
-        public GameObject Prefab => prefab;
-    }
-
-    [Serializable]
     private class OpeningSegment
     {
         [LabelText("路段模板")]
-        [SerializeField] private SegmentTemplate template = new SegmentTemplate();
+        [SerializeField] private SegmentTemplateConfig template = new SegmentTemplateConfig();
         [LabelText("重复次数")]
         [SerializeField] private int repeatCount = 1;
 
@@ -76,21 +19,21 @@ public class EndlessLevelGenerator : MonoBehaviour
         {
         }
 
-        public OpeningSegment(SegmentTemplate template, int repeatCount)
+        public OpeningSegment(SegmentTemplateConfig template, int repeatCount)
         {
             this.template = template;
             this.repeatCount = repeatCount;
         }
 
-        public SegmentTemplate Template => template;
+        public SegmentTemplateConfig Template => template;
         public int RepeatCount => Mathf.Max(1, repeatCount);
     }
 
     [Serializable]
     private class RandomSegmentRule
     {
-        [LabelText("路段模板")]
-        [SerializeField] private SegmentTemplate template = new SegmentTemplate();
+        [LabelText("环境类型")]
+        [SerializeField] private EnvironmentType environmentType = EnvironmentType.None;
         [LabelText("权重")]
         [SerializeField] private float weight = 1f;
         [LabelText("最少连续出现次数")]
@@ -108,14 +51,14 @@ public class EndlessLevelGenerator : MonoBehaviour
         }
 
         public RandomSegmentRule(
-            SegmentTemplate template,
+            EnvironmentType environmentType,
             float weight,
             int minConsecutiveCount,
             int maxConsecutiveCount,
             bool canBeFirstRandomSegment = true,
             List<EnvironmentType> allowedPreviousEnvironments = null)
         {
-            this.template = template;
+            this.environmentType = environmentType;
             this.weight = weight;
             this.minConsecutiveCount = minConsecutiveCount;
             this.maxConsecutiveCount = maxConsecutiveCount;
@@ -126,7 +69,7 @@ public class EndlessLevelGenerator : MonoBehaviour
             }
         }
 
-        public SegmentTemplate Template => template;
+        public EnvironmentType EnvironmentType => environmentType;
         public float Weight => weight;
         public int MinConsecutiveCount => Mathf.Max(1, minConsecutiveCount);
         public int MaxConsecutiveCount => Mathf.Max(MinConsecutiveCount, maxConsecutiveCount);
@@ -159,6 +102,8 @@ public class EndlessLevelGenerator : MonoBehaviour
     [SerializeField] private GameLevelController levelController;
     [LabelText("流程配置")]
     [SerializeField] private GameProgressionConfig progressionConfig;
+    [LabelText("路段变体配置")]
+    [SerializeField] private SegmentVariantConfig segmentVariantConfig;
 
     [Header("Spawn Range")]
     [LabelText("初始左边界 X")]
@@ -171,16 +116,11 @@ public class EndlessLevelGenerator : MonoBehaviour
     [Header("Startup")]
     [LabelText("运行时清空已有子物体")]
     [SerializeField] private bool clearChildrenOnPlay = true;
-    [LabelText("开场固定序列")]
-    [SerializeField] private List<OpeningSegment> openingSequence = new List<OpeningSegment>();
 
-    [Header("Segment Library")]
-    [LabelText("环境路段库")]
-    [SerializeField] private List<EnvironmentSegmentEntry> segmentLibrary = new List<EnvironmentSegmentEntry>();
+    private readonly List<OpeningSegment> openingSequence = new List<OpeningSegment>();
+    private readonly List<RandomSegmentRule> randomRules = new List<RandomSegmentRule>();
 
     [Header("Random Rules")]
-    [LabelText("随机生成规则")]
-    [SerializeField] private List<RandomSegmentRule> randomRules = new List<RandomSegmentRule>();
     [LabelText("随机种子")]
     [SerializeField] private int randomSeed = 230;
     [LabelText("运行时随机化种子")]
@@ -192,9 +132,11 @@ public class EndlessLevelGenerator : MonoBehaviour
 
     private System.Random rng;
     private float nextLeftEdgeX;
-    private RandomSegmentRule lastRandomRule;
-    private int lastRandomRuleRepeatCount;
     private bool openingSequenceGenerated;
+    private RandomSegmentRule currentRunRule;
+    private SegmentTemplateConfig currentRunTemplate;
+    private int currentRunRemainingCount;
+    private bool hasGeneratedRandomSegments;
 
     private void Reset()
     {
@@ -202,7 +144,7 @@ public class EndlessLevelGenerator : MonoBehaviour
         segmentParent = transform;
         levelController = FindObjectOfType<GameLevelController>();
         progressionConfig = GameProgressionConfig.Load();
-        EnsureDefaultSegmentLibrary();
+        segmentVariantConfig = SegmentVariantConfig.Load();
         EnsureDefaultRules();
     }
 
@@ -228,7 +170,11 @@ public class EndlessLevelGenerator : MonoBehaviour
             progressionConfig = GameProgressionConfig.Load();
         }
 
-        EnsureDefaultSegmentLibrary();
+        if (segmentVariantConfig == null)
+        {
+            segmentVariantConfig = SegmentVariantConfig.Load();
+        }
+
         EnsureDefaultRules();
         InitializeRuntimeState();
     }
@@ -273,13 +219,17 @@ public class EndlessLevelGenerator : MonoBehaviour
     private void ResetRulesToDefaults()
     {
         openingSequence.Clear();
-        openingSequence.Add(CreateOpeningSegment("Start Road", LoadSegmentPrefab("公路"), EnvironmentType.Road, 3));
+        SegmentTemplateConfig openingRoadTemplate = ResolveOpeningTemplate(EnvironmentType.Road);
+        if (openingRoadTemplate != null && openingRoadTemplate.Prefab != null)
+        {
+            openingSequence.Add(new OpeningSegment(openingRoadTemplate, 3));
+        }
 
         randomRules.Clear();
-        randomRules.Add(CreateRandomRule("Road", LoadSegmentPrefab("公路"), EnvironmentType.Road, 2.2f, 1, 3));
-        randomRules.Add(CreateRandomRule("Water", LoadSegmentPrefab("水面"), EnvironmentType.Water, 1.2f, 1, 2));
-        randomRules.Add(CreateRandomRule("Blizzard", LoadSegmentPrefab("雪地"), EnvironmentType.Blizzard, 1f, 1, 2));
-        randomRules.Add(CreateRandomRule("Cliff", LoadSegmentPrefab("悬崖"), EnvironmentType.Cliff, 0.9f, 1, 2));
+        randomRules.Add(CreateRandomRule(EnvironmentType.Road, 2.2f, 1, 3));
+        randomRules.Add(CreateRandomRule(EnvironmentType.Water, 1.2f, 1, 2));
+        randomRules.Add(CreateRandomRule(EnvironmentType.Blizzard, 1f, 1, 2));
+        randomRules.Add(CreateRandomRule(EnvironmentType.Cliff, 0.9f, 1, 2));
     }
 
     [ContextMenu("Clear Generated Segments")]
@@ -307,8 +257,10 @@ public class EndlessLevelGenerator : MonoBehaviour
         measurementCache.Clear();
         nextLeftEdgeX = initialLeftEdgeX;
         openingSequenceGenerated = false;
-        lastRandomRule = null;
-        lastRandomRuleRepeatCount = 0;
+        currentRunRule = null;
+        currentRunTemplate = null;
+        currentRunRemainingCount = 0;
+        hasGeneratedRandomSegments = false;
     }
 
     private void InitializeRuntimeState()
@@ -321,8 +273,10 @@ public class EndlessLevelGenerator : MonoBehaviour
         rng = new System.Random(randomSeed);
         nextLeftEdgeX = initialLeftEdgeX;
         openingSequenceGenerated = false;
-        lastRandomRule = null;
-        lastRandomRuleRepeatCount = 0;
+        currentRunRule = null;
+        currentRunTemplate = null;
+        currentRunRemainingCount = 0;
+        hasGeneratedRandomSegments = false;
 
         ApplyConfiguredRules();
 
@@ -371,14 +325,13 @@ public class EndlessLevelGenerator : MonoBehaviour
         int safetyCounter = 0;
         while (nextLeftEdgeX < requiredRightEdge && safetyCounter < 256)
         {
-            RandomSegmentRule rule = ChooseNextRandomRule();
-            if (rule == null || rule.Template == null || rule.Template.Prefab == null)
+            if (!EnsureCurrentRun())
             {
                 break;
             }
 
-            SpawnTemplate(rule.Template);
-            TrackRandomRuleUsage(rule);
+            SpawnTemplate(currentRunTemplate);
+            currentRunRemainingCount--;
             safetyCounter++;
         }
     }
@@ -430,7 +383,7 @@ public class EndlessLevelGenerator : MonoBehaviour
         }
     }
 
-    private void SpawnTemplate(SegmentTemplate template)
+    private void SpawnTemplate(SegmentTemplateConfig template)
     {
         GameObject instance = Instantiate(template.Prefab, Vector3.zero, Quaternion.identity, segmentParent);
         SegmentMeasurement measurement = MeasurePrefabInstance(template.Prefab, instance);
@@ -769,13 +722,40 @@ public class EndlessLevelGenerator : MonoBehaviour
         };
     }
 
-    private RandomSegmentRule ChooseNextRandomRule()
+    private bool EnsureCurrentRun()
     {
-        if (lastRandomRule != null && lastRandomRuleRepeatCount < lastRandomRule.MinConsecutiveCount)
+        if (currentRunRule != null && currentRunTemplate != null && currentRunRemainingCount > 0)
         {
-            return lastRandomRule;
+            return true;
         }
 
+        RandomSegmentRule rule = ChooseNextRandomRule();
+        if (rule == null)
+        {
+            currentRunRule = null;
+            currentRunTemplate = null;
+            currentRunRemainingCount = 0;
+            return false;
+        }
+
+        SegmentTemplateConfig template = ResolveRandomTemplate(rule.EnvironmentType);
+        if (template == null || template.Prefab == null)
+        {
+            currentRunRule = null;
+            currentRunTemplate = null;
+            currentRunRemainingCount = 0;
+            return false;
+        }
+
+        currentRunRule = rule;
+        currentRunTemplate = template;
+        currentRunRemainingCount = rng.Next(rule.MinConsecutiveCount, rule.MaxConsecutiveCount + 1);
+        hasGeneratedRandomSegments = true;
+        return true;
+    }
+
+    private RandomSegmentRule ChooseNextRandomRule()
+    {
         List<RandomSegmentRule> candidates = CollectCandidates();
         if (candidates.Count == 0)
         {
@@ -805,22 +785,21 @@ public class EndlessLevelGenerator : MonoBehaviour
     {
         List<RandomSegmentRule> candidates = new List<RandomSegmentRule>();
         EnvironmentType previousEnvironment = GetPreviousEnvironmentType();
-        bool hasPreviousRandomRule = lastRandomRule != null;
 
         for (int i = 0; i < randomRules.Count; i++)
         {
             RandomSegmentRule rule = randomRules[i];
-            if (rule == null || rule.Template == null || rule.Template.Prefab == null)
+            if (rule == null || !HasAvailableTemplate(rule.EnvironmentType))
             {
                 continue;
             }
 
-            if (!IsTemplateAllowedForCurrentLevel(rule.Template))
+            if (!IsEnvironmentAllowedForCurrentLevel(rule.EnvironmentType))
             {
                 continue;
             }
 
-            if (!hasPreviousRandomRule && !rule.CanBeFirstRandomSegment)
+            if (!hasGeneratedRandomSegments && !rule.CanBeFirstRandomSegment)
             {
                 continue;
             }
@@ -829,12 +808,6 @@ public class EndlessLevelGenerator : MonoBehaviour
             {
                 continue;
             }
-
-            if (rule == lastRandomRule && lastRandomRuleRepeatCount >= rule.MaxConsecutiveCount)
-            {
-                continue;
-            }
-
             candidates.Add(rule);
         }
 
@@ -846,17 +819,17 @@ public class EndlessLevelGenerator : MonoBehaviour
         for (int i = 0; i < randomRules.Count; i++)
         {
             RandomSegmentRule rule = randomRules[i];
-            if (rule == null || rule.Template == null || rule.Template.Prefab == null)
+            if (rule == null || !HasAvailableTemplate(rule.EnvironmentType))
             {
                 continue;
             }
 
-            if (!IsTemplateAllowedForCurrentLevel(rule.Template))
+            if (!IsEnvironmentAllowedForCurrentLevel(rule.EnvironmentType))
             {
                 continue;
             }
 
-            if (!hasPreviousRandomRule && !rule.CanBeFirstRandomSegment)
+            if (!hasGeneratedRandomSegments && !rule.CanBeFirstRandomSegment)
             {
                 continue;
             }
@@ -870,18 +843,6 @@ public class EndlessLevelGenerator : MonoBehaviour
         }
 
         return candidates;
-    }
-
-    private void TrackRandomRuleUsage(RandomSegmentRule chosenRule)
-    {
-        if (chosenRule == lastRandomRule)
-        {
-            lastRandomRuleRepeatCount++;
-            return;
-        }
-
-        lastRandomRule = chosenRule;
-        lastRandomRuleRepeatCount = 1;
     }
 
     private EnvironmentType GetPreviousEnvironmentType()
@@ -933,45 +894,6 @@ public class EndlessLevelGenerator : MonoBehaviour
         }
     }
 
-    private void EnsureDefaultSegmentLibrary()
-    {
-        if (segmentLibrary.Count > 0 && HasConfiguredSegmentLibrary())
-        {
-            return;
-        }
-
-        segmentLibrary.Clear();
-        AddSegmentLibraryEntry(EnvironmentType.Road, "公路");
-        AddSegmentLibraryEntry(EnvironmentType.Water, "水面");
-        AddSegmentLibraryEntry(EnvironmentType.Cliff, "悬崖");
-        AddSegmentLibraryEntry(EnvironmentType.Blizzard, "雪地");
-    }
-
-    private bool HasConfiguredSegmentLibrary()
-    {
-        for (int i = 0; i < segmentLibrary.Count; i++)
-        {
-            EnvironmentSegmentEntry entry = segmentLibrary[i];
-            if (entry != null && entry.EnvironmentType != EnvironmentType.None && entry.Prefab != null)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private void AddSegmentLibraryEntry(EnvironmentType environmentType, string prefabName)
-    {
-        GameObject prefab = LoadSegmentPrefab(prefabName);
-        if (prefab == null)
-        {
-            return;
-        }
-
-        segmentLibrary.Add(new EnvironmentSegmentEntry(environmentType, prefab));
-    }
-
     private void ApplyConfiguredRules()
     {
         if (progressionConfig == null || levelController == null)
@@ -991,10 +913,10 @@ public class EndlessLevelGenerator : MonoBehaviour
         }
 
         openingSequence.Clear();
-        GameObject roadPrefab = ResolvePrefabForEnvironment(EnvironmentType.Road);
-        if (roadPrefab != null)
+        SegmentTemplateConfig openingRoadTemplate = ResolveOpeningTemplate(EnvironmentType.Road);
+        if (openingRoadTemplate != null && openingRoadTemplate.Prefab != null)
         {
-            openingSequence.Add(CreateOpeningSegment("Start Road", roadPrefab, EnvironmentType.Road, levelDefinition.OpeningRoadRepeatCount));
+            openingSequence.Add(new OpeningSegment(openingRoadTemplate, levelDefinition.OpeningRoadRepeatCount));
         }
 
         randomRules.Clear();
@@ -1006,15 +928,12 @@ public class EndlessLevelGenerator : MonoBehaviour
                 continue;
             }
 
-            GameObject prefab = ResolvePrefabForEnvironment(configRule.EnvironmentType);
-            if (prefab == null)
+            if (!HasAvailableTemplate(configRule.EnvironmentType))
             {
                 continue;
             }
 
             RandomSegmentRule rule = CreateRandomRule(
-                configRule.EnvironmentType.ToString(),
-                prefab,
                 configRule.EnvironmentType,
                 configRule.Weight,
                 configRule.MinConsecutiveCount,
@@ -1025,19 +944,12 @@ public class EndlessLevelGenerator : MonoBehaviour
         }
     }
 
-    private static OpeningSegment CreateOpeningSegment(string label, GameObject prefab, EnvironmentType environmentType, int repeatCount)
+    private static RandomSegmentRule CreateRandomRule(EnvironmentType environmentType, float weight, int minRepeat, int maxRepeat)
     {
-        return new OpeningSegment(new SegmentTemplate(label, prefab, environmentType), repeatCount);
-    }
-
-    private static RandomSegmentRule CreateRandomRule(string label, GameObject prefab, EnvironmentType environmentType, float weight, int minRepeat, int maxRepeat)
-    {
-        return new RandomSegmentRule(new SegmentTemplate(label, prefab, environmentType), weight, minRepeat, maxRepeat);
+        return new RandomSegmentRule(environmentType, weight, minRepeat, maxRepeat);
     }
 
     private static RandomSegmentRule CreateRandomRule(
-        string label,
-        GameObject prefab,
         EnvironmentType environmentType,
         float weight,
         int minRepeat,
@@ -1046,7 +958,7 @@ public class EndlessLevelGenerator : MonoBehaviour
         List<EnvironmentType> allowedPreviousEnvironments)
     {
         return new RandomSegmentRule(
-            new SegmentTemplate(label, prefab, environmentType),
+            environmentType,
             weight,
             minRepeat,
             maxRepeat,
@@ -1054,52 +966,18 @@ public class EndlessLevelGenerator : MonoBehaviour
             allowedPreviousEnvironments);
     }
 
-    private GameObject LoadSegmentPrefab(string prefabName)
+    private SegmentTemplateConfig ResolveOpeningTemplate(EnvironmentType environmentType)
     {
-        GameObject loaded = Resources.Load<GameObject>($"Segments/{prefabName}");
-        if (loaded != null)
+        EnvironmentVariantSetConfig variantSet = FindVariantSet(environmentType);
+        if (variantSet == null)
         {
-            return loaded;
+            return null;
         }
 
-        loaded = Resources.Load<GameObject>(prefabName);
-        if (loaded != null)
-        {
-            return loaded;
-        }
-
-#if UNITY_EDITOR
-        string assetPath = $"Assets/Resources/Segments/{prefabName}.prefab";
-        GameObject editorLoaded = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
-        if (editorLoaded != null)
-        {
-            return editorLoaded;
-        }
-
-        assetPath = $"Assets/Prefabs/环境/{prefabName}.prefab";
-        return UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
-#else
-        return null;
-#endif
+        return GetFirstUsableTemplate(variantSet.NormalVariants) ?? GetFirstUsableTemplate(variantSet.SpecialVariants);
     }
 
-    private GameObject ResolvePrefabForEnvironment(EnvironmentType environmentType)
-    {
-        for (int i = 0; i < segmentLibrary.Count; i++)
-        {
-            EnvironmentSegmentEntry entry = segmentLibrary[i];
-            if (entry == null || entry.EnvironmentType != environmentType || entry.Prefab == null)
-            {
-                continue;
-            }
-
-            return entry.Prefab;
-        }
-
-        return null;
-    }
-
-    private static EnvironmentType ResolveEnvironmentType(SegmentTemplate template)
+    private static EnvironmentType ResolveEnvironmentType(SegmentTemplateConfig template)
     {
         if (template.EnvironmentType != EnvironmentType.None)
         {
@@ -1126,7 +1004,7 @@ public class EndlessLevelGenerator : MonoBehaviour
         return WorldSemanticUtility.ResolveEnvironmentFromTag(template.Prefab.tag);
     }
 
-    private bool IsTemplateAllowedForCurrentLevel(SegmentTemplate template)
+    private bool IsTemplateAllowedForCurrentLevel(SegmentTemplateConfig template)
     {
         if (levelController == null)
         {
@@ -1136,10 +1014,128 @@ public class EndlessLevelGenerator : MonoBehaviour
         return levelController.IsEnvironmentAllowed(ResolveEnvironmentType(template));
     }
 
+    private bool IsEnvironmentAllowedForCurrentLevel(EnvironmentType environmentType)
+    {
+        if (levelController == null)
+        {
+            return true;
+        }
+
+        return levelController.IsEnvironmentAllowed(environmentType);
+    }
+
     private void HandleLevelChanged(int _)
     {
         ClearGeneratedSegments();
         ApplyConfiguredRules();
+    }
+
+    private SegmentTemplateConfig ResolveRandomTemplate(EnvironmentType environmentType)
+    {
+        EnvironmentVariantSetConfig variantSet = FindVariantSet(environmentType);
+        if (variantSet == null)
+        {
+            return null;
+        }
+
+        bool canUseSpecial = HasAnyUsableTemplate(variantSet.SpecialVariants);
+        bool useSpecial = canUseSpecial && rng.NextDouble() < variantSet.SpecialVariantChance;
+        List<SegmentTemplateConfig> source = useSpecial ? variantSet.SpecialVariants : variantSet.NormalVariants;
+
+        SegmentTemplateConfig selected = GetRandomUsableTemplate(source);
+        if (selected != null)
+        {
+            return selected;
+        }
+
+        source = useSpecial ? variantSet.NormalVariants : variantSet.SpecialVariants;
+        return GetRandomUsableTemplate(source);
+    }
+
+    private EnvironmentVariantSetConfig FindVariantSet(EnvironmentType environmentType)
+    {
+        if (segmentVariantConfig == null || segmentVariantConfig.EnvironmentVariants == null)
+        {
+            return null;
+        }
+
+        for (int i = 0; i < segmentVariantConfig.EnvironmentVariants.Count; i++)
+        {
+            EnvironmentVariantSetConfig variantSet = segmentVariantConfig.EnvironmentVariants[i];
+            if (variantSet != null && variantSet.EnvironmentType == environmentType)
+            {
+                return variantSet;
+            }
+        }
+
+        return null;
+    }
+
+    private bool HasAvailableTemplate(EnvironmentType environmentType)
+    {
+        EnvironmentVariantSetConfig variantSet = FindVariantSet(environmentType);
+        if (variantSet == null)
+        {
+            return false;
+        }
+
+        return HasAnyUsableTemplate(variantSet.NormalVariants) || HasAnyUsableTemplate(variantSet.SpecialVariants);
+    }
+
+    private static bool HasAnyUsableTemplate(List<SegmentTemplateConfig> templates)
+    {
+        return GetFirstUsableTemplate(templates) != null;
+    }
+
+    private static SegmentTemplateConfig GetFirstUsableTemplate(List<SegmentTemplateConfig> templates)
+    {
+        if (templates == null)
+        {
+            return null;
+        }
+
+        for (int i = 0; i < templates.Count; i++)
+        {
+            SegmentTemplateConfig template = templates[i];
+            if (template != null && template.Prefab != null)
+            {
+                return template;
+            }
+        }
+
+        return null;
+    }
+
+    private SegmentTemplateConfig GetRandomUsableTemplate(List<SegmentTemplateConfig> templates)
+    {
+        if (templates == null || templates.Count == 0)
+        {
+            return null;
+        }
+
+        List<SegmentTemplateConfig> candidates = new List<SegmentTemplateConfig>();
+        for (int i = 0; i < templates.Count; i++)
+        {
+            SegmentTemplateConfig template = templates[i];
+            if (template == null || template.Prefab == null)
+            {
+                continue;
+            }
+
+            if (!IsTemplateAllowedForCurrentLevel(template))
+            {
+                continue;
+            }
+
+            candidates.Add(template);
+        }
+
+        if (candidates.Count == 0)
+        {
+            return null;
+        }
+
+        return candidates[rng.Next(0, candidates.Count)];
     }
 
 }

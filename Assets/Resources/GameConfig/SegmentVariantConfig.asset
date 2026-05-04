@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cb0e38af1f04b4ab13cfccff83f8223, type: 3}
+  m_Name: SegmentVariantConfig
+  m_EditorClassIdentifier: 
+  environmentVariants:
+  - environmentType: 1
+    normalVariants:
+    - label: Road 1
+      prefab: {fileID: 5786679596210446977, guid: 75f15c07c09e66d4cab4ff54e46ec588, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      environmentType: 1
+    - label: Road 2
+      prefab: {fileID: 5786679596210446977, guid: c808e3bf2bbf5214595cff809df49dc2, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      environmentType: 1
+    - label: Road 3
+      prefab: {fileID: 5786679596210446977, guid: f3190518a28a64e49877746dfc0e6530, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      environmentType: 1
+    - label: Road 4
+      prefab: {fileID: 5786679596210446977, guid: 816aa0486e51985469829dbad781dbd0, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      environmentType: 1
+    specialVariants: []
+    specialVariantChance: 0
+  - environmentType: 2
+    normalVariants:
+    - label: Water 1
+      prefab: {fileID: 6462962553053882942, guid: 109a876000a256f4f82eaafd65df679b, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      environmentType: 2
+    - label: Water 2
+      prefab: {fileID: 6462962553053882942, guid: f9d95fc448a536f45b5dffc2693c0e3a, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      environmentType: 2
+    specialVariants: []
+    specialVariantChance: 0
+  - environmentType: 3
+    normalVariants:
+    - label: Cliff
+      prefab: {fileID: 4129112159835014063, guid: 503c353e54aa2e240ab2e435b5a7b8fd, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      environmentType: 3
+    specialVariants: []
+    specialVariantChance: 0
+  - environmentType: 4
+    normalVariants:
+    - label: Blizzard 1
+      prefab: {fileID: 8080263092050496596, guid: 63983607cd0aa6344bd9bda8d46ccf9c, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      environmentType: 4
+    - label: Blizzard 2
+      prefab: {fileID: 8080263092050496596, guid: a391438f6ac47a14bbf42f6395422884, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      environmentType: 4
+    specialVariants: []
+    specialVariantChance: 0
