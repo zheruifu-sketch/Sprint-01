@@ -12,8 +12,6 @@ public class PlayerRuleController : MonoBehaviour
     [LabelText("玩家调参配置")]
     [SerializeField] private PlayerTuningConfig tuningConfig;
 
-    private readonly Collider2D[] boatSwitchResults = new Collider2D[16];
-
     public float HumanSpeedMultiplier => IsInBlizzardAsHuman() ? (tuningConfig != null ? tuningConfig.EnvironmentRules.BlizzardHumanSpeedMultiplier : 0.3f) : 1f;
     public float BlizzardSlowMultiplier => tuningConfig != null ? tuningConfig.EnvironmentRules.BlizzardHumanSpeedMultiplier : 0.3f;
 
@@ -66,19 +64,18 @@ public class PlayerRuleController : MonoBehaviour
 
     public bool CanUseForm(PlayerFormType targetForm)
     {
-        if (IsInCliff())
-        {
-            return targetForm != PlayerFormType.Boat;
-        }
-
-        if (targetForm == PlayerFormType.Plane && IsInBlizzard())
-        {
-            return false;
-        }
+        bool inOrApproachingWater = IsInOrApproachingEnvironment(EnvironmentType.Water);
+        bool inOrApproachingCliff = IsInOrApproachingEnvironment(EnvironmentType.Cliff);
+        bool inOrApproachingBlizzard = IsInOrApproachingEnvironment(EnvironmentType.Blizzard);
 
         if (targetForm == PlayerFormType.Boat)
         {
-            return IsBoatSupportedSurface() || CanSwitchBoatFromNearbyWater();
+            return inOrApproachingWater || inOrApproachingBlizzard;
+        }
+
+        if (targetForm == PlayerFormType.Plane)
+        {
+            return !IsInBlizzard() || inOrApproachingCliff;
         }
 
         return true;
@@ -86,7 +83,7 @@ public class PlayerRuleController : MonoBehaviour
 
     public bool IsPlaneBlockedByEnvironment()
     {
-        return IsInBlizzard() && !IsInCliff();
+        return IsInBlizzard() && !IsInOrApproachingEnvironment(EnvironmentType.Cliff);
     }
 
     private bool IsInBlizzardAsHuman()
@@ -94,27 +91,8 @@ public class PlayerRuleController : MonoBehaviour
         return formRoot != null && formRoot.CurrentForm == PlayerFormType.Human && IsInBlizzard();
     }
 
-    private bool CanSwitchBoatFromNearbyWater()
+    private bool IsInOrApproachingEnvironment(EnvironmentType environmentType)
     {
-        Vector2 origin = transform.position;
-        origin += tuningConfig != null ? tuningConfig.EnvironmentRules.BoatSwitchCheckOffset : GameConstants.DefaultBoatSwitchCheckOffset;
-
-        float boatSwitchCheckRadius = tuningConfig != null ? tuningConfig.EnvironmentRules.BoatSwitchCheckRadius : GameConstants.DefaultBoatSwitchCheckRadius;
-        int hitCount = Physics2D.OverlapCircleNonAlloc(origin, boatSwitchCheckRadius, boatSwitchResults);
-        for (int i = 0; i < hitCount; i++)
-        {
-            Collider2D hit = boatSwitchResults[i];
-            if (hit == null)
-            {
-                continue;
-            }
-
-            if (WorldSemanticUtility.HasEnvironment(hit, EnvironmentType.Water))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return environmentContext != null && environmentContext.IsInOrPreviewingEnvironment(environmentType);
     }
 }

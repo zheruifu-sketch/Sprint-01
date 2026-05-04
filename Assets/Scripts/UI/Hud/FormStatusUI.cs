@@ -9,6 +9,8 @@ public class FormStatusUI : HudUIBase
     [SerializeField] private PlayerRuntimeContext runtimeContext;
     [LabelText("玩家形态根节点")]
     [SerializeField] private PlayerFormRoot playerFormRoot;
+    [LabelText("环境规则控制器")]
+    [SerializeField] private PlayerRuleController ruleController;
     [LabelText("关卡控制器")]
     [SerializeField] private GameLevelController levelController;
 
@@ -30,6 +32,10 @@ public class FormStatusUI : HudUIBase
     private GameObject carLock;
     private GameObject planeLock;
     private GameObject boatLock;
+    private GameObject humanDisabled;
+    private GameObject carDisabled;
+    private GameObject planeDisabled;
+    private GameObject boatDisabled;
     private PlayerFormType lastForm = (PlayerFormType)(-1);
 
     protected override void Reset()
@@ -65,11 +71,17 @@ public class FormStatusUI : HudUIBase
         {
             runtimeContext.RefreshReferences();
             playerFormRoot = playerFormRoot != null ? playerFormRoot : runtimeContext.FormRoot;
+            ruleController = ruleController != null ? ruleController : runtimeContext.RuleController;
         }
 
         if (playerFormRoot == null)
         {
             playerFormRoot = FindObjectOfType<PlayerFormRoot>();
+        }
+
+        if (ruleController == null)
+        {
+            ruleController = FindObjectOfType<PlayerRuleController>();
         }
 
         if (levelController == null)
@@ -108,6 +120,10 @@ public class FormStatusUI : HudUIBase
         carLock = FindChildObject(carRoot, "Lock");
         planeLock = FindChildObject(planeRoot, "Lock");
         boatLock = FindChildObject(boatRoot, "Lock");
+        humanDisabled = FindChildObject(humanRoot, "Disabled");
+        carDisabled = FindChildObject(carRoot, "Disabled");
+        planeDisabled = FindChildObject(planeRoot, "Disabled");
+        boatDisabled = FindChildObject(boatRoot, "Disabled");
     }
 
     private static GameObject FindActiveChild(Transform root)
@@ -160,10 +176,10 @@ public class FormStatusUI : HudUIBase
 
     private void RefreshRootVisibility()
     {
-        RefreshLock(humanLock, PlayerFormType.Human);
-        RefreshLock(carLock, PlayerFormType.Car);
-        RefreshLock(planeLock, PlayerFormType.Plane);
-        RefreshLock(boatLock, PlayerFormType.Boat);
+        RefreshState(humanLock, humanDisabled, humanActive, PlayerFormType.Human);
+        RefreshState(carLock, carDisabled, carActive, PlayerFormType.Car);
+        RefreshState(planeLock, planeDisabled, planeActive, PlayerFormType.Plane);
+        RefreshState(boatLock, boatDisabled, boatActive, PlayerFormType.Boat);
     }
 
     private bool IsFormUnlocked(PlayerFormType formType)
@@ -176,30 +192,29 @@ public class FormStatusUI : HudUIBase
         return levelController.IsFormUnlocked(formType);
     }
 
-    private void RefreshLock(GameObject lockObject, PlayerFormType formType)
+    private bool IsFormDisabled(PlayerFormType formType)
+    {
+        if (ruleController == null)
+        {
+            return false;
+        }
+
+        return !ruleController.CanUseForm(formType);
+    }
+
+    private void RefreshState(GameObject lockObject, GameObject disabledObject, GameObject activeObject, PlayerFormType formType)
     {
         bool unlocked = IsFormUnlocked(formType);
+        bool disabled = unlocked && IsFormDisabled(formType);
+
         SetVisible(lockObject, !unlocked);
+        SetVisible(disabledObject, disabled);
 
         if (unlocked)
         {
             return;
         }
 
-        switch (formType)
-        {
-            case PlayerFormType.Human:
-                SetVisible(humanActive, false);
-                break;
-            case PlayerFormType.Car:
-                SetVisible(carActive, false);
-                break;
-            case PlayerFormType.Plane:
-                SetVisible(planeActive, false);
-                break;
-            case PlayerFormType.Boat:
-                SetVisible(boatActive, false);
-                break;
-        }
+        SetVisible(activeObject, false);
     }
 }

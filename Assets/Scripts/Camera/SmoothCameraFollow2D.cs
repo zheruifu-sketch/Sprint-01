@@ -63,13 +63,25 @@ public class SmoothCameraFollow2D : MonoBehaviour
 
     private Vector2 GetTargetPosition()
     {
-        if (!useRigidbodyPrediction || targetRigidbody == null)
+        if (!ShouldUseRigidbodyPrediction())
         {
             return target.position;
         }
 
         float predictionTime = Mathf.Clamp(Time.time - Time.fixedTime, 0f, Time.fixedDeltaTime);
         return targetRigidbody.position + targetRigidbody.velocity * predictionTime;
+    }
+
+    private bool ShouldUseRigidbodyPrediction()
+    {
+        if (!useRigidbodyPrediction || targetRigidbody == null)
+        {
+            return false;
+        }
+
+        // Interpolated rigidbodies already render between physics steps.
+        // Adding camera-side prediction on top of that tends to create visible overshoot/jitter.
+        return targetRigidbody.interpolation == RigidbodyInterpolation2D.None;
     }
 
     private void CacheTargetRigidbody()

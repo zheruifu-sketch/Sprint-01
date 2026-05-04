@@ -20,6 +20,10 @@ public static class GameConstants
     public const float DefaultCliffDeathY = -8f;
     public const float DefaultCameraSmoothTime = 0.12f;
     public const float DefaultTransformInvulnerabilityDuration = 1f;
+    public const float DefaultEnvironmentPreviewForwardDistance = 1.2f;
+    public const float DefaultEnvironmentPreviewBackwardTolerance = 0.15f;
+    public const float DefaultEnvironmentPreviewVerticalTolerance = 0.75f;
+    public const float DefaultEnvironmentPreviewBoundsExpandPercent = 0.2f;
 
     public static readonly Vector2 DefaultBoatSwitchCheckOffset = new Vector2(0f, -0.35f);
     public const float DefaultBoatSwitchCheckRadius = 0.2f;

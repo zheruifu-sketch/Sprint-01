@@ -12,6 +12,7 @@ public class PlayerRespawnController : MonoBehaviour
     [SerializeField] private PlayerFuelController fuelController;
     [SerializeField] private PlayerHazardResolver hazardResolver;
     [SerializeField] private GameFlowController flowController;
+    [SerializeField] private GameSessionController sessionController;
     [SerializeField] private PlayerInputReader inputReader;
 
     public FailureType LastFailureType { get; private set; } = FailureType.None;
@@ -35,17 +36,28 @@ public class PlayerRespawnController : MonoBehaviour
         fuelController = fuelController != null ? fuelController : GetComponent<PlayerFuelController>();
         hazardResolver = hazardResolver != null ? hazardResolver : GetComponent<PlayerHazardResolver>();
         flowController = flowController != null ? flowController : FindObjectOfType<GameFlowController>();
+        sessionController = sessionController != null ? sessionController : FindObjectOfType<GameSessionController>();
         inputReader = inputReader != null ? inputReader : GetComponent<PlayerInputReader>();
     }
 
     private void Update()
     {
+        if (!CanEvaluateFailure())
+        {
+            return;
+        }
+
         UpdateFuelAndRespawn();
         UpdateHazardDamageAndRespawn();
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (!CanEvaluateFailure())
+        {
+            return;
+        }
+
         if (formRoot == null || formRoot.CurrentForm != PlayerFormType.Plane)
         {
             return;
@@ -70,7 +82,7 @@ public class PlayerRespawnController : MonoBehaviour
 
     public void Respawn(FailureType failureType)
     {
-        if (hasTriggeredFailure)
+        if (hasTriggeredFailure || !CanEvaluateFailure())
         {
             return;
         }
@@ -82,6 +94,16 @@ public class PlayerRespawnController : MonoBehaviour
         {
             flowController.HandleRunFailed(failureType);
         }
+    }
+
+    private bool CanEvaluateFailure()
+    {
+        if (sessionController == null)
+        {
+            sessionController = FindObjectOfType<GameSessionController>();
+        }
+
+        return sessionController == null || sessionController.IsGameplayRunning;
     }
 
     private void UpdateFuelAndRespawn()

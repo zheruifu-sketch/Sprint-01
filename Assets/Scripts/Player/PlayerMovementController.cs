@@ -13,6 +13,8 @@ public class PlayerMovementController : MonoBehaviour
     [SerializeField] private PlayerRuleController ruleController;
     [LabelText("输入读取器")]
     [SerializeField] private PlayerInputReader inputReader;
+    [LabelText("跑局控制器")]
+    [SerializeField] private GameSessionController sessionController;
     [LabelText("玩家调参配置")]
     [SerializeField] private PlayerTuningConfig tuningConfig;
 
@@ -20,13 +22,14 @@ public class PlayerMovementController : MonoBehaviour
     private float verticalInput;
     private float jumpBufferCounter;
     private float coyoteTimeCounter;
-    private int humanJumpCount;
+    private int remainingHumanJumps;
     private bool jumpHeld;
     private bool jumpCutConsumed;
 
     private void Reset()
     {
         CacheReferences();
+        sessionController = FindObjectOfType<GameSessionController>();
         tuningConfig = PlayerTuningConfig.Load();
     }
 
@@ -37,6 +40,11 @@ public class PlayerMovementController : MonoBehaviour
         if (tuningConfig == null)
         {
             tuningConfig = PlayerTuningConfig.Load();
+        }
+
+        if (sessionController == null)
+        {
+            sessionController = FindObjectOfType<GameSessionController>();
         }
     }
 
@@ -91,7 +99,7 @@ public class PlayerMovementController : MonoBehaviour
         if (grounded)
         {
             coyoteTimeCounter = coyoteTime;
-            humanJumpCount = 0;
+            remainingHumanJumps = tuningConfig != null ? tuningConfig.Movement.MaxHumanJumpCount : 2;
             jumpCutConsumed = false;
         }
         else
@@ -137,6 +145,17 @@ public class PlayerMovementController : MonoBehaviour
             return;
         }
 
+        if (sessionController == null)
+        {
+            sessionController = FindObjectOfType<GameSessionController>();
+        }
+
+        if (sessionController != null && !sessionController.IsGameplayRunning)
+        {
+            StopMotion();
+            return;
+        }
+
         Rigidbody2D rb = formRoot.PlayerRigidbody;
         Vector2 velocity = rb.velocity;
         PlayerTuningConfig.MovementSettings movement = tuningConfig != null ? tuningConfig.Movement : null;
@@ -153,20 +172,26 @@ public class PlayerMovementController : MonoBehaviour
             case PlayerFormType.Human:
                 float humanZoneMultiplier = ruleController != null ? ruleController.HumanSpeedMultiplier : 1f;
                 bool isGrounded = IsStableGrounded();
+                int maxHumanJumpCount = movement != null ? movement.MaxHumanJumpCount : 2;
+                if (isGrounded)
+                {
+                    remainingHumanJumps = maxHumanJumpCount;
+                }
+
                 velocity.x = GetSmoothedHorizontalVelocity(
                     velocity.x,
                     (movement != null ? movement.HumanMoveSpeed : 4f) * speedMultiplier * humanZoneMultiplier,
                     isGrounded,
                     movement);
-                int maxHumanJumpCount = movement != null ? movement.MaxHumanJumpCount : 2;
-                bool canUseGroundJump = jumpBufferCounter > 0f && coyoteTimeCounter > 0f;
-                bool canUseAirJump = jumpBufferCounter > 0f && !isGrounded && humanJumpCount > 0 && humanJumpCount < maxHumanJumpCount;
+                bool hasJumpInputBuffered = jumpBufferCounter > 0f;
+                bool canUseGroundJump = hasJumpInputBuffered && coyoteTimeCounter > 0f;
+                bool canUseAirJump = hasJumpInputBuffered && !canUseGroundJump && remainingHumanJumps > 0;
                 if (canUseGroundJump || canUseAirJump)
                 {
                     velocity.y = 0f;
                     rb.velocity = velocity;
                     rb.AddForce(Vector2.up * (movement != null ? movement.HumanJumpForce : 9f), ForceMode2D.Impulse);
-                    humanJumpCount = Mathf.Min(maxHumanJumpCount, humanJumpCount + 1);
+                    remainingHumanJumps = Mathf.Max(0, remainingHumanJumps - 1);
                     jumpBufferCounter = 0f;
                     coyoteTimeCounter = 0f;
                     jumpCutConsumed = false;
@@ -216,6 +241,23 @@ public class PlayerMovementController : MonoBehaviour
 
         formRoot.SetFacingFromHorizontal(1f);
         formRoot.SetRunState(isRunning);
+    }
+
+    private void StopMotion()
+    {
+        if (formRoot == null || formRoot.PlayerRigidbody == null)
+        {
+            return;
+        }
+
+        Rigidbody2D rb = formRoot.PlayerRigidbody;
+        Vector2 velocity = rb.velocity;
+        if (velocity.sqrMagnitude > 0f)
+        {
+            rb.velocity = Vector2.zero;
+        }
+
+        formRoot.SetRunState(false);
     }
 
     private float ResolveForwardSpeedMultiplier(PlayerTuningConfig.MovementSettings movement)
