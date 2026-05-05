@@ -749,9 +749,27 @@ public class EndlessLevelGenerator : MonoBehaviour
 
         currentRunRule = rule;
         currentRunTemplate = template;
-        currentRunRemainingCount = rng.Next(rule.MinConsecutiveCount, rule.MaxConsecutiveCount + 1);
+        currentRunRemainingCount = ResolveRunRepeatCount(rule, template);
         hasGeneratedRandomSegments = true;
         return true;
+    }
+
+    private int ResolveRunRepeatCount(RandomSegmentRule rule, SegmentTemplateConfig template)
+    {
+        int ruleMin = rule != null ? rule.MinConsecutiveCount : 1;
+        int ruleMax = rule != null ? rule.MaxConsecutiveCount : 1;
+        int templateMin = template != null ? template.MinRepeatCount : 1;
+        int templateMax = template != null ? template.MaxRepeatCount : 1;
+
+        int resolvedMin = Mathf.Max(1, Mathf.Max(ruleMin, templateMin));
+        int resolvedMax = Mathf.Max(resolvedMin, Mathf.Min(ruleMax, templateMax));
+
+        if (resolvedMax < resolvedMin)
+        {
+            resolvedMax = resolvedMin;
+        }
+
+        return rng.Next(resolvedMin, resolvedMax + 1);
     }
 
     private RandomSegmentRule ChooseNextRandomRule()
@@ -913,10 +931,13 @@ public class EndlessLevelGenerator : MonoBehaviour
         }
 
         openingSequence.Clear();
-        SegmentTemplateConfig openingRoadTemplate = ResolveOpeningTemplate(EnvironmentType.Road);
-        if (openingRoadTemplate != null && openingRoadTemplate.Prefab != null)
+        if (levelDefinition.OpeningRoadRepeatCount > 0)
         {
-            openingSequence.Add(new OpeningSegment(openingRoadTemplate, levelDefinition.OpeningRoadRepeatCount));
+            SegmentTemplateConfig openingRoadTemplate = ResolveOpeningTemplate(EnvironmentType.Road);
+            if (openingRoadTemplate != null && openingRoadTemplate.Prefab != null)
+            {
+                openingSequence.Add(new OpeningSegment(openingRoadTemplate, levelDefinition.OpeningRoadRepeatCount));
+            }
         }
 
         randomRules.Clear();

@@ -15,6 +15,10 @@ public class SegmentTemplateConfig
     [SerializeField] private float extraSpacing;
     [LabelText("纵向偏移")]
     [SerializeField] private float yOffset;
+    [LabelText("最少连续生成次数")]
+    [SerializeField] private int minRepeatCount = 1;
+    [LabelText("最多连续生成次数")]
+    [SerializeField] private int maxRepeatCount = 1;
     [FormerlySerializedAs("zoneType")]
     [LabelText("环境类型")]
     [SerializeField] private EnvironmentType environmentType = EnvironmentType.None;
@@ -23,19 +27,30 @@ public class SegmentTemplateConfig
     {
     }
 
-    public SegmentTemplateConfig(string label, GameObject prefab, EnvironmentType environmentType, float extraSpacing = 0f, float yOffset = 0f)
+    public SegmentTemplateConfig(
+        string label,
+        GameObject prefab,
+        EnvironmentType environmentType,
+        float extraSpacing = 0f,
+        float yOffset = 0f,
+        int minRepeatCount = 1,
+        int maxRepeatCount = 1)
     {
         this.label = label;
         this.prefab = prefab;
         this.environmentType = environmentType;
         this.extraSpacing = extraSpacing;
         this.yOffset = yOffset;
+        this.minRepeatCount = minRepeatCount;
+        this.maxRepeatCount = maxRepeatCount;
     }
 
     public string Label => string.IsNullOrWhiteSpace(label) && prefab != null ? prefab.name : label;
     public GameObject Prefab => prefab;
     public float ExtraSpacing => extraSpacing;
     public float YOffset => yOffset;
+    public int MinRepeatCount => Mathf.Max(1, minRepeatCount);
+    public int MaxRepeatCount => Mathf.Max(MinRepeatCount, maxRepeatCount);
     public EnvironmentType EnvironmentType => environmentType;
 }
 

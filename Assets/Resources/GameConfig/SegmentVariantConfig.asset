@@ -19,35 +19,68 @@ MonoBehaviour:
       prefab: {fileID: 5786679596210446977, guid: 75f15c07c09e66d4cab4ff54e46ec588, type: 3}
       extraSpacing: 0
       yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
       environmentType: 1
     - label: Road 2
       prefab: {fileID: 5786679596210446977, guid: c808e3bf2bbf5214595cff809df49dc2, type: 3}
       extraSpacing: 0
       yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
       environmentType: 1
     - label: Road 3
       prefab: {fileID: 5786679596210446977, guid: f3190518a28a64e49877746dfc0e6530, type: 3}
       extraSpacing: 0
       yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
       environmentType: 1
     - label: Road 4
       prefab: {fileID: 5786679596210446977, guid: 816aa0486e51985469829dbad781dbd0, type: 3}
       extraSpacing: 0
       yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
       environmentType: 1
-    specialVariants: []
-    specialVariantChance: 0
+    specialVariants:
+    - label: Collapsing Road
+      prefab: {fileID: 5786679596210446977, guid: cc96f439e29fd4c4399e0e6ba4d6dad2, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
+      environmentType: 1
+    - label: Sinking Road
+      prefab: {fileID: 5786679596210446977, guid: 2d1259e24c04c0d498e30e29d1d4c41b, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
+      environmentType: 1
+    - label: Retractable Bridge
+      prefab: {fileID: 5786679596210446977, guid: 420c7a77bd5d8624ca4db19876c16711, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
+      environmentType: 1
+    specialVariantChance: 1
   - environmentType: 2
     normalVariants:
     - label: Water 1
       prefab: {fileID: 6462962553053882942, guid: 109a876000a256f4f82eaafd65df679b, type: 3}
       extraSpacing: 0
       yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
       environmentType: 2
     - label: Water 2
       prefab: {fileID: 6462962553053882942, guid: f9d95fc448a536f45b5dffc2693c0e3a, type: 3}
       extraSpacing: 0
       yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
       environmentType: 2
     specialVariants: []
     specialVariantChance: 0
@@ -57,25 +90,61 @@ MonoBehaviour:
       prefab: {fileID: 4129112159835014063, guid: 5ef412a0d53357d47b2060dcf00ff507, type: 3}
       extraSpacing: 0
       yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
       environmentType: 3
     - label: Cliff
       prefab: {fileID: 4129112159835014063, guid: 503c353e54aa2e240ab2e435b5a7b8fd, type: 3}
       extraSpacing: 0
       yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
       environmentType: 3
-    specialVariants: []
-    specialVariantChance: 0
+    specialVariants:
+    - label: Cliff Platform Chain
+      prefab: {fileID: 4129112159835014063, guid: a40a3c630a108ce47b1b30b336670ce6, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
+      environmentType: 3
+    specialVariantChance: 1
   - environmentType: 4
     normalVariants:
     - label: Blizzard 1
       prefab: {fileID: 8080263092050496596, guid: 63983607cd0aa6344bd9bda8d46ccf9c, type: 3}
       extraSpacing: 0
       yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
       environmentType: 4
     - label: Blizzard 2
       prefab: {fileID: 8080263092050496596, guid: a391438f6ac47a14bbf42f6395422884, type: 3}
       extraSpacing: 0
       yOffset: 0
+      minRepeatCount: 1
+      maxRepeatCount: 1
       environmentType: 4
-    specialVariants: []
-    specialVariantChance: 0
+    specialVariants:
+    - label: Blizzard Whiteout
+      prefab: {fileID: 8080263092050496596, guid: d2d4e431f22742946acc7927356111d0, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      minRepeatCount: 3
+      maxRepeatCount: 4
+      environmentType: 4
+    - label: Collapsing Snow
+      prefab: {fileID: 8080263092050496596, guid: 4e973edfe94943640a794c743fe7c5cf, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      minRepeatCount: 2
+      maxRepeatCount: 3
+      environmentType: 4
+    - label: Icicle Snow
+      prefab: {fileID: 8080263092050496596, guid: 57a74ccb55d53e3498017f53d58ef187, type: 3}
+      extraSpacing: 0
+      yOffset: 0
+      minRepeatCount: 3
+      maxRepeatCount: 5
+      environmentType: 4
+    specialVariantChance: 1
