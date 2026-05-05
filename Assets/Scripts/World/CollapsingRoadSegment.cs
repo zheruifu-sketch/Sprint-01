@@ -4,7 +4,7 @@ using UnityEngine;
 using Nenn.InspectorEnhancements.Runtime.Attributes;
 
 [DisallowMultipleComponent]
-public class CollapsingRoadSegment : MonoBehaviour
+public class CollapsingRoadSegment : SpecialRoadSegmentBase
 {
     [Header("Collapse Timing")]
     [LabelText("最短坍塌延迟")]
@@ -30,11 +30,17 @@ public class CollapsingRoadSegment : MonoBehaviour
 
     private void Reset()
     {
+        EnsureHintDefaults(
+            "road.collapse",
+            "Collapsing road ahead. It will break seconds after you touch it. Accelerate through.");
         CollectTargets();
     }
 
     private void Awake()
     {
+        EnsureHintDefaults(
+            "road.collapse",
+            "Collapsing road ahead. It will break seconds after you touch it. Accelerate through.");
         CollectTargets();
         SetRenderersVisible(true);
         SetCollidersEnabled(true);
