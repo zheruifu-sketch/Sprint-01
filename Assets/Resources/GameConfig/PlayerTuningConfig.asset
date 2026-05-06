@@ -47,7 +47,7 @@ MonoBehaviour:
   survival:
     maxHealth: 100
     hazardDamagePerSecond: 20
-    maxFuel: 110
+    maxFuel: 1000
     carFuelCostPerSecond: 0.85
     planeFuelCostPerSecond: 6.5
     boatFuelCostPerSecond: 1.15

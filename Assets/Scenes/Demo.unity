@@ -5898,6 +5898,7 @@ MonoBehaviour:
     suppressWhenAlreadyUsingRecommendedForm: 0
     showOnlyOnce: 1
     duration: 1.6
+  hintGapDuration: 0.15
 --- !u!114 &1548789101
 MonoBehaviour:
   m_ObjectHideFlags: 0

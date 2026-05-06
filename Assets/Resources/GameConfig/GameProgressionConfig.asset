@@ -19,24 +19,39 @@ MonoBehaviour:
   - levelName: Level 1
     description: 'Level 1
 
-      Unlocked Forms: Human, Car
+      Unlocked Forms: Human, Car, Boat, Plane
 
-      Goal: Reach 150m.'
+      Goal:
+      Reach 500m.'
     backgroundSprite: {fileID: 21300000, guid: 53a5262438cc6414c9a3d9d9cc0bc134, type: 3}
-    targetDistance: 150
+    targetDistance: 2000
     startHint: Level 1 Start
     clearHint: Level 1 Clear
-    openingRoadRepeatCount: 2
-    unlockedForms: 0100000002000000
-    allowedEnvironments: 01000000
+    openingRoadRepeatCount: 0
+    unlockedForms: 01000000020000000400000003000000
+    allowedEnvironments: 010000000300000004000000
     zoneGenerationRules:
     - environmentType: 1
-      weight: 3
+      weight: 1
       minConsecutiveCount: 1
-      maxConsecutiveCount: 4
+      maxConsecutiveCount: 1
       canBeFirstRandomSegment: 1
       allowedPreviousEnvironments: 
-    hazards: []
+    - environmentType: 3
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 1
+      canBeFirstRandomSegment: 1
+      allowedPreviousEnvironments: 
+    - environmentType: 4
+      weight: 1
+      minConsecutiveCount: 1
+      maxConsecutiveCount: 1
+      canBeFirstRandomSegment: 1
+      allowedPreviousEnvironments: 
+    hazards:
+    - {fileID: 11400000, guid: 8d4b14e359be4885a5532489a10cd7d9, type: 2}
+    - {fileID: 11400000, guid: c2cb36d2212d471ab743bcc237419f4c, type: 2}
     pickups:
       enabled: 0
       minSpawnDistance: 18
