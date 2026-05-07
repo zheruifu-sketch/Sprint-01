@@ -150,6 +150,14 @@ public class EndlessLevelGenerator : MonoBehaviour
 
     private void Awake()
     {
+        // Manual level mode now loads a hand-authored level prefab at scene start.
+        // The old endless generator is intentionally kept in the project, but its
+        // runtime entry is skipped so later agents can still reuse this logic if needed.
+        if (ManualLevelSequenceController.IsManualModeActive)
+        {
+            return;
+        }
+
         if (segmentParent == null)
         {
             segmentParent = transform;
@@ -181,6 +189,11 @@ public class EndlessLevelGenerator : MonoBehaviour
 
     private void OnEnable()
     {
+        if (ManualLevelSequenceController.IsManualModeActive)
+        {
+            return;
+        }
+
         if (levelController == null)
         {
             levelController = FindObjectOfType<GameLevelController>();
@@ -194,6 +207,11 @@ public class EndlessLevelGenerator : MonoBehaviour
 
     private void OnDisable()
     {
+        if (ManualLevelSequenceController.IsManualModeActive)
+        {
+            return;
+        }
+
         if (levelController != null)
         {
             levelController.LevelChanged -= HandleLevelChanged;
@@ -202,6 +220,11 @@ public class EndlessLevelGenerator : MonoBehaviour
 
     private void Update()
     {
+        if (ManualLevelSequenceController.IsManualModeActive)
+        {
+            return;
+        }
+
         if (target == null)
         {
             target = FindPlayerTransform();

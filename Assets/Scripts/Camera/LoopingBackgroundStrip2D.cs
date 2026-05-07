@@ -115,6 +115,11 @@ public class LoopingBackgroundStrip2D : MonoBehaviour
 
     private void Initialize()
     {
+        if (ManualLevelSequenceController.IsManualModeActive)
+        {
+            return;
+        }
+
         if (levelController == null)
         {
             levelController = FindObjectOfType<GameLevelController>();
@@ -198,6 +203,11 @@ public class LoopingBackgroundStrip2D : MonoBehaviour
 
     private void ApplyCurrentLevelBackground()
     {
+        if (ManualLevelSequenceController.IsManualModeActive)
+        {
+            return;
+        }
+
         if (progressionConfig == null)
         {
             progressionConfig = GameProgressionConfig.Load();

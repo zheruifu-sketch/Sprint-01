@@ -29,13 +29,41 @@ public class PlayerSpawnController : MonoBehaviour
         CacheReferences();
 
         Vector3 sceneStartPosition = transform.position;
+        if (sessionController != null)
+        {
+            sessionController.RegisterSceneEntryPosition(sceneStartPosition);
+        }
+
         int levelNumber = levelController != null
             ? levelController.CurrentLevelNumber
             : (sessionController != null ? sessionController.CurrentLevelNumber : 1);
 
-        if (sessionController != null)
+        if (ManualLevelSequenceController.IsManualModeActive
+            && sessionController != null
+            && !sessionController.HasActiveRun)
+        {
+            // In manual level mode, the scene-authored player placement owns the
+            // initial Level 1 start position instead of any marker inside the level prefab.
+            sessionController.UseSceneEntryAsCurrentLevelStart(levelNumber);
+        }
+
+        bool useManualLevelSpawn = ManualLevelSequenceController.IsManualModeActive
+                                   && sessionController != null
+                                   && sessionController.HasLevelStartPosition
+                                   && sessionController.HasActiveRun;
+
+        if (sessionController != null && !useManualLevelSpawn)
         {
             sessionController.PrepareLevelSpawn(levelNumber, sceneStartPosition);
+        }
+
+        if (useManualLevelSpawn)
+        {
+            sceneStartPosition = sessionController.LevelStartPosition;
+        }
+
+        if (sessionController != null)
+        {
             transform.position = sessionController.GetRespawnPositionOrDefault(sceneStartPosition);
         }
 

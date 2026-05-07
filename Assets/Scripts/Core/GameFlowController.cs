@@ -26,6 +26,8 @@ public class GameFlowController : MonoBehaviour
     [SerializeField] private Transform player;
     [LabelText("界面管理器")]
     [SerializeField] private UIManager uiManager;
+    [LabelText("手工关卡序列控制器")]
+    [SerializeField] private ManualLevelSequenceController manualLevelSequenceController;
 
     [Header("Text")]
     [LabelText("开始按钮文本")]
@@ -49,6 +51,9 @@ public class GameFlowController : MonoBehaviour
         sessionController = sessionController != null ? sessionController : FindObjectOfType<GameSessionController>();
         player = player != null ? player : FindPlayerTransform();
         uiManager = uiManager != null ? uiManager : FindObjectOfType<UIManager>(true);
+        manualLevelSequenceController = manualLevelSequenceController != null
+            ? manualLevelSequenceController
+            : FindObjectOfType<ManualLevelSequenceController>();
         BindUiEvents();
     }
 
@@ -107,12 +112,17 @@ public class GameFlowController : MonoBehaviour
             return;
         }
 
+        if (IsUsingManualLevelFlow())
+        {
+            return;
+        }
+
         if (GetDistanceTravelled() < GetCurrentTargetDistance())
         {
             return;
         }
 
-        StartCoroutine(HandleLevelCompleted());
+        TryCompleteCurrentLevel();
     }
 
     private bool ShouldStartRunFromKeyboard()
@@ -200,6 +210,17 @@ public class GameFlowController : MonoBehaviour
             sessionController.ResetRespawnToLevelStart();
         }
 
+        if (IsUsingManualLevelFlow())
+        {
+            levelController?.SetLevel(0);
+            manualLevelSequenceController = manualLevelSequenceController != null
+                ? manualLevelSequenceController
+                : FindObjectOfType<ManualLevelSequenceController>();
+            manualLevelSequenceController?.LoadLevel(1, true);
+            sessionController?.UseSceneEntryAsCurrentLevelStart(1);
+            RestorePlayerForCurrentManualLevel(false);
+        }
+
         ResumeGameplay();
         TryShowLevelIntroCard();
     }
@@ -227,6 +248,20 @@ public class GameFlowController : MonoBehaviour
                 sessionController.AdvanceLevel(levelCount);
             }
 
+            if (IsUsingManualLevelFlow())
+            {
+                int nextLevelNumber = sessionController != null ? sessionController.CurrentLevelNumber : currentLevel + 1;
+                levelController?.SetLevel(nextLevelNumber - 1);
+                manualLevelSequenceController = manualLevelSequenceController != null
+                    ? manualLevelSequenceController
+                    : FindObjectOfType<ManualLevelSequenceController>();
+                manualLevelSequenceController?.LoadLevel(nextLevelNumber, false);
+                RestorePlayerForCurrentManualLevel(false);
+                ResumeGameplay();
+                TryShowLevelIntroCard();
+                yield break;
+            }
+
             ReloadActiveScene();
             yield break;
         }
@@ -251,6 +286,12 @@ public class GameFlowController : MonoBehaviour
         LevelProgressUI levelProgressUi = GetLevelProgressUi();
         if (levelProgressUi == null || levelController == null)
         {
+            return;
+        }
+
+        if (IsUsingManualLevelFlow())
+        {
+            levelProgressUi.SetProgressText(string.Empty);
             return;
         }
 
@@ -433,10 +474,31 @@ public class GameFlowController : MonoBehaviour
         ApplyUiState(FlowUiState.Failed);
     }
 
+    public void CompleteCurrentLevelFromTrigger()
+    {
+        TryCompleteCurrentLevel();
+    }
+
     private void HandleEndConfirmClicked()
     {
         if (sessionController != null && sessionController.RunState == GameRunState.Failed)
         {
+            if (currentFailureType == FailureType.FuelDepleted || currentFailureType == FailureType.HealthDepleted)
+            {
+                // Resource-depletion deaths should reset the player back to the
+                // level start instead of preserving checkpoint progress, otherwise
+                // the player can get soft-locked into a bad health/fuel state.
+                sessionController.ResetRespawnToLevelStart();
+            }
+
+            if (IsUsingManualLevelFlow())
+            {
+                sessionController.ResumeLevel(sessionController.CurrentLevelNumber);
+                RestorePlayerForCurrentManualLevel(true);
+                ResumeGameplay();
+                return;
+            }
+
             sessionController.ResumeLevel(sessionController.CurrentLevelNumber);
             ReloadActiveScene();
             return;
@@ -447,6 +509,20 @@ public class GameFlowController : MonoBehaviour
             sessionController.StartNewRun();
         }
 
+        if (IsUsingManualLevelFlow())
+        {
+            levelController?.SetLevel(0);
+            manualLevelSequenceController = manualLevelSequenceController != null
+                ? manualLevelSequenceController
+                : FindObjectOfType<ManualLevelSequenceController>();
+            manualLevelSequenceController?.LoadLevel(1, true);
+            sessionController?.UseSceneEntryAsCurrentLevelStart(1);
+            RestorePlayerForCurrentManualLevel(false);
+            ResumeGameplay();
+            TryShowLevelIntroCard();
+            return;
+        }
+
         ReloadActiveScene();
     }
 
@@ -455,6 +531,19 @@ public class GameFlowController : MonoBehaviour
         if (sessionController != null)
         {
             sessionController.ResetRun();
+        }
+
+        if (IsUsingManualLevelFlow())
+        {
+            levelController?.SetLevel(0, false);
+            manualLevelSequenceController = manualLevelSequenceController != null
+                ? manualLevelSequenceController
+                : FindObjectOfType<ManualLevelSequenceController>();
+            manualLevelSequenceController?.LoadLevel(1, true);
+            sessionController?.UseSceneEntryAsCurrentLevelStart(1);
+            RestorePlayerForCurrentManualLevel(false);
+            PauseForStartScreen();
+            return;
         }
 
         ReloadActiveScene();
@@ -504,29 +593,11 @@ public class GameFlowController : MonoBehaviour
 
     private string BuildFailureDescription(FailureType failureType)
     {
-        switch (failureType)
-        {
-            case FailureType.FellIntoWater:
-                return "You fell into the water before switching to a safe form.";
-            case FailureType.FellFromCliff:
-                return "You fell from a cliff. Watch the drop ahead.";
-            case FailureType.PlaneCrash:
-                return "Your plane crashed into an obstacle. Dodge earlier.";
-            case FailureType.InvalidForm:
-                return "You were using the wrong form for this terrain.";
-            case FailureType.FuelDepleted:
-                return "Your fuel ran out before you reached safety.";
-            case FailureType.CrushedByBoulder:
-                return "A boulder caught up and crushed you.";
-            case FailureType.HitByFallingRock:
-                return "You were struck by a falling rock.";
-            case FailureType.HealthDepleted:
-                return "Your health was depleted after taking too much damage.";
-            case FailureType.TimeUp:
-                return "Time ran out before you completed the objective.";
-            default:
-                return "The run failed. Try again with a better route.";
-        }
+        GameMessageCatalog messageCatalog = GameMessageCatalog.Load();
+        string fallbackMessage = "Run failed.";
+        return messageCatalog != null
+            ? messageCatalog.GetFailureMessage(failureType, fallbackMessage)
+            : fallbackMessage;
     }
 
     private StartPanelUI GetStartPanelUi()
@@ -599,9 +670,72 @@ public class GameFlowController : MonoBehaviour
         return $"Level {Mathf.Max(1, levelNumber)}";
     }
 
+    private void TryCompleteCurrentLevel()
+    {
+        if (isTransitioning || sessionController == null || !sessionController.IsGameplayRunning)
+        {
+            return;
+        }
+
+        StartCoroutine(HandleLevelCompleted());
+    }
+
+    private bool IsUsingManualLevelFlow()
+    {
+        if (manualLevelSequenceController == null)
+        {
+            manualLevelSequenceController = FindObjectOfType<ManualLevelSequenceController>();
+        }
+
+        return manualLevelSequenceController != null && manualLevelSequenceController.IsManualLevelModeEnabled;
+    }
+
+    private void RestorePlayerForCurrentManualLevel(bool rebuildLevelInstance)
+    {
+        if (rebuildLevelInstance)
+        {
+            if (manualLevelSequenceController == null)
+            {
+                manualLevelSequenceController = FindObjectOfType<ManualLevelSequenceController>();
+            }
+
+            // Manual prefab levels can contain one-shot runtime state such as sinking
+            // platforms. Rebuild the current instantiated level before restoring the
+            // player so each respawn starts from a clean authored layout.
+            manualLevelSequenceController?.ReloadCurrentLevelForRespawn();
+        }
+
+        PlayerRuntimeContext runtimeContext = PlayerRuntimeContext.FindInScene();
+        if (runtimeContext == null || runtimeContext.RespawnController == null)
+        {
+            return;
+        }
+
+        runtimeContext.RespawnController.RestorePlayerAtCurrentRespawn();
+        player = runtimeContext.FormRoot != null ? runtimeContext.FormRoot.transform : player;
+        levelStartX = sessionController != null && sessionController.HasLevelStartPosition
+            ? sessionController.LevelStartX
+            : GetPlayerX();
+    }
+
     private string BuildLevelIntroBody(int levelNumber)
     {
-        GameProgressionConfig.LevelDefinition levelConfig = GetLevelConfig(levelNumber);
+        ManualLevelFlowConfig.ManualLevelDefinition manualLevelConfig = GetManualLevelConfig(levelNumber);
+        GameProgressionConfig.LevelDefinition levelConfig = GetLegacyLevelConfig(levelNumber);
+        if (IsUsingManualLevelFlow())
+        {
+            if (manualLevelConfig == null)
+            {
+                return "Reach the goal trigger.";
+            }
+
+            StringBuilder manualBuilder = new StringBuilder();
+            manualBuilder.Append("Reach the goal trigger.");
+            manualBuilder.AppendLine();
+            manualBuilder.Append($"Forms: {JoinFormNames(manualLevelConfig != null ? manualLevelConfig.UnlockedForms : null)}");
+            return manualBuilder.ToString();
+        }
+
         if (levelConfig == null)
         {
             return "Goal\n0m";
@@ -618,7 +752,13 @@ public class GameFlowController : MonoBehaviour
         return builder.ToString();
     }
 
-    private GameProgressionConfig.LevelDefinition GetLevelConfig(int levelNumber)
+    private ManualLevelFlowConfig.ManualLevelDefinition GetManualLevelConfig(int levelNumber)
+    {
+        ManualLevelFlowConfig manualConfig = ManualLevelFlowConfig.Load();
+        return manualConfig != null ? manualConfig.GetLevel(levelNumber - 1) : null;
+    }
+
+    private GameProgressionConfig.LevelDefinition GetLegacyLevelConfig(int levelNumber)
     {
         GameProgressionConfig progressionConfig = GameProgressionConfig.Load();
         return progressionConfig != null ? progressionConfig.GetLevel(levelNumber - 1) : null;

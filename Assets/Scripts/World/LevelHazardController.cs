@@ -73,6 +73,13 @@ public class LevelHazardController : MonoBehaviour
     {
         ClearHazards();
 
+        // Manual level mode disables config-driven global hazard spawning.
+        // Hazards can still be dropped into the level prefab manually when needed.
+        if (ManualLevelSequenceController.IsManualModeActive)
+        {
+            return;
+        }
+
         if (progressionConfig == null || levelController == null)
         {
             return;

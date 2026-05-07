@@ -6,6 +6,8 @@ using Nenn.InspectorEnhancements.Runtime.Attributes;
 [DisallowMultipleComponent]
 public class GameSessionController : MonoBehaviour
 {
+    public static GameSessionController Instance { get; private set; }
+
     [LabelText("当前跑局状态")]
     [SerializeField] private GameRunState runState;
     [LabelText("当前关卡序号")]
@@ -18,10 +20,22 @@ public class GameSessionController : MonoBehaviour
     [SerializeField] private bool hasRespawnPosition;
     [LabelText("当前重生点位置")]
     [SerializeField] private Vector3 respawnPosition;
+    [LabelText("是否已记录场景首关起点")]
+    [SerializeField] private bool hasSceneEntryPosition;
+    [LabelText("场景首关起点位置")]
+    [SerializeField] private Vector3 sceneEntryPosition;
     [LabelText("是否已激活检查点")]
     [SerializeField] private bool hasActiveCheckpoint;
     [LabelText("当前检查点距离")]
     [SerializeField] private float activeCheckpointDistance;
+    [LabelText("是否已记录检查点生命快照")]
+    [SerializeField] private bool hasCheckpointHealthSnapshot;
+    [LabelText("检查点生命快照")]
+    [SerializeField] private float checkpointHealthSnapshot;
+    [LabelText("是否已记录检查点燃料快照")]
+    [SerializeField] private bool hasCheckpointFuelSnapshot;
+    [LabelText("检查点燃料快照")]
+    [SerializeField] private float checkpointFuelSnapshot;
     [LabelText("已展示过开场卡片的关卡")]
     [SerializeField] private int lastShownLevelIntroNumber;
 
@@ -35,8 +49,14 @@ public class GameSessionController : MonoBehaviour
     public float LevelStartX => hasLevelStartPosition ? levelStartPosition.x : 0f;
     public bool HasRespawnPosition => hasRespawnPosition;
     public Vector3 RespawnPosition => respawnPosition;
+    public bool HasSceneEntryPosition => hasSceneEntryPosition;
+    public Vector3 SceneEntryPosition => sceneEntryPosition;
     public bool HasActiveCheckpoint => hasActiveCheckpoint;
     public float ActiveCheckpointDistance => activeCheckpointDistance;
+    public bool HasCheckpointHealthSnapshot => hasCheckpointHealthSnapshot;
+    public float CheckpointHealthSnapshot => checkpointHealthSnapshot;
+    public bool HasCheckpointFuelSnapshot => hasCheckpointFuelSnapshot;
+    public float CheckpointFuelSnapshot => checkpointFuelSnapshot;
     public int LastShownLevelIntroNumber => Mathf.Max(0, lastShownLevelIntroNumber);
 
     public event Action<GameRunState> RunStateChanged;
@@ -44,53 +64,15 @@ public class GameSessionController : MonoBehaviour
 
     private void Awake()
     {
-        GameSessionController previousSession = FindPersistentSessionInstance();
-        if (previousSession != null && previousSession != this)
+        if (Instance != null && Instance != this)
         {
-            CopyRuntimeStateFrom(previousSession);
-            Destroy(previousSession.gameObject);
-        }
-
-        DontDestroyOnLoad(gameObject);
-        currentLevelNumber = Mathf.Max(1, currentLevelNumber);
-    }
-
-    private GameSessionController FindPersistentSessionInstance()
-    {
-        GameSessionController[] sessionControllers = FindObjectsOfType<GameSessionController>();
-        for (int i = 0; i < sessionControllers.Length; i++)
-        {
-            GameSessionController other = sessionControllers[i];
-            if (other == null || other == this)
-            {
-                continue;
-            }
-
-            if (other.gameObject.scene.name == "DontDestroyOnLoad")
-            {
-                return other;
-            }
-        }
-
-        return null;
-    }
-
-    private void CopyRuntimeStateFrom(GameSessionController source)
-    {
-        if (source == null)
-        {
+            Destroy(gameObject);
             return;
         }
 
-        runState = source.runState;
-        currentLevelNumber = source.currentLevelNumber;
-        hasLevelStartPosition = source.hasLevelStartPosition;
-        levelStartPosition = source.levelStartPosition;
-        hasRespawnPosition = source.hasRespawnPosition;
-        respawnPosition = source.respawnPosition;
-        hasActiveCheckpoint = source.hasActiveCheckpoint;
-        activeCheckpointDistance = source.activeCheckpointDistance;
-        lastShownLevelIntroNumber = source.lastShownLevelIntroNumber;
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+        currentLevelNumber = Mathf.Max(1, currentLevelNumber);
     }
 
     public void StartNewRun()
@@ -204,6 +186,25 @@ public class GameSessionController : MonoBehaviour
         }
     }
 
+    public void RegisterSceneEntryPosition(Vector3 playerScenePosition)
+    {
+        hasSceneEntryPosition = true;
+        sceneEntryPosition = playerScenePosition;
+    }
+
+    public void UseSceneEntryAsCurrentLevelStart(int levelNumber)
+    {
+        if (!hasSceneEntryPosition)
+        {
+            return;
+        }
+
+        SetCurrentLevelNumber(Mathf.Max(1, levelNumber));
+        ClearCheckpointProgress();
+        SetLevelStartPositionInternal(sceneEntryPosition, true);
+        SetRespawnPositionInternal(sceneEntryPosition, true);
+    }
+
     public Vector3 GetRespawnPositionOrDefault(Vector3 fallbackPosition)
     {
         return hasRespawnPosition ? respawnPosition : fallbackPosition;
@@ -219,7 +220,7 @@ public class GameSessionController : MonoBehaviour
         return Mathf.Max(0f, worldX - levelStartPosition.x);
     }
 
-    public void ActivateCheckpoint(Vector3 checkpointPosition)
+    public void ActivateCheckpoint(Vector3 checkpointPosition, float currentHealth, float currentFuel)
     {
         if (!hasLevelStartPosition)
         {
@@ -229,6 +230,10 @@ public class GameSessionController : MonoBehaviour
         SetRespawnPositionInternal(checkpointPosition, true);
         hasActiveCheckpoint = true;
         activeCheckpointDistance = Mathf.Max(0f, checkpointPosition.x - levelStartPosition.x);
+        hasCheckpointHealthSnapshot = true;
+        checkpointHealthSnapshot = Mathf.Max(0f, currentHealth);
+        hasCheckpointFuelSnapshot = true;
+        checkpointFuelSnapshot = Mathf.Max(0f, currentFuel);
     }
 
     public void ResetRespawnToLevelStart()
@@ -246,6 +251,10 @@ public class GameSessionController : MonoBehaviour
     {
         hasActiveCheckpoint = false;
         activeCheckpointDistance = 0f;
+        hasCheckpointHealthSnapshot = false;
+        checkpointHealthSnapshot = 0f;
+        hasCheckpointFuelSnapshot = false;
+        checkpointFuelSnapshot = 0f;
     }
 
     private void SetLevelStartPositionInternal(Vector3 position, bool hasValue)
@@ -281,5 +290,13 @@ public class GameSessionController : MonoBehaviour
 
         currentLevelNumber = clampedLevelNumber;
         RunLevelChanged?.Invoke(currentLevelNumber);
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 }
