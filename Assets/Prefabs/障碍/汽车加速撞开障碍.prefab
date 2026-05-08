@@ -246,7 +246,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: -1823975061, guid: c30b1831eb382674d9ff32a74f73fd68, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -332,15 +332,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hintId: 
-  firstEncounterHintMessage: 
-  hintDuration: 2.8
-  showHintWhenPreviewed: 0
-  showHintOnlyOnce: 0
   requireCarForm: 1
   requireSprint: 1
   requiredForwardSpeed: 12
   hideRenderersOnBreak: 1
   disableCollidersOnBreak: 1
+  colliderDisableDelay: 0.2
+  blinkCountOnBreak: 2
+  blinkOffDuration: 0.05
+  blinkOnDuration: 0.05
   breakOnlyOnce: 1
   controlledRenderers:
   - {fileID: 2985232854469121840}
