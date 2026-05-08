@@ -22,9 +22,10 @@ public class PlayerMovementController : MonoBehaviour
     private float verticalInput;
     private float jumpBufferCounter;
     private float coyoteTimeCounter;
-    private int remainingHumanJumps;
+    private int humanJumpsUsed;
     private bool jumpHeld;
     private bool jumpCutConsumed;
+    private bool wasStableGroundedLastFrame;
 
     private void Reset()
     {
@@ -46,6 +47,8 @@ public class PlayerMovementController : MonoBehaviour
         {
             sessionController = FindObjectOfType<GameSessionController>();
         }
+
+        humanJumpsUsed = 0;
     }
 
     private void CacheReferences()
@@ -59,12 +62,13 @@ public class PlayerMovementController : MonoBehaviour
     private void Update()
     {
         ReadInput();
-        UpdateGroundTimers();
+        UpdateJumpBufferTimer();
         ApplyGravityPreset();
     }
 
     private void FixedUpdate()
     {
+        UpdateGroundState();
         ApplyMovement();
     }
 
@@ -87,7 +91,15 @@ public class PlayerMovementController : MonoBehaviour
         }
     }
 
-    private void UpdateGroundTimers()
+    private void UpdateJumpBufferTimer()
+    {
+        if (jumpBufferCounter > 0f)
+        {
+            jumpBufferCounter -= Time.deltaTime;
+        }
+    }
+
+    private void UpdateGroundState()
     {
         if (groundSensor != null)
         {
@@ -99,18 +111,20 @@ public class PlayerMovementController : MonoBehaviour
         if (grounded)
         {
             coyoteTimeCounter = coyoteTime;
-            remainingHumanJumps = tuningConfig != null ? tuningConfig.Movement.MaxHumanJumpCount : 2;
-            jumpCutConsumed = false;
+            if (!wasStableGroundedLastFrame)
+            {
+                // Reset jump budget only on a confirmed landing edge so jump count
+                // stays deterministic instead of fluctuating with transient contacts.
+                humanJumpsUsed = 0;
+                jumpCutConsumed = false;
+            }
         }
         else
         {
-            coyoteTimeCounter -= Time.deltaTime;
+            coyoteTimeCounter -= Time.fixedDeltaTime;
         }
 
-        if (jumpBufferCounter > 0f)
-        {
-            jumpBufferCounter -= Time.deltaTime;
-        }
+        wasStableGroundedLastFrame = grounded;
     }
 
     private void ApplyGravityPreset()
@@ -159,39 +173,31 @@ public class PlayerMovementController : MonoBehaviour
         Rigidbody2D rb = formRoot.PlayerRigidbody;
         Vector2 velocity = rb.velocity;
         PlayerTuningConfig.MovementSettings movement = tuningConfig != null ? tuningConfig.Movement : null;
-        float speedMultiplier = ResolveForwardSpeedMultiplier(movement);
+        float speedMultiplier = ResolveSprintSpeedMultiplier(movement);
         bool isRunning = false;
-
-        if (groundSensor != null)
-        {
-            groundSensor.Refresh();
-        }
 
         switch (formRoot.CurrentForm)
         {
             case PlayerFormType.Human:
                 float humanZoneMultiplier = ruleController != null ? ruleController.HumanSpeedMultiplier : 1f;
                 bool isGrounded = IsStableGrounded();
-                int maxHumanJumpCount = movement != null ? movement.MaxHumanJumpCount : 2;
-                if (isGrounded)
-                {
-                    remainingHumanJumps = maxHumanJumpCount;
-                }
-
                 velocity.x = GetSmoothedHorizontalVelocity(
                     velocity.x,
-                    (movement != null ? movement.HumanMoveSpeed : 4f) * speedMultiplier * humanZoneMultiplier,
+                    horizontalInput * (movement != null ? movement.HumanMoveSpeed : 4f) * speedMultiplier * humanZoneMultiplier,
                     isGrounded,
                     movement);
                 bool hasJumpInputBuffered = jumpBufferCounter > 0f;
-                bool canUseGroundJump = hasJumpInputBuffered && coyoteTimeCounter > 0f;
-                bool canUseAirJump = hasJumpInputBuffered && !canUseGroundJump && remainingHumanJumps > 0;
+                int maxHumanJumpCount = movement != null ? movement.MaxHumanJumpCount : 2;
+                // MaxHumanJumpCount now means the total jump count in one airtime:
+                // first ground/coyote jump counts as 1, extra air jumps consume the rest.
+                bool canUseGroundJump = hasJumpInputBuffered && coyoteTimeCounter > 0f && humanJumpsUsed == 0;
+                bool canUseAirJump = hasJumpInputBuffered && !canUseGroundJump && humanJumpsUsed > 0 && humanJumpsUsed < maxHumanJumpCount;
                 if (canUseGroundJump || canUseAirJump)
                 {
                     velocity.y = 0f;
                     rb.velocity = velocity;
                     rb.AddForce(Vector2.up * (movement != null ? movement.HumanJumpForce : 9f), ForceMode2D.Impulse);
-                    remainingHumanJumps = Mathf.Max(0, remainingHumanJumps - 1);
+                    humanJumpsUsed++;
                     jumpBufferCounter = 0f;
                     coyoteTimeCounter = 0f;
                     jumpCutConsumed = false;
@@ -206,24 +212,24 @@ public class PlayerMovementController : MonoBehaviour
 
                     rb.velocity = velocity;
                 }
-                isRunning = velocity.x > 0.05f && isGrounded;
+                isRunning = Mathf.Abs(velocity.x) > 0.05f && isGrounded;
                 break;
 
             case PlayerFormType.Car:
                 velocity.x = GetSmoothedHorizontalVelocity(
                     velocity.x,
-                    (movement != null ? movement.CarMoveSpeed : 7f) * speedMultiplier * (ruleController != null ? ruleController.CarSpeedMultiplier : 1f),
+                    horizontalInput * (movement != null ? movement.CarMoveSpeed : 7f) * speedMultiplier * (ruleController != null ? ruleController.CarSpeedMultiplier : 1f),
                     IsStableGrounded(),
                     movement);
                 rb.velocity = velocity;
-                isRunning = velocity.x > 0.05f;
+                isRunning = Mathf.Abs(velocity.x) > 0.05f;
                 break;
 
             case PlayerFormType.Plane:
-                velocity.x = (movement != null ? movement.PlaneMoveSpeed : 6f) * speedMultiplier;
+                velocity.x = horizontalInput * (movement != null ? movement.PlaneMoveSpeed : 6f) * speedMultiplier;
                 velocity.y = verticalInput * (movement != null ? movement.PlaneVerticalSpeed : 5f) * speedMultiplier;
                 rb.velocity = velocity;
-                isRunning = velocity.x > 0.05f || Mathf.Abs(verticalInput) > 0.01f;
+                isRunning = Mathf.Abs(velocity.x) > 0.05f || Mathf.Abs(verticalInput) > 0.01f;
                 break;
 
             case PlayerFormType.Boat:
@@ -233,13 +239,18 @@ public class PlayerMovementController : MonoBehaviour
                     boatSpeed *= ruleController.BlizzardBoatSpeedMultiplier;
                 }
 
-                velocity.x = boatSpeed * speedMultiplier;
+                velocity.x = horizontalInput * boatSpeed * speedMultiplier;
                 rb.velocity = velocity;
-                isRunning = true;
+                isRunning = Mathf.Abs(velocity.x) > 0.05f;
                 break;
         }
 
-        formRoot.SetFacingFromHorizontal(1f);
+        float facingHorizontal = Mathf.Abs(velocity.x) > 0.01f ? velocity.x : horizontalInput;
+        if (Mathf.Abs(facingHorizontal) > 0.01f)
+        {
+            formRoot.SetFacingFromHorizontal(facingHorizontal);
+        }
+
         formRoot.SetRunState(isRunning);
     }
 
@@ -260,26 +271,14 @@ public class PlayerMovementController : MonoBehaviour
         formRoot.SetRunState(false);
     }
 
-    private float ResolveForwardSpeedMultiplier(PlayerTuningConfig.MovementSettings movement)
+    private float ResolveSprintSpeedMultiplier(PlayerTuningConfig.MovementSettings movement)
     {
-        float baseForwardMultiplier = movement != null ? movement.DefaultForwardMultiplier : 1.6f;
-
-        if (inputReader != null)
+        if (inputReader != null && inputReader.IsSprintHeld)
         {
-            if (inputReader.IsForwardBoostHeld)
-            {
-                float boostMultiplier = movement != null ? movement.ForwardBoostMultiplier : GameConstants.DefaultForwardBoostMultiplier;
-                return baseForwardMultiplier * boostMultiplier;
-            }
-
-            if (inputReader.IsForwardBrakeHeld)
-            {
-                float brakeMultiplier = movement != null ? movement.ForwardBrakeMultiplier : GameConstants.DefaultForwardBrakeMultiplier;
-                return baseForwardMultiplier * brakeMultiplier;
-            }
+            return movement != null ? movement.ForwardBoostMultiplier : GameConstants.DefaultForwardBoostMultiplier;
         }
 
-        return baseForwardMultiplier;
+        return 1f;
     }
 
     private float GetSmoothedHorizontalVelocity(float currentVelocityX, float targetVelocityX, bool isGrounded, PlayerTuningConfig.MovementSettings movement)
@@ -303,13 +302,10 @@ public class PlayerMovementController : MonoBehaviour
         {
             return false;
         }
-
-        Rigidbody2D rb = formRoot != null ? formRoot.PlayerRigidbody : null;
-        if (rb == null)
-        {
-            return true;
-        }
-
-        return Mathf.Abs(rb.velocity.y) <= (tuningConfig != null ? tuningConfig.Movement.GroundedVelocityThreshold : 0.1f);
+        
+        // A valid foot contact is enough to count as grounded. Sinking or moving
+        // platforms can carry the player with a non-zero Y velocity, and using the
+        // player's world-space vertical speed here makes jump input randomly fail.
+        return true;
     }
 }

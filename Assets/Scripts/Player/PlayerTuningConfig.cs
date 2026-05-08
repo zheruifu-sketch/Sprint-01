@@ -18,13 +18,15 @@ public class PlayerTuningConfig : ScriptableObject
         [SerializeField] private float planeVerticalSpeed = 7f;
         [LabelText("船移动速度")]
         [SerializeField] private float boatMoveSpeed = 6f;
+        // Legacy auto-run fields are intentionally kept serialized for old assets,
+        // but manual movement mode no longer uses default forward/brake behavior.
         [LabelText("默认前进倍率")]
         [SerializeField] private float defaultForwardMultiplier = 1.6f;
-        [LabelText("自动前进加速倍率")]
+        [LabelText("Shift 冲刺速度倍率")]
         [SerializeField] private float forwardBoostMultiplier = GameConstants.DefaultForwardBoostMultiplier;
-        [LabelText("自动前进减速倍率")]
+        [LabelText("旧自动减速倍率(已弃用)")]
         [SerializeField] private float forwardBrakeMultiplier = GameConstants.DefaultForwardBrakeMultiplier;
-        [LabelText("加速前进每秒额外耗油")]
+        [LabelText("旧冲刺额外耗油(已弃用)")]
         [SerializeField] private float forwardBoostFuelCostPerSecond = GameConstants.DefaultForwardBoostFuelCostPerSecond;
         [LabelText("人形跳跃力度")]
         [SerializeField] private float humanJumpForce = 9f;
@@ -167,6 +169,14 @@ public class PlayerTuningConfig : ScriptableObject
         }
 
         cachedConfig = Resources.Load<PlayerTuningConfig>("GameConfig/PlayerTuningConfig");
+        if (cachedConfig != null)
+        {
+            return cachedConfig;
+        }
+
+        // Manual flow now keeps the active player tuning asset directly under Resources.
+        // Keep this fallback so the current Chinese-named tuning asset is actually used at runtime.
+        cachedConfig = Resources.Load<PlayerTuningConfig>("玩家参数");
         return cachedConfig;
     }
 }

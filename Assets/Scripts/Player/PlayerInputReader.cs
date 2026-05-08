@@ -9,8 +9,7 @@ public class PlayerInputReader : MonoBehaviour
 
     public float HorizontalInput { get; private set; }
     public float VerticalInput { get; private set; }
-    public bool IsForwardBoostHeld { get; private set; }
-    public bool IsForwardBrakeHeld { get; private set; }
+    public bool IsSprintHeld { get; private set; }
     public bool JumpPressedThisFrame { get; private set; }
     public bool JumpHeld { get; private set; }
     public PlayerFormType? RequestedFormThisFrame { get; private set; }
@@ -37,17 +36,17 @@ public class PlayerInputReader : MonoBehaviour
         {
             HorizontalInput = 0f;
             VerticalInput = 0f;
-            IsForwardBoostHeld = false;
-            IsForwardBrakeHeld = false;
+            IsSprintHeld = false;
             JumpHeld = false;
             return;
         }
 
-        IsForwardBrakeHeld = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
-        IsForwardBoostHeld = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
-        HorizontalInput = IsForwardBoostHeld == IsForwardBrakeHeld
+        bool moveLeftHeld = Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
+        bool moveRightHeld = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
+        HorizontalInput = moveLeftHeld == moveRightHeld
             ? 0f
-            : (IsForwardBoostHeld ? 1f : -1f);
+            : (moveRightHeld ? 1f : -1f);
+        IsSprintHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
         VerticalInput = 0f;
         if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
