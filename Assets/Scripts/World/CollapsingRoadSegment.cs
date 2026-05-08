@@ -30,17 +30,13 @@ public class CollapsingRoadSegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintDefaults(
-            "road.collapse",
-            "Collapsing road ahead. It will break seconds after you touch it. Accelerate through.");
+        EnsureHintId("road.collapse");
         CollectTargets();
     }
 
     private void Awake()
     {
-        EnsureHintDefaults(
-            "road.collapse",
-            "Collapsing road ahead. It will break seconds after you touch it. Accelerate through.");
+        EnsureHintId("road.collapse");
         CollectTargets();
         SetRenderersVisible(true);
         SetCollidersEnabled(true);

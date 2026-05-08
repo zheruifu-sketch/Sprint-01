@@ -65,16 +65,12 @@ public class CollapsingSnowSegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintDefaults(
-            "blizzard.collapse-snow",
-            "Weak snow ahead. The surface gives way underfoot. Jump the collapse the moment it breaks.");
+        EnsureHintId("blizzard.collapse-snow");
     }
 
     private void Awake()
     {
-        EnsureHintDefaults(
-            "blizzard.collapse-snow",
-            "Weak snow ahead. The surface gives way underfoot. Jump the collapse the moment it breaks.");
+        EnsureHintId("blizzard.collapse-snow");
         CachePlayerReferences();
         ClearRendererCaches();
     }

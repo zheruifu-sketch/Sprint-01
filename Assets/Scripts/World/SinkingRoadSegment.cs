@@ -55,18 +55,14 @@ public class SinkingRoadSegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintDefaults(
-            "road.sinking",
-            "Sinking road ahead. Once triggered, the lane drops fast. Cross without stopping.");
+        EnsureHintId("road.sinking");
         sinkingRoot = transform;
         CollectTargets();
     }
 
     private void Awake()
     {
-        EnsureHintDefaults(
-            "road.sinking",
-            "Sinking road ahead. Once triggered, the lane drops fast. Cross without stopping.");
+        EnsureHintId("road.sinking");
         if (sinkingRoot == null)
         {
             sinkingRoot = transform;
@@ -83,9 +79,7 @@ public class SinkingRoadSegment : SpecialRoadSegmentBase
 
     private void Start()
     {
-        EnsureHintDefaults(
-            "road.sinking",
-            "Sinking road ahead. Once triggered, the lane drops fast. Cross without stopping.");
+        EnsureHintId("road.sinking");
         CaptureInitialState();
         RestoreInitialState(true);
     }

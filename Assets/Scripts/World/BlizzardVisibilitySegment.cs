@@ -30,9 +30,7 @@ public class BlizzardVisibilitySegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintDefaults(
-            "blizzard.visibility",
-            "Whiteout ahead. Visibility surges in the blizzard. Keep your line and read the road late.");
+        EnsureHintId("blizzard.visibility");
         blizzardVisualRoot = transform;
         CollectTargets();
         CaptureInitialState();
@@ -40,9 +38,7 @@ public class BlizzardVisibilitySegment : SpecialRoadSegmentBase
 
     private void Awake()
     {
-        EnsureHintDefaults(
-            "blizzard.visibility",
-            "Whiteout ahead. Visibility surges in the blizzard. Keep your line and read the road late.");
+        EnsureHintId("blizzard.visibility");
 
         if (blizzardVisualRoot == null)
         {

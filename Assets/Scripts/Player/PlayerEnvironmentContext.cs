@@ -10,6 +10,7 @@ public class PlayerEnvironmentContext : MonoBehaviour
 
     private readonly HashSet<EnvironmentType> sampledEnvironments = new HashSet<EnvironmentType>();
     private readonly HashSet<EnvironmentType> previewEnvironments = new HashSet<EnvironmentType>();
+    private readonly HashSet<PlayerFormType> overlayDisabledForms = new HashSet<PlayerFormType>();
     private readonly Collider2D[] results = new Collider2D[16];
     private RuleTag sampledRuleTags;
 
@@ -27,6 +28,7 @@ public class PlayerEnvironmentContext : MonoBehaviour
     {
         sampledEnvironments.Clear();
         previewEnvironments.Clear();
+        overlayDisabledForms.Clear();
         sampledRuleTags = RuleTag.None;
 
         Vector2 origin = samplePoint != null ? samplePoint.position : transform.position;
@@ -46,6 +48,7 @@ public class PlayerEnvironmentContext : MonoBehaviour
             }
 
             sampledRuleTags |= WorldSemanticUtility.ResolveRuleTags(hit);
+            CollectOverlayDisabledForms(hit);
         }
 
         RefreshPreviewEnvironments(origin);
@@ -69,6 +72,11 @@ public class PlayerEnvironmentContext : MonoBehaviour
     public bool HasRule(RuleTag ruleTag)
     {
         return (sampledRuleTags & ruleTag) == ruleTag;
+    }
+
+    public bool IsFormDisabledByOverlay(PlayerFormType formType)
+    {
+        return overlayDisabledForms.Contains(formType);
     }
 
     private void RefreshPreviewEnvironments(Vector2 origin)
@@ -102,6 +110,36 @@ public class PlayerEnvironmentContext : MonoBehaviour
             {
                 previewEnvironments.Add(environmentType);
             }
+
+            CollectOverlayDisabledForms(hit);
+        }
+    }
+
+    private void CollectOverlayDisabledForms(Collider2D hit)
+    {
+        if (hit == null)
+        {
+            return;
+        }
+
+        FormDisableOverrideZone overrideZone = hit.GetComponent<FormDisableOverrideZone>();
+        if (overrideZone == null)
+        {
+            overrideZone = hit.GetComponentInParent<FormDisableOverrideZone>();
+        }
+
+        if (overrideZone == null || overrideZone.DisabledForms == null)
+        {
+            return;
+        }
+
+        // Overlay-only form restriction pass:
+        // the old environment/form rule runs first, then any zone with this component
+        // can further disable forms as a local additive restriction.
+        IReadOnlyList<PlayerFormType> disabledForms = overrideZone.DisabledForms;
+        for (int i = 0; i < disabledForms.Count; i++)
+        {
+            overlayDisabledForms.Add(disabledForms[i]);
         }
     }
 

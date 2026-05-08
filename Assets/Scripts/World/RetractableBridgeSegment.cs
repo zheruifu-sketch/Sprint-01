@@ -47,9 +47,7 @@ public class RetractableBridgeSegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintDefaults(
-            "road.retractable-bridge",
-            "Retractable bridge ahead. Watch the cycle and move when the bridge extends.");
+        EnsureHintId("road.retractable-bridge");
         bridgeRoot = transform;
         ResolveMotionMarkers();
         CacheMotionPositions();
@@ -58,9 +56,7 @@ public class RetractableBridgeSegment : SpecialRoadSegmentBase
 
     private void Awake()
     {
-        EnsureHintDefaults(
-            "road.retractable-bridge",
-            "Retractable bridge ahead. Watch the cycle and move when the bridge extends.");
+        EnsureHintId("road.retractable-bridge");
         if (bridgeRoot == null)
         {
             bridgeRoot = transform;

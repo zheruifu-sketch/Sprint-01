@@ -69,18 +69,26 @@ public class PlayerRuleController : MonoBehaviour
         bool inOrApproachingWater = IsInOrApproachingEnvironment(EnvironmentType.Water);
         bool inOrApproachingCliff = IsInOrApproachingEnvironment(EnvironmentType.Cliff);
         bool inOrApproachingBlizzard = IsInOrApproachingEnvironment(EnvironmentType.Blizzard);
+        bool canUseByLegacyEnvironmentRule = true;
 
         if (targetForm == PlayerFormType.Boat)
         {
-            return inOrApproachingWater || inOrApproachingBlizzard;
+            canUseByLegacyEnvironmentRule = inOrApproachingWater || inOrApproachingBlizzard;
         }
-
-        if (targetForm == PlayerFormType.Plane)
+        else if (targetForm == PlayerFormType.Plane)
         {
-            return !IsInBlizzard() || inOrApproachingCliff;
+            canUseByLegacyEnvironmentRule = !IsInBlizzard() || inOrApproachingCliff;
         }
 
-        return true;
+        if (!canUseByLegacyEnvironmentRule)
+        {
+            return false;
+        }
+
+        // This is an overlay compatibility path.
+        // The legacy environment-bound rule resolves first, then local override zones
+        // are allowed to remove additional forms without replacing the old system.
+        return environmentContext == null || !environmentContext.IsFormDisabledByOverlay(targetForm);
     }
 
     public bool IsPlaneBlockedByEnvironment()

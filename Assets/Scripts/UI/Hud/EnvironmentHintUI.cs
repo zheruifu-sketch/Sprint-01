@@ -1,57 +1,10 @@
-using System;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Serialization;
 using Nenn.InspectorEnhancements.Runtime.Attributes;
+using UnityEngine;
 
 [DisallowMultipleComponent]
 public class EnvironmentHintUI : HudUIBase
 {
-    [Serializable]
-    private class ZoneHintEntry
-    {
-        [FormerlySerializedAs("zoneType")]
-        [LabelText("环境类型")]
-        [SerializeField] private EnvironmentType environmentType = EnvironmentType.None;
-        [LabelText("提示文本")]
-        [SerializeField] private string message = string.Empty;
-        [LabelText("推荐形态")]
-        [SerializeField] private PlayerFormType recommendedForm = PlayerFormType.Human;
-        [LabelText("已是推荐形态时不提示")]
-        [SerializeField] private bool suppressWhenAlreadyUsingRecommendedForm = true;
-        [LabelText("首次仅提示一次")]
-        [SerializeField] private bool showOnlyOnce = true;
-        [LabelText("提示持续时长")]
-        [SerializeField] private float duration = 3f;
-
-        public ZoneHintEntry()
-        {
-        }
-
-        public ZoneHintEntry(
-            EnvironmentType environmentType,
-            string message,
-            PlayerFormType recommendedForm,
-            bool suppressWhenAlreadyUsingRecommendedForm = true,
-            bool showOnlyOnce = true,
-            float duration = 3f)
-        {
-            this.environmentType = environmentType;
-            this.message = message;
-            this.recommendedForm = recommendedForm;
-            this.suppressWhenAlreadyUsingRecommendedForm = suppressWhenAlreadyUsingRecommendedForm;
-            this.showOnlyOnce = showOnlyOnce;
-            this.duration = duration;
-        }
-
-        public EnvironmentType EnvironmentType => environmentType;
-        public string Message => message;
-        public PlayerFormType RecommendedForm => recommendedForm;
-        public bool SuppressWhenAlreadyUsingRecommendedForm => suppressWhenAlreadyUsingRecommendedForm;
-        public bool ShowOnlyOnce => showOnlyOnce;
-        public float Duration => duration;
-    }
-
     private struct HintRequest
     {
         public string Key;
@@ -76,24 +29,12 @@ public class EnvironmentHintUI : HudUIBase
     [SerializeField] private HintBarUI hintBarUi;
     [LabelText("关卡控制器")]
     [SerializeField] private GameLevelController levelController;
+    [LabelText("提示配置")]
+    [SerializeField] private GameMessageCatalog messageCatalog;
 
     [Header("Intro Hint")]
-    [LabelText("启动时显示引导")]
-    [SerializeField] private bool showIntroHintOnStart;
-    [LabelText("默认引导文本")]
-    [SerializeField] private string introHintMessage = string.Empty;
     [LabelText("引导延迟")]
     [SerializeField] private float introHintDelay = 0.6f;
-    [LabelText("引导持续时间")]
-    [SerializeField] private float introHintDuration = 2f;
-
-    [Header("Zone Hints")]
-    [LabelText("环境提示列表")]
-    [SerializeField] private List<ZoneHintEntry> zoneHints = new List<ZoneHintEntry>
-    {
-        new ZoneHintEntry(),
-        new ZoneHintEntry()
-    };
 
     [Header("Hint Queue")]
     [LabelText("提示间隔")]
@@ -116,17 +57,17 @@ public class EnvironmentHintUI : HudUIBase
     {
         base.Reset();
         AutoBind();
-        EnsureDefaultZoneHints();
     }
 
     protected override void Awake()
     {
         base.Awake();
         AutoBind();
-        EnsureDefaultZoneHints();
         PrimeZoneStates();
         introHintTimer = introHintDelay;
-        introHintQueued = showIntroHintOnStart && !string.IsNullOrWhiteSpace(introHintMessage);
+        introHintQueued = messageCatalog != null
+                          && messageCatalog.ShowIntroHintOnStart
+                          && !string.IsNullOrWhiteSpace(messageCatalog.IntroTransformHintTemplate);
     }
 
     public override void Initialize()
@@ -141,17 +82,6 @@ public class EnvironmentHintUI : HudUIBase
         UpdateZoneHints();
         UpdateSpecialRoadHints();
         FlushPendingHints();
-    }
-
-    [ContextMenu("Reset Zone Hints To Defaults")]
-    private void ResetZoneHintsToDefaults()
-    {
-        zoneHints.Clear();
-        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Road, "Open road ahead. Switch to Car to build speed.", PlayerFormType.Car, true, true, 1.8f));
-        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Water, "Water ahead. Boat keeps you afloat.", PlayerFormType.Boat, true, true, 1.8f));
-        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Cliff, "Cliff ahead. Plane can clear the gap.", PlayerFormType.Plane, true, true, 1.8f));
-        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Blizzard, "Blizzard ahead. Stay grounded and push through.", PlayerFormType.Human, false, true, 1.8f));
-        zoneHints.Add(new ZoneHintEntry(EnvironmentType.Obstacle, "Obstacle ahead. Hold your line and thread through.", PlayerFormType.Human, false, true, 1.8f));
     }
 
     private void AutoBind()
@@ -185,67 +115,24 @@ public class EnvironmentHintUI : HudUIBase
         {
             levelController = FindObjectOfType<GameLevelController>();
         }
-    }
 
-    private void EnsureDefaultZoneHints()
-    {
-        if (zoneHints.Count == 0 || !HasConfiguredZoneHint())
+        if (messageCatalog == null)
         {
-            ResetZoneHintsToDefaults();
+            messageCatalog = GameMessageCatalog.Load();
         }
-
-        EnsureRequiredZoneHint(EnvironmentType.Road, "Open road ahead. Switch to Car to build speed.", PlayerFormType.Car, true, true, 1.8f);
-        EnsureRequiredZoneHint(EnvironmentType.Water, "Water ahead. Boat keeps you afloat.", PlayerFormType.Boat, true, true, 1.8f);
-        EnsureRequiredZoneHint(EnvironmentType.Cliff, "Cliff ahead. Plane can clear the gap.", PlayerFormType.Plane, true, true, 1.8f);
-        EnsureRequiredZoneHint(EnvironmentType.Blizzard, "Blizzard ahead. Stay grounded and push through.", PlayerFormType.Human, false, true, 1.8f);
-    }
-
-    private void EnsureRequiredZoneHint(
-        EnvironmentType environmentType,
-        string message,
-        PlayerFormType recommendedForm,
-        bool suppressWhenAlreadyUsingRecommendedForm,
-        bool showOnlyOnce,
-        float duration)
-    {
-        for (int i = 0; i < zoneHints.Count; i++)
-        {
-            ZoneHintEntry entry = zoneHints[i];
-            if (entry != null && entry.EnvironmentType == environmentType)
-            {
-                return;
-            }
-        }
-
-        zoneHints.Add(new ZoneHintEntry(
-            environmentType,
-            message,
-            recommendedForm,
-            suppressWhenAlreadyUsingRecommendedForm,
-            showOnlyOnce,
-            duration));
-    }
-
-    private bool HasConfiguredZoneHint()
-    {
-        for (int i = 0; i < zoneHints.Count; i++)
-        {
-            ZoneHintEntry entry = zoneHints[i];
-            if (entry != null && entry.EnvironmentType != EnvironmentType.None && !string.IsNullOrWhiteSpace(entry.Message))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private void PrimeZoneStates()
     {
         previousZoneStates.Clear();
-        for (int i = 0; i < zoneHints.Count; i++)
+        if (messageCatalog == null || messageCatalog.EnvironmentHints == null)
         {
-            ZoneHintEntry entry = zoneHints[i];
+            return;
+        }
+
+        for (int i = 0; i < messageCatalog.EnvironmentHints.Count; i++)
+        {
+            GameMessageCatalog.EnvironmentHintEntry entry = messageCatalog.EnvironmentHints[i];
             if (entry == null || entry.EnvironmentType == EnvironmentType.None)
             {
                 continue;
@@ -257,7 +144,7 @@ public class EnvironmentHintUI : HudUIBase
 
     private void UpdateIntroHint()
     {
-        if (!introHintQueued)
+        if (!introHintQueued || messageCatalog == null)
         {
             return;
         }
@@ -269,25 +156,27 @@ public class EnvironmentHintUI : HudUIBase
         }
 
         introHintQueued = false;
-        EnqueueHint("intro", ResolveIntroHintMessage(), introHintDuration);
+        EnqueueHint("intro", ResolveIntroHintMessage(), messageCatalog.IntroHintDuration);
     }
 
     private void UpdateZoneHints()
     {
-        if (environmentContext == null)
+        if (environmentContext == null || messageCatalog == null || messageCatalog.EnvironmentHints == null)
         {
             return;
         }
 
+        // Environment hints now pull from the shared catalog so the queue/display
+        // logic stays here while all actual player-facing text lives in one asset.
         if (!startHintsQueued)
         {
             QueueCurrentEnvironmentHintsAtStart();
             startHintsQueued = true;
         }
 
-        for (int i = 0; i < zoneHints.Count; i++)
+        for (int i = 0; i < messageCatalog.EnvironmentHints.Count; i++)
         {
-            ZoneHintEntry entry = zoneHints[i];
+            GameMessageCatalog.EnvironmentHintEntry entry = messageCatalog.EnvironmentHints[i];
             if (entry == null || entry.EnvironmentType == EnvironmentType.None || string.IsNullOrWhiteSpace(entry.Message))
             {
                 continue;
@@ -309,16 +198,21 @@ public class EnvironmentHintUI : HudUIBase
         }
     }
 
-    private bool ShouldShowZoneHint(ZoneHintEntry entry)
+    private bool ShouldShowZoneHint(GameMessageCatalog.EnvironmentHintEntry entry)
     {
+        if (entry == null)
+        {
+            return false;
+        }
+
         if (entry.ShowOnlyOnce && shownZoneHints.Contains(entry.EnvironmentType))
         {
             return false;
         }
 
-        if (entry.SuppressWhenAlreadyUsingRecommendedForm &&
-            playerFormRoot != null &&
-            playerFormRoot.CurrentForm == entry.RecommendedForm)
+        if (entry.SuppressWhenAlreadyUsingRecommendedForm
+            && playerFormRoot != null
+            && playerFormRoot.CurrentForm == entry.RecommendedForm)
         {
             return false;
         }
@@ -333,9 +227,14 @@ public class EnvironmentHintUI : HudUIBase
 
     private void QueueCurrentEnvironmentHintsAtStart()
     {
-        for (int i = 0; i < zoneHints.Count; i++)
+        if (messageCatalog == null || messageCatalog.EnvironmentHints == null)
         {
-            ZoneHintEntry entry = zoneHints[i];
+            return;
+        }
+
+        for (int i = 0; i < messageCatalog.EnvironmentHints.Count; i++)
+        {
+            GameMessageCatalog.EnvironmentHintEntry entry = messageCatalog.EnvironmentHints[i];
             if (entry == null || entry.EnvironmentType == EnvironmentType.None || string.IsNullOrWhiteSpace(entry.Message))
             {
                 continue;
@@ -525,37 +424,37 @@ public class EnvironmentHintUI : HudUIBase
 
     private string ResolveIntroHintMessage()
     {
-        if (string.IsNullOrWhiteSpace(introHintMessage) || levelController == null)
+        if (messageCatalog == null || string.IsNullOrWhiteSpace(messageCatalog.IntroTransformHintTemplate) || levelController == null)
         {
-            return introHintMessage;
+            return messageCatalog != null ? messageCatalog.IntroTransformHintTemplate : string.Empty;
         }
 
         List<string> hotkeys = new List<string>();
         if (levelController.IsFormUnlocked(PlayerFormType.Human))
         {
-            hotkeys.Add("1-Human");
+            hotkeys.Add("1-人");
         }
 
         if (levelController.IsFormUnlocked(PlayerFormType.Car))
         {
-            hotkeys.Add("2-Car");
+            hotkeys.Add("2-车");
         }
 
         if (levelController.IsFormUnlocked(PlayerFormType.Plane))
         {
-            hotkeys.Add("3-Plane");
+            hotkeys.Add("3-飞机");
         }
 
         if (levelController.IsFormUnlocked(PlayerFormType.Boat))
         {
-            hotkeys.Add("4-Boat");
+            hotkeys.Add("4-船");
         }
 
         if (hotkeys.Count == 0)
         {
-            return introHintMessage;
+            return messageCatalog.IntroTransformHintTemplate;
         }
 
-        return $"Press {string.Join(" / ", hotkeys)} to transform";
+        return string.Format(messageCatalog.IntroTransformHintTemplate, string.Join(" / ", hotkeys));
     }
 }

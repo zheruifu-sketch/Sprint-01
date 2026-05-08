@@ -65,16 +65,12 @@ public class CliffPlatformChainSegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintDefaults(
-            "cliff.platform-chain",
-            "Falling platforms ahead. Each foothold vanishes moments after contact. Keep jumping forward.");
+        EnsureHintId("cliff.platform-chain");
     }
 
     private void Awake()
     {
-        EnsureHintDefaults(
-            "cliff.platform-chain",
-            "Falling platforms ahead. Each foothold vanishes moments after contact. Keep jumping forward.");
+        EnsureHintId("cliff.platform-chain");
         CachePlayerReferences();
         ClearRendererCaches();
     }

@@ -43,7 +43,8 @@ public enum FailureType
     CrushedByBoulder = 6,
     HitByFallingRock = 7,
     HealthDepleted = 8,
-    TimeUp = 9
+    TimeUp = 9,
+    FellIntoLava = 10
 }
 
 public enum GameRunState

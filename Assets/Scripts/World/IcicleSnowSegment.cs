@@ -62,16 +62,12 @@ public class IcicleSnowSegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintDefaults(
-            "blizzard.icicle-fall",
-            "Icicles overhead. Random drops punish hesitation. Keep moving or brace for impact.");
+        EnsureHintId("blizzard.icicle-fall");
     }
 
     private void Awake()
     {
-        EnsureHintDefaults(
-            "blizzard.icicle-fall",
-            "Icicles overhead. Random drops punish hesitation. Keep moving or brace for impact.");
+        EnsureHintId("blizzard.icicle-fall");
         CachePlayerReferences();
         ScheduleNextSpawn();
     }

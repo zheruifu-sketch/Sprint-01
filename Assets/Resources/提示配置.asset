@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f8f12666b32431a93e4db8f2bb9aa01, type: 3}
+  m_Name: "\u63D0\u793A\u914D\u7F6E"
+  m_EditorClassIdentifier: 
+  showIntroHintOnStart: 0
+  introTransformHintTemplate: Press {0} to transform
+  introHintDuration: 2
+  failureMessages:
+  - failureType: 1
+    message: You fell into the water. Switch earlier next time.
+  - failureType: 2
+    message: You fell from a cliff. Watch the drop ahead.
+  - failureType: 3
+    message: Your plane hit an obstacle. Adjust earlier.
+  - failureType: 4
+    message: Your current form does not work here.
+  - failureType: 5
+    message: You ran out of fuel.
+  - failureType: 6
+    message: A boulder crushed you.
+  - failureType: 7
+    message: You were hit by falling rocks.
+  - failureType: 8
+    message: Your health was depleted.
+  - failureType: 9
+    message: Time is up.
+  - failureType: 10
+    message: You fell into lava. Fly over it from above.
+  environmentHints:
+  - environmentType: 1
+    message: Road ahead.
+    recommendedForm: 2
+    suppressWhenAlreadyUsingRecommendedForm: 1
+    showOnlyOnce: 1
+    duration: 1.8
+  - environmentType: 2
+    message: Water ahead.
+    recommendedForm: 4
+    suppressWhenAlreadyUsingRecommendedForm: 1
+    showOnlyOnce: 1
+    duration: 1.8
+  - environmentType: 3
+    message: Cliff ahead.
+    recommendedForm: 3
+    suppressWhenAlreadyUsingRecommendedForm: 1
+    showOnlyOnce: 1
+    duration: 1.8
+  - environmentType: 4
+    message: Snowfield ahead.
+    recommendedForm: 1
+    suppressWhenAlreadyUsingRecommendedForm: 0
+    showOnlyOnce: 1
+    duration: 1.8
+  - environmentType: 5
+    message: Obstacle ahead.
+    recommendedForm: 1
+    suppressWhenAlreadyUsingRecommendedForm: 0
+    showOnlyOnce: 1
+    duration: 1.8
+  specialRoadHints:
+  - hintId: road.retractable-bridge
+    message: Retractable bridge ahead.
+    duration: 2.2
+    showWhenPreviewed: 1
+    showOnlyOnce: 1
+  - hintId: road.lava
+    message: Lava ahead.
+    duration: 2.2
+    showWhenPreviewed: 1
+    showOnlyOnce: 1
+  - hintId: road.sinking
+    message: Sinking road ahead.
+    duration: 2.2
+    showWhenPreviewed: 1
+    showOnlyOnce: 1
+  - hintId: road.collapse
+    message: Collapsing road ahead.
+    duration: 2.2
+    showWhenPreviewed: 1
+    showOnlyOnce: 1
+  - hintId: road.breakable-block
+    message: Barrier ahead.
+    duration: 2.2
+    showWhenPreviewed: 1
+    showOnlyOnce: 1
+  - hintId: blizzard.visibility
+    message: Blizzard ahead.
+    duration: 2.2
+    showWhenPreviewed: 1
+    showOnlyOnce: 1
+  - hintId: blizzard.collapse-snow
+    message: Weak snow ahead.
+    duration: 2.2
+    showWhenPreviewed: 1
+    showOnlyOnce: 1
+  - hintId: blizzard.icicle-fall
+    message: Icicles ahead.
+    duration: 2.2
+    showWhenPreviewed: 1
+    showOnlyOnce: 1
+  - hintId: cliff.platform-chain
+    message: Falling platforms ahead.
+    duration: 2.2
+    showWhenPreviewed: 1
+    showOnlyOnce: 1
