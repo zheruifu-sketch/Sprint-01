@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b2726f3ab2a4c4f8050b3fbf22c15e7, type: 3}
+  m_Name: HZ_FallingRocks_Level3
+  m_EditorClassIdentifier: 
+  enabled: 1
+  displayName: Falling Rocks
+  hazardType: 2
+  hazardPrefab: {fileID: 1165821349952151377, guid: c256a4335937d054db0006671879dd93, type: 3}
+  spawnPositionMode: 1
+  spawnOffset: {x: 0, y: 0, z: 0}
+  boulderChase:
+    startBehindDistance: 12
+    moveSpeed: 6
+    acceleration: 0
+    instantKillOnTouch: 1
+  risingWater:
+    startY: -4
+    riseSpeed: 0.75
+    maxY: 8
+    instantKillBelowWaterLine: 0
+  fallingRocks:
+    spawnInterval: 3.6
+    spawnIntervalJitter: 0.7
+    spawnChance: 0.75
+    rocksPerWave: 1
+    warningDuration: 0.9
+    spawnHeight: 10
+    minSpawnAheadDistance: -2
+    maxSpawnAheadDistance: 12
+    minHorizontalDistanceFromPlayer: 4.5
+    fallSpeed: 10
+    instantKillOnHit: 1

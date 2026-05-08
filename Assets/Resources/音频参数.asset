@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df86b8d46d264e67a16ecdcda08dd6ae, type: 3}
+  m_Name: "\u97F3\u9891\u53C2\u6570"
+  m_EditorClassIdentifier: 
+  entries:
+  - soundEffectId: 1
+    clips:
+    - {fileID: 8300000, guid: a792abf71d0904f469747c5308ed7f34, type: 3}
+    volume: 1
+  - soundEffectId: 2
+    clips:
+    - {fileID: 8300000, guid: 6714971709b1c034ab34fb94e67614ef, type: 3}
+    volume: 1
+  - soundEffectId: 3
+    clips:
+    - {fileID: 8300000, guid: f7325a7b09f40a849bbddbc36664a335, type: 3}
+    volume: 1
+  - soundEffectId: 4
+    clips:
+    - {fileID: 8300000, guid: 58361e8c515af3f49977275c4d8bff43, type: 3}
+    volume: 1
+  - soundEffectId: 5
+    clips:
+    - {fileID: 8300000, guid: 6dac645717cae3d40b5b37cd3a65ead2, type: 3}
+    volume: 1

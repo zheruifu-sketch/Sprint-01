@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ab1575459f24a59a2d3cf13ee7154a2, type: 3}
+  m_Name: "\u73A9\u5BB6\u53C2\u6570"
+  m_EditorClassIdentifier: 
+  movement:
+    humanMoveSpeed: 7
+    carMoveSpeed: 14
+    planeMoveSpeed: 10
+    planeVerticalSpeed: 6.4
+    boatMoveSpeed: 8
+    defaultForwardMultiplier: 1.5
+    forwardBoostMultiplier: 2
+    forwardBrakeMultiplier: 0.5
+    forwardBoostFuelCostPerSecond: 4.5
+    humanJumpForce: 12.5
+    humanGravityScale: 3
+    carGravityScale: 4
+    planeGravityScale: 0
+    boatGravityScale: 3
+    jumpBufferTime: 0.15
+    coyoteTime: 0.12
+    maxHumanJumpCount: 2
+    groundedVelocityThreshold: 0.1
+    horizontalAcceleration: 1800
+    horizontalDeceleration: 2200
+    airControlMultiplier: 1
+    shortJumpMultiplier: 0.45
+  form:
+    forceHumanWhenPlaneBlocked: 1
+    transformInvulnerabilityDuration: 1
+  environmentRules:
+    blizzardHumanSpeedMultiplier: 0.7
+    blizzardCarSpeedMultiplier: 0.72
+    blizzardBoatSpeedMultiplier: 0.9
+    boatSwitchCheckOffset: {x: 0, y: -0.35}
+    boatSwitchCheckRadius: 0.2
+  survival:
+    maxHealth: 100
+    hazardDamagePerSecond: 20
+    maxFuel: 100
+    carFuelCostPerSecond: 10
+    planeFuelCostPerSecond: 20
+    boatFuelCostPerSecond: 5
+    transformFuelCost: 5

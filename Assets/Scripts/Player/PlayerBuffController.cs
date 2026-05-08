@@ -86,6 +86,17 @@ public class PlayerBuffController : MonoBehaviour
         return state != null && state.RemainingDuration > 0f;
     }
 
+    public void ClearBuffs()
+    {
+        if (activeBuffs.Count == 0)
+        {
+            return;
+        }
+
+        activeBuffs.Clear();
+        BuffsChanged?.Invoke();
+    }
+
     public BuffSnapshot GetBuffSnapshot(int index)
     {
         if (index < 0 || index >= activeBuffs.Count)

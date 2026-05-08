@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f4e55d4bd2547ab93be3d37e7b58a10, type: 3}
+  m_Name: "\u5173\u5361\u914D\u7F6E"
+  m_EditorClassIdentifier: 
+  defaultStartingLevel: 1
+  transitionDelay: 1.25
+  enableDebugHotkeys: 1
+  levels:
+  - levelName: Level 1
+    description: 
+    startHint: Level 1 Start
+    clearHint: Level 1 Clear
+    unlockedForms: 01000000020000000400000003000000
+  - levelName: Level 2
+    description: 
+    startHint: Level 2 Start
+    clearHint: Level 2 Clear
+    unlockedForms: 01000000020000000400000003000000
+  - levelName: Level 3
+    description: 
+    startHint: Level 3 Start
+    clearHint: Level 3 Clear
+    unlockedForms: 01000000020000000400000003000000
