@@ -80,6 +80,13 @@ public class PickupSpawner : MonoBehaviour
     {
         CleanupCollectedPickups();
 
+        // Manual level mode places pickups and checkpoints directly in the level prefab.
+        // Keep the procedural spawner for the old flow, but stop entering it at runtime.
+        if (ManualLevelSequenceController.IsManualModeActive)
+        {
+            return;
+        }
+
         if (sessionController == null || !sessionController.HasActiveRun)
         {
             return;
@@ -431,6 +438,11 @@ public class PickupSpawner : MonoBehaviour
 
     private void HandleLevelChanged(int _)
     {
+        if (ManualLevelSequenceController.IsManualModeActive)
+        {
+            return;
+        }
+
         ClearSpawnedPickups();
         spawnedCheckpointDistances.Clear();
         hasSpawnBaseline = false;

@@ -111,6 +111,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 2057589768345766926}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52e6699b722f463db1d5cad3b865bd17, type: 3}
+  m_Script: {fileID: 11500000, guid: 3ea38665dca34df3ae95b5634460b3e9, type: 3}
   m_Name:
   m_EditorClassIdentifier:
+  triggerCollider: {fileID: 534001001}
+  destroyOnCollect: 1
+  healAmount: 25

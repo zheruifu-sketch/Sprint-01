@@ -6,6 +6,8 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerHazardResolver))]
 public class PlayerRespawnController : MonoBehaviour
 {
+    private const float HumanSprintHealthCostPerSecond = 5f;
+
     [Header("References")]
     [SerializeField] private PlayerFormRoot formRoot;
     [SerializeField] private PlayerHealthController healthController;
@@ -96,6 +98,83 @@ public class PlayerRespawnController : MonoBehaviour
         }
     }
 
+    public void RestorePlayerAtCurrentRespawn(bool resetSurvivalState = true)
+    {
+        if (sessionController == null)
+        {
+            sessionController = FindObjectOfType<GameSessionController>();
+        }
+
+        if (formRoot == null)
+        {
+            formRoot = GetComponent<PlayerFormRoot>();
+        }
+
+        if (formRoot == null)
+        {
+            return;
+        }
+
+        Vector3 targetPosition = sessionController != null
+            ? sessionController.GetRespawnPositionOrDefault(transform.position)
+            : transform.position;
+        transform.position = targetPosition;
+
+        Rigidbody2D playerRigidbody = formRoot.PlayerRigidbody;
+        if (playerRigidbody != null)
+        {
+            playerRigidbody.velocity = Vector2.zero;
+            playerRigidbody.angularVelocity = 0f;
+        }
+
+        if (resetSurvivalState)
+        {
+            bool shouldUseCheckpointSnapshot = sessionController != null && sessionController.HasActiveCheckpoint;
+            if (healthController != null)
+            {
+                if (shouldUseCheckpointSnapshot && sessionController.HasCheckpointHealthSnapshot)
+                {
+                    healthController.SetHealthDirect(sessionController.CheckpointHealthSnapshot);
+                }
+                else
+                {
+                    healthController.ResetHealth();
+                }
+            }
+
+            if (fuelController != null)
+            {
+                if (shouldUseCheckpointSnapshot && sessionController.HasCheckpointFuelSnapshot)
+                {
+                    fuelController.SetFuelDirect(sessionController.CheckpointFuelSnapshot);
+                }
+                else
+                {
+                    fuelController.ResetFuel();
+                }
+            }
+        }
+
+        PlayerBuffController buffController = GetComponent<PlayerBuffController>();
+        if (buffController != null)
+        {
+            buffController.ClearBuffs();
+        }
+
+        GameLevelController levelController = FindObjectOfType<GameLevelController>();
+        if (levelController != null)
+        {
+            formRoot.SetForm(levelController.GetFallbackUnlockedForm());
+        }
+        else
+        {
+            formRoot.SetForm(PlayerFormType.Human);
+        }
+
+        LastFailureType = FailureType.None;
+        hasTriggeredFailure = false;
+    }
+
     private bool CanEvaluateFailure()
     {
         if (sessionController == null)
@@ -114,9 +193,9 @@ public class PlayerRespawnController : MonoBehaviour
         }
 
         fuelController.ConsumeByForm(formRoot.CurrentForm, Time.deltaTime);
-        if (inputReader != null && inputReader.IsForwardBoostHeld)
+        if (inputReader != null && inputReader.IsSprintHeld)
         {
-            fuelController.ConsumeForForwardBoost(Time.deltaTime);
+            fuelController.ConsumeSprintExtraByForm(formRoot.CurrentForm, Time.deltaTime);
         }
 
         if (fuelController.IsEmpty())
@@ -150,6 +229,14 @@ public class PlayerRespawnController : MonoBehaviour
             {
                 Respawn(failureType);
             }
+        }
+
+        if (!hasTriggeredFailure
+            && inputReader != null
+            && inputReader.IsSprintHeld
+            && formRoot.CurrentForm == PlayerFormType.Human)
+        {
+            healthController.ApplyDamage(HumanSprintHealthCostPerSecond * Time.deltaTime);
         }
 
         if (!hasTriggeredFailure && healthController.IsDead())

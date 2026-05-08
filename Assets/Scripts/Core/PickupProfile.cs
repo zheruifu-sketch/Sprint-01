@@ -4,6 +4,8 @@ using Nenn.InspectorEnhancements.Runtime.Attributes;
 [CreateAssetMenu(fileName = "PickupProfile", menuName = "JumpGame/Pickup Profile")]
 public class PickupProfile : ScriptableObject
 {
+    // Deprecated for manual levels.
+    // Hand-authored pickups now keep their own gameplay parameters on prefab scripts.
     [Header("Base")]
     [LabelText("启用")]
     [SerializeField] private bool enabled = true;

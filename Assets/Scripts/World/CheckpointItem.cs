@@ -1,66 +1,65 @@
 using Nenn.InspectorEnhancements.Runtime.Attributes;
 using UnityEngine;
 
-[RequireComponent(typeof(Collider2D))]
 [DisallowMultipleComponent]
-public class CheckpointItem : MonoBehaviour
+public class CheckpointItem : PlayerCollectibleBase
 {
-    [Header("References")]
-    [LabelText("触发器")]
-    [SerializeField] private Collider2D triggerCollider;
+    [Header("Mode")]
+    [LabelText("作为关卡终点")]
+    [SerializeField] private bool completeLevelOnTouch;
 
     [Header("State")]
     [LabelText("检查点距离")]
     [SerializeField] private float checkpointDistance;
 
-    private bool activated;
+    private GameFlowController flowController;
 
     public void Initialize(float distanceFromLevelStart)
     {
         checkpointDistance = Mathf.Max(0f, distanceFromLevelStart);
     }
 
-    private void Reset()
+    protected override void Reset()
     {
-        CacheReferences();
-        if (triggerCollider != null)
-        {
-            triggerCollider.isTrigger = true;
-        }
+        base.Reset();
     }
 
-    private void Awake()
+    protected override void Awake()
     {
-        CacheReferences();
+        base.Awake();
+        flowController = FindObjectOfType<GameFlowController>();
+        SetDestroyOnCollect(!completeLevelOnTouch);
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    protected override bool Collect(GameObject playerObject)
     {
-        if (activated || other == null)
-        {
-            return;
-        }
-
-        PlayerFormRoot formRoot = other.GetComponentInParent<PlayerFormRoot>();
-        if (formRoot == null)
-        {
-            return;
-        }
-
         GameSessionController sessionController = FindObjectOfType<GameSessionController>();
+        if (completeLevelOnTouch)
+        {
+            if (flowController == null)
+            {
+                flowController = FindObjectOfType<GameFlowController>();
+            }
+
+            if (flowController == null)
+            {
+                return false;
+            }
+
+            flowController.CompleteCurrentLevelFromTrigger();
+            return true;
+        }
+
         if (sessionController == null)
         {
-            return;
+            return false;
         }
 
-        sessionController.ActivateCheckpoint(transform.position);
-        activated = true;
-        SoundEffectPlayback.Play(SoundEffectId.Pickup);
-        Destroy(gameObject);
-    }
-
-    private void CacheReferences()
-    {
-        triggerCollider = triggerCollider != null ? triggerCollider : GetComponent<Collider2D>();
+        PlayerHealthController playerHealth = playerObject.GetComponentInParent<PlayerHealthController>();
+        PlayerFuelController playerFuel = playerObject.GetComponentInParent<PlayerFuelController>();
+        float checkpointHealth = playerHealth != null ? playerHealth.CurrentHealth : 0f;
+        float checkpointFuel = playerFuel != null ? playerFuel.CurrentFuel : 0f;
+        sessionController.ActivateCheckpoint(transform.position, checkpointHealth, checkpointFuel);
+        return true;
     }
 }

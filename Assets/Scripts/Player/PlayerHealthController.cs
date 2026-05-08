@@ -35,6 +35,18 @@ public class PlayerHealthController : MonoBehaviour
         NotifyHealthChanged();
     }
 
+    public void SetHealthDirect(float value)
+    {
+        float clampedValue = Mathf.Clamp(value, 0f, MaxHealth);
+        if (Mathf.Approximately(CurrentHealth, clampedValue))
+        {
+            return;
+        }
+
+        CurrentHealth = clampedValue;
+        NotifyHealthChanged();
+    }
+
     public void ApplyHazardDamage(float deltaTime)
     {
         if (deltaTime <= 0f || IsDead())

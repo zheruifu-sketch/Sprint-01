@@ -29,6 +29,18 @@ public class PlayerFuelController : MonoBehaviour
         NotifyFuelChanged();
     }
 
+    public void SetFuelDirect(float value)
+    {
+        float clampedValue = Mathf.Clamp(value, 0f, MaxFuel);
+        if (Mathf.Approximately(CurrentFuel, clampedValue))
+        {
+            return;
+        }
+
+        CurrentFuel = clampedValue;
+        NotifyFuelChanged();
+    }
+
     public void ConsumeByForm(PlayerFormType currentForm, float deltaTime)
     {
         if (deltaTime <= 0f || IsEmpty())
@@ -56,16 +68,14 @@ public class PlayerFuelController : MonoBehaviour
         Consume(transformCost);
     }
 
-    public void ConsumeForForwardBoost(float deltaTime)
+    public void ConsumeSprintExtraByForm(PlayerFormType currentForm, float deltaTime)
     {
         if (deltaTime <= 0f || IsEmpty())
         {
             return;
         }
 
-        float consumeRate = tuningConfig != null
-            ? tuningConfig.Movement.ForwardBoostFuelCostPerSecond
-            : GameConstants.DefaultForwardBoostFuelCostPerSecond;
+        float consumeRate = GetConsumeRate(currentForm);
         if (consumeRate <= 0f)
         {
             return;

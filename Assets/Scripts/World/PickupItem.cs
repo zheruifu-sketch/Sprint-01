@@ -1,10 +1,13 @@
 using UnityEngine;
+using Nenn.InspectorEnhancements.Runtime.Attributes;
 
 [RequireComponent(typeof(Collider2D))]
 [DisallowMultipleComponent]
 public class PickupItem : MonoBehaviour
 {
-    private PickupProfile pickupProfile;
+    [Header("Deprecated")]
+    [LabelText("旧道具配置(仅旧随机系统使用)")]
+    [SerializeField] private PickupProfile pickupProfile;
     private bool collected;
 
     public void Initialize(PickupProfile pickupProfile)
@@ -23,6 +26,9 @@ public class PickupItem : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        // Deprecated pickup entry for the old procedural generator only.
+        // Manual levels now use prefab-bound collectible scripts instead:
+        // HealthPickupItem / FuelPickupItem / CheckpointItem.
         if (collected || pickupProfile == null || other == null)
         {
             return;
