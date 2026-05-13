@@ -11,10 +11,11 @@ public class GameFlowController : MonoBehaviour
     private enum FlowUiState
     {
         Start = 0,
-        Tutorial = 1,
-        Gameplay = 2,
-        Completed = 3,
-        Failed = 4
+        LevelSelect = 1,
+        Tutorial = 2,
+        Gameplay = 3,
+        Completed = 4,
+        Failed = 5
     }
 
     [Header("References")]
@@ -30,8 +31,6 @@ public class GameFlowController : MonoBehaviour
     [SerializeField] private ManualLevelSequenceController manualLevelSequenceController;
 
     [Header("Text")]
-    [LabelText("开始按钮文本")]
-    [SerializeField] private string startButtonText = "Start";
     [LabelText("重开按钮文本")]
     [SerializeField] private string restartButtonText = "Restart";
     [LabelText("退出按钮文本")]
@@ -195,6 +194,18 @@ public class GameFlowController : MonoBehaviour
 
     private void BeginNewRun()
     {
+        if (sessionController != null && sessionController.HasActiveRun)
+        {
+            return;
+        }
+
+        Time.timeScale = 0f;
+        isTransitioning = false;
+        ApplyUiState(FlowUiState.LevelSelect);
+    }
+
+    private void BeginNewRunFromLevelSelection(int levelNumber)
+    {
         if (sessionController != null)
         {
             sessionController.StartNewRun();
@@ -202,7 +213,7 @@ public class GameFlowController : MonoBehaviour
 
         if (levelController != null)
         {
-            levelController.SetLevel(0);
+            levelController.SetLevel(Mathf.Max(0, levelNumber - 1));
         }
 
         if (sessionController != null)
@@ -212,12 +223,11 @@ public class GameFlowController : MonoBehaviour
 
         if (IsUsingManualLevelFlow())
         {
-            levelController?.SetLevel(0);
+            levelController?.SetLevel(Mathf.Max(0, levelNumber - 1));
             manualLevelSequenceController = manualLevelSequenceController != null
                 ? manualLevelSequenceController
                 : FindObjectOfType<ManualLevelSequenceController>();
-            manualLevelSequenceController?.LoadLevel(1, true);
-            sessionController?.UseSceneEntryAsCurrentLevelStart(1);
+            manualLevelSequenceController?.LoadLevel(levelNumber, true);
             RestorePlayerForCurrentManualLevel(false);
         }
 
@@ -278,26 +288,12 @@ public class GameFlowController : MonoBehaviour
             return;
         }
 
-        levelProgressUi.SetLevelText($"Level {levelController.CurrentLevelNumber}");
+        levelProgressUi.SetLevelText(levelController.CurrentLevelName);
     }
 
     private void RefreshProgressText()
     {
-        LevelProgressUI levelProgressUi = GetLevelProgressUi();
-        if (levelProgressUi == null || levelController == null)
-        {
-            return;
-        }
-
-        if (IsUsingManualLevelFlow())
-        {
-            levelProgressUi.SetProgressText(string.Empty);
-            return;
-        }
-
-        float targetDistance = GetCurrentTargetDistance();
-        float currentDistance = Mathf.Clamp(GetDistanceTravelled(), 0f, targetDistance);
-        levelProgressUi.SetProgressText($"{currentDistance:0}/{targetDistance:0}m");
+        // Level progress distance text is no longer used in the current UI flow.
     }
 
     private float GetCurrentTargetDistance()
@@ -355,13 +351,31 @@ public class GameFlowController : MonoBehaviour
             tutorialPanelUi.CloseRequested += HandleTutorialClosed;
         }
 
-        ResultPanelUI resultPanelUi = uiManager.Get<ResultPanelUI>();
-        if (resultPanelUi != null)
+        FailResultPanelUI failResultPanelUi = uiManager.Get<FailResultPanelUI>();
+        if (failResultPanelUi != null)
         {
-            resultPanelUi.ConfirmRequested -= HandleEndConfirmClicked;
-            resultPanelUi.ConfirmRequested += HandleEndConfirmClicked;
-            resultPanelUi.SecondaryRequested -= HandleEndSecondaryClicked;
-            resultPanelUi.SecondaryRequested += HandleEndSecondaryClicked;
+            failResultPanelUi.ConfirmRequested -= HandleFailConfirmClicked;
+            failResultPanelUi.ConfirmRequested += HandleFailConfirmClicked;
+            failResultPanelUi.SecondaryRequested -= HandleReturnHomeClicked;
+            failResultPanelUi.SecondaryRequested += HandleReturnHomeClicked;
+        }
+
+        LevelSelectPanelUI levelSelectPanelUi = uiManager.Get<LevelSelectPanelUI>();
+        if (levelSelectPanelUi != null)
+        {
+            levelSelectPanelUi.LevelSelected -= BeginNewRunFromLevelSelection;
+            levelSelectPanelUi.LevelSelected += BeginNewRunFromLevelSelection;
+            levelSelectPanelUi.BackRequested -= HandleLevelSelectBackRequested;
+            levelSelectPanelUi.BackRequested += HandleLevelSelectBackRequested;
+        }
+
+        WinResultPanelUI winResultPanelUi = uiManager.Get<WinResultPanelUI>();
+        if (winResultPanelUi != null)
+        {
+            winResultPanelUi.NextLevelRequested -= HandleNextLevelRequested;
+            winResultPanelUi.NextLevelRequested += HandleNextLevelRequested;
+            winResultPanelUi.HomeRequested -= HandleReturnHomeClicked;
+            winResultPanelUi.HomeRequested += HandleReturnHomeClicked;
         }
     }
 
@@ -373,7 +387,13 @@ public class GameFlowController : MonoBehaviour
         StartPanelUI startPanelUi = GetStartPanelUi();
         if (startPanelUi != null)
         {
-            startPanelUi.SetContent("Start Run", BuildStartDescription(), startButtonText);
+            startPanelUi.SetContent("Start Run", BuildStartDescription());
+        }
+
+        LevelSelectPanelUI levelSelectPanelUi = GetLevelSelectPanelUi();
+        if (levelSelectPanelUi != null)
+        {
+            levelSelectPanelUi.SetContent(levelController != null ? levelController.LevelCount : 0);
         }
     }
 
@@ -398,27 +418,44 @@ public class GameFlowController : MonoBehaviour
             return;
         }
 
+        if (uiState == FlowUiState.LevelSelect)
+        {
+            uiManager.ShowOnly<LevelSelectPanelUI>();
+            return;
+        }
+
         if (uiState == FlowUiState.Tutorial)
         {
             uiManager.ShowOnly<TutorialPanelUI>();
             return;
         }
 
-        ResultPanelUI resultPanelUi = uiManager.ShowOnly<ResultPanelUI>();
-        if (resultPanelUi == null)
-        {
-            return;
-        }
-
         if (uiState == FlowUiState.Completed)
         {
-            resultPanelUi.SetContent("Run Complete", "This run has ended.", restartButtonText, exitButtonText);
+            WinResultPanelUI winResultPanelUi = uiManager.ShowOnly<WinResultPanelUI>();
+            if (winResultPanelUi == null)
+            {
+                return;
+            }
+
+            bool canGoToNextLevel = levelController != null && levelController.CurrentLevelNumber < levelController.LevelCount;
+            string description = canGoToNextLevel
+                ? "Level cleared. Move on when you are ready."
+                : "Final level cleared. Return to the home screen to start over.";
+            winResultPanelUi.SetContent(
+                $"Level {levelController?.CurrentLevelNumber ?? 1} Clear",
+                description,
+                canGoToNextLevel);
             return;
         }
 
         if (uiState == FlowUiState.Failed)
         {
-            resultPanelUi.SetContent("Run Failed", BuildFailureDescription(currentFailureType), restartButtonText, exitButtonText);
+            FailResultPanelUI failResultPanelUi = uiManager.ShowOnly<FailResultPanelUI>();
+            if (failResultPanelUi != null)
+            {
+                failResultPanelUi.SetContent("Run Failed", BuildFailureDescription(currentFailureType), "Back to Home");
+            }
         }
     }
 
@@ -479,7 +516,7 @@ public class GameFlowController : MonoBehaviour
         TryCompleteCurrentLevel();
     }
 
-    private void HandleEndConfirmClicked()
+    private void HandleFailConfirmClicked()
     {
         if (sessionController != null && sessionController.RunState == GameRunState.Failed)
         {
@@ -504,49 +541,60 @@ public class GameFlowController : MonoBehaviour
             return;
         }
 
+    }
+
+    private void HandleNextLevelRequested()
+    {
+        if (levelController == null)
+        {
+            return;
+        }
+
+        int currentLevelNumber = levelController.CurrentLevelNumber;
+        int nextLevelNumber = currentLevelNumber + 1;
+        if (nextLevelNumber > levelController.LevelCount)
+        {
+            return;
+        }
+
+        Time.timeScale = 1f;
+        isTransitioning = false;
+
         if (sessionController != null)
         {
-            sessionController.StartNewRun();
+            sessionController.AdvanceLevel(levelController.LevelCount);
         }
 
         if (IsUsingManualLevelFlow())
         {
-            levelController?.SetLevel(0);
+            levelController.SetLevel(nextLevelNumber - 1);
             manualLevelSequenceController = manualLevelSequenceController != null
                 ? manualLevelSequenceController
                 : FindObjectOfType<ManualLevelSequenceController>();
-            manualLevelSequenceController?.LoadLevel(1, true);
-            sessionController?.UseSceneEntryAsCurrentLevelStart(1);
+            manualLevelSequenceController?.LoadLevel(nextLevelNumber, false);
             RestorePlayerForCurrentManualLevel(false);
             ResumeGameplay();
             TryShowLevelIntroCard();
             return;
         }
 
+        levelController.SetLevel(nextLevelNumber - 1);
         ReloadActiveScene();
     }
 
-    private void HandleEndSecondaryClicked()
+    private void HandleReturnHomeClicked()
     {
         if (sessionController != null)
         {
             sessionController.ResetRun();
         }
 
-        if (IsUsingManualLevelFlow())
-        {
-            levelController?.SetLevel(0, false);
-            manualLevelSequenceController = manualLevelSequenceController != null
-                ? manualLevelSequenceController
-                : FindObjectOfType<ManualLevelSequenceController>();
-            manualLevelSequenceController?.LoadLevel(1, true);
-            sessionController?.UseSceneEntryAsCurrentLevelStart(1);
-            RestorePlayerForCurrentManualLevel(false);
-            PauseForStartScreen();
-            return;
-        }
-
         ReloadActiveScene();
+    }
+
+    private void HandleLevelSelectBackRequested()
+    {
+        PauseForStartScreen();
     }
 
     private void HandleRunStateChanged(GameRunState runState)
@@ -605,9 +653,14 @@ public class GameFlowController : MonoBehaviour
         return uiManager != null ? uiManager.Get<StartPanelUI>() : null;
     }
 
-    private ResultPanelUI GetResultPanelUi()
+    private FailResultPanelUI GetResultPanelUi()
     {
-        return uiManager != null ? uiManager.Get<ResultPanelUI>() : null;
+        return uiManager != null ? uiManager.Get<FailResultPanelUI>() : null;
+    }
+
+    private LevelSelectPanelUI GetLevelSelectPanelUi()
+    {
+        return uiManager != null ? uiManager.Get<LevelSelectPanelUI>() : null;
     }
 
     private TutorialPanelUI GetTutorialPanelUi()

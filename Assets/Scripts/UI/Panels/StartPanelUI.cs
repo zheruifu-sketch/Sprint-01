@@ -14,12 +14,8 @@ public class StartPanelUI : PanelUIBase
     [SerializeField] private TMP_Text descriptionText;
     [LabelText("开始按钮")]
     [SerializeField] private Button startButton;
-    [LabelText("按钮文本")]
-    [SerializeField] private TMP_Text startButtonText;
     [LabelText("说明按钮")]
     [SerializeField] private Button helpButton;
-    [LabelText("说明按钮文本")]
-    [SerializeField] private TMP_Text helpButtonText;
 
     public event Action StartRequested;
     public event Action HelpRequested;
@@ -43,7 +39,7 @@ public class StartPanelUI : PanelUIBase
         BindButton();
     }
 
-    public void SetContent(string title, string description, string buttonLabel)
+    public void SetContent(string title, string description)
     {
         if (titleText != null)
         {
@@ -55,10 +51,8 @@ public class StartPanelUI : PanelUIBase
             descriptionText.text = description;
         }
 
-        if (startButtonText != null)
-        {
-            startButtonText.text = buttonLabel;
-        }
+        SetButtonLabel(startButton, "Start");
+        SetButtonLabel(helpButton, "Help");
     }
 
     private void BindButton()
@@ -93,9 +87,7 @@ public class StartPanelUI : PanelUIBase
         titleText = titleText != null ? titleText : FindText("Card/Title", "Title");
         descriptionText = descriptionText != null ? descriptionText : FindText("Card/Description", "Description");
         startButton = startButton != null ? startButton : FindButton("Card/StartButton", "StartButton");
-        startButtonText = startButtonText != null ? startButtonText : FindText("Card/StartButton/Label", "StartButton/Label");
         helpButton = helpButton != null ? helpButton : FindButton("Card/HelpButton", "HelpButton");
-        helpButtonText = helpButtonText != null ? helpButtonText : FindText("Card/HelpButton/Label", "HelpButton/Label");
     }
 
     private TMP_Text FindText(params string[] paths)
@@ -132,5 +124,19 @@ public class StartPanelUI : PanelUIBase
         }
 
         return null;
+    }
+
+    private void SetButtonLabel(Button button, string text)
+    {
+        if (button == null)
+        {
+            return;
+        }
+
+        TMP_Text label = button.GetComponentInChildren<TMP_Text>(true);
+        if (label != null)
+        {
+            label.text = text;
+        }
     }
 }
