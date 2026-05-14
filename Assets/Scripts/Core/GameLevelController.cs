@@ -39,6 +39,13 @@ public class GameLevelController : MonoBehaviour
         {
             if (IsUsingManualLevelFlow())
             {
+                ManualLevelSequenceController manualController = ResolveManualLevelSequenceController();
+                string configuredName = manualController != null ? manualController.GetLevelName(CurrentLevelNumber) : string.Empty;
+                if (!string.IsNullOrWhiteSpace(configuredName))
+                {
+                    return configuredName;
+                }
+
                 ManualLevelFlowConfig.ManualLevelDefinition manualConfig = GetCurrentManualLevelConfig();
                 return manualConfig != null && !string.IsNullOrWhiteSpace(manualConfig.LevelName)
                     ? manualConfig.LevelName

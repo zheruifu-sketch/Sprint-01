@@ -8,8 +8,6 @@ public class LevelProgressUI : HudUIBase
     [Header("References")]
     [LabelText("关卡标题文本")]
     [SerializeField] private TMP_Text levelText;
-    [LabelText("进度文本")]
-    [SerializeField] private TMP_Text progressText;
 
     protected override void Reset()
     {
@@ -30,18 +28,9 @@ public class LevelProgressUI : HudUIBase
         }
     }
 
-    public void SetProgressText(string value)
-    {
-        if (progressText != null)
-        {
-            progressText.text = value;
-        }
-    }
-
     private void AutoBind()
     {
         levelText = levelText != null ? levelText : FindText("LevelText");
-        progressText = progressText != null ? progressText : FindText("ProgressText");
     }
 
     private TMP_Text FindText(string childName)

@@ -21,6 +21,8 @@ public class ManualLevelSequenceController : MonoBehaviour
     [Header("Manual Levels")]
     [LabelText("手工关卡预制体列表")]
     [SerializeField] private List<GameObject> levelPrefabs = new List<GameObject>();
+    [LabelText("手工关卡名称列表")]
+    [SerializeField] private List<string> levelNames = new List<string>();
 
     private GameObject currentLevelInstance;
 
@@ -127,6 +129,17 @@ public class ManualLevelSequenceController : MonoBehaviour
         }
 
         return levelPrefabs[resolvedIndex];
+    }
+
+    public string GetLevelName(int levelNumber)
+    {
+        int resolvedIndex = ResolveConfiguredLevelIndex(levelNumber);
+        if (resolvedIndex < 0 || resolvedIndex >= levelNames.Count)
+        {
+            return string.Empty;
+        }
+
+        return levelNames[resolvedIndex] != null ? levelNames[resolvedIndex].Trim() : string.Empty;
     }
 
     private Transform FindExistingManualLevelContent(int targetLevelNumber, bool allowSceneTestContent, GameObject ignoredRuntimeLevelInstance)
