@@ -88,20 +88,4 @@ public class SmoothCameraFollow2D : MonoBehaviour
     {
         targetRigidbody = target != null ? target.GetComponent<Rigidbody2D>() : null;
     }
-
-    public void SnapToTarget()
-    {
-        if (target == null)
-        {
-            return;
-        }
-
-        if (targetRigidbody == null)
-        {
-            CacheTargetRigidbody();
-        }
-
-        transform.position = GetDesiredPosition(transform.position);
-        velocity = Vector3.zero;
-    }
 }
