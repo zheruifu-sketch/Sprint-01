@@ -14,22 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - soundEffectId: 1
-    clips:
-    - {fileID: 8300000, guid: a792abf71d0904f469747c5308ed7f34, type: 3}
+    clip: {fileID: 8300000, guid: a792abf71d0904f469747c5308ed7f34, type: 3}
     volume: 1
   - soundEffectId: 2
-    clips:
-    - {fileID: 8300000, guid: 6714971709b1c034ab34fb94e67614ef, type: 3}
+    clip: {fileID: 8300000, guid: 6714971709b1c034ab34fb94e67614ef, type: 3}
     volume: 1
   - soundEffectId: 3
-    clips:
-    - {fileID: 8300000, guid: f7325a7b09f40a849bbddbc36664a335, type: 3}
+    clip: {fileID: 8300000, guid: 56e96bdc476a39c4eb6590172ae656fb, type: 3}
     volume: 1
   - soundEffectId: 4
-    clips:
-    - {fileID: 8300000, guid: 58361e8c515af3f49977275c4d8bff43, type: 3}
+    clip: {fileID: 8300000, guid: 58361e8c515af3f49977275c4d8bff43, type: 3}
     volume: 1
   - soundEffectId: 5
-    clips:
-    - {fileID: 8300000, guid: 6dac645717cae3d40b5b37cd3a65ead2, type: 3}
+    clip: {fileID: 8300000, guid: 5513f6c3321c3f04c8468fbff3c290ce, type: 3}
     volume: 1

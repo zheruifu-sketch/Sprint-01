@@ -38,6 +38,22 @@ public class PlayerFormView : MonoBehaviour
     [LabelText("跑步参数名")]
     [SerializeField] private string runParameterName = "Run";
 
+    [Header("Boat Float")]
+    [LabelText("船只上下浮动")]
+    [SerializeField] private bool enableBoatFloat = true;
+    [LabelText("船只浮动幅度")]
+    [SerializeField] private float boatFloatAmplitude = 0.08f;
+    [LabelText("船只浮动频率")]
+    [SerializeField] private float boatFloatFrequency = 1.35f;
+    [LabelText("船只晃动角度")]
+    [SerializeField] private float boatRockAngle = 2.5f;
+    [LabelText("船只晃动频率")]
+    [SerializeField] private float boatRockFrequency = 0.9f;
+
+    [Header("References")]
+    [LabelText("环境规则控制器")]
+    [SerializeField] private PlayerRuleController ruleController;
+
     private Vector3 humanScale = Vector3.one;
     private Vector3 carScale = Vector3.one;
     private Vector3 planeScale = Vector3.one;
@@ -47,13 +63,22 @@ public class PlayerFormView : MonoBehaviour
     private Animator planeAnimator;
     private Animator boatAnimator;
     private SpriteRenderer[] cachedSpriteRenderers;
+    private Vector3 boatBaseLocalPosition;
+    private Quaternion boatBaseLocalRotation;
 
     private void Awake()
     {
+        CacheReferences();
         ResolveVisualTargets();
         CacheAnimators();
         CacheBaseScales();
+        CacheBoatVisualBasePose();
         CacheSpriteRenderers();
+    }
+
+    private void LateUpdate()
+    {
+        UpdateBoatFloat();
     }
 
     public void ShowForm(PlayerFormType formType)
@@ -93,6 +118,24 @@ public class PlayerFormView : MonoBehaviour
         carScale = carVisual != null ? carVisual.localScale : Vector3.one;
         planeScale = planeVisual != null ? planeVisual.localScale : Vector3.one;
         boatScale = boatVisual != null ? boatVisual.localScale : Vector3.one;
+    }
+
+    private void CacheBoatVisualBasePose()
+    {
+        if (boatVisual == null)
+        {
+            boatBaseLocalPosition = Vector3.zero;
+            boatBaseLocalRotation = Quaternion.identity;
+            return;
+        }
+
+        boatBaseLocalPosition = boatVisual.localPosition;
+        boatBaseLocalRotation = boatVisual.localRotation;
+    }
+
+    private void CacheReferences()
+    {
+        ruleController = ruleController != null ? ruleController : GetComponentInParent<PlayerRuleController>();
     }
 
     private void ResolveVisualTargets()
@@ -182,6 +225,44 @@ public class PlayerFormView : MonoBehaviour
         return animator.isActiveAndEnabled
                && animator.gameObject.activeInHierarchy
                && animator.runtimeAnimatorController != null;
+    }
+
+    private void UpdateBoatFloat()
+    {
+        if (boatVisual == null)
+        {
+            return;
+        }
+
+        bool shouldFloat = enableBoatFloat
+                           && ruleController != null
+                           && ruleController.IsInWater()
+                           && gameObject.activeInHierarchy;
+
+        if (!shouldFloat)
+        {
+            ResetBoatVisualPose();
+            return;
+        }
+
+        float bobOffset = Mathf.Sin(Time.time * Mathf.Max(0f, boatFloatFrequency) * Mathf.PI * 2f) * Mathf.Max(0f, boatFloatAmplitude);
+        float rockAngle = Mathf.Sin(Time.time * Mathf.Max(0f, boatRockFrequency) * Mathf.PI * 2f) * boatRockAngle;
+
+        Vector3 nextPosition = boatBaseLocalPosition;
+        nextPosition.y += bobOffset;
+        boatVisual.localPosition = nextPosition;
+        boatVisual.localRotation = boatBaseLocalRotation * Quaternion.Euler(0f, 0f, rockAngle);
+    }
+
+    private void ResetBoatVisualPose()
+    {
+        if (boatVisual == null)
+        {
+            return;
+        }
+
+        boatVisual.localPosition = boatBaseLocalPosition;
+        boatVisual.localRotation = boatBaseLocalRotation;
     }
 
     private static void ApplyScale(Transform target, Vector3 baseScale, bool faceLeft)
