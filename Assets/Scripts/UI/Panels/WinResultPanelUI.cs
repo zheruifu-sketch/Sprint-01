@@ -10,8 +10,8 @@ public class WinResultPanelUI : PanelUIBase
     [Header("References")]
     [LabelText("标题文本")]
     [SerializeField] private TMP_Text titleText;
-    [LabelText("说明文本")]
-    [SerializeField] private TMP_Text descriptionText;
+    [LabelText("结算明细文本")]
+    [SerializeField] private TMP_Text statsText;
     [LabelText("下一关按钮")]
     [SerializeField] private Button nextLevelButton;
     [LabelText("返回首页按钮")]
@@ -39,16 +39,16 @@ public class WinResultPanelUI : PanelUIBase
         BindButtons();
     }
 
-    public void SetContent(string title, string description, bool canGoToNextLevel)
+    public void SetContent(string title, string stats, bool canGoToNextLevel)
     {
         if (titleText != null)
         {
             titleText.text = title;
         }
 
-        if (descriptionText != null)
+        if (statsText != null)
         {
-            descriptionText.text = description;
+            statsText.text = stats;
         }
 
         SetButtonLabel(nextLevelButton, "Next Level");
@@ -95,7 +95,7 @@ public class WinResultPanelUI : PanelUIBase
     private void AutoBind()
     {
         titleText = titleText != null ? titleText : FindText("Card/Title");
-        descriptionText = descriptionText != null ? descriptionText : FindText("Card/Description");
+        statsText = statsText != null ? statsText : FindText("Card/Stats");
         nextLevelButton = nextLevelButton != null ? nextLevelButton : FindButton("Card/NextLevelButton");
         homeButton = homeButton != null ? homeButton : FindButton("Card/HomeButton");
     }

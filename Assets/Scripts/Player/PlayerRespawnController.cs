@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using Nenn.InspectorEnhancements.Runtime.Attributes;
 
 [RequireComponent(typeof(PlayerFormRoot))]
 [RequireComponent(typeof(PlayerHealthController))]
@@ -16,6 +18,14 @@ public class PlayerRespawnController : MonoBehaviour
     [SerializeField] private GameFlowController flowController;
     [SerializeField] private GameSessionController sessionController;
     [SerializeField] private PlayerInputReader inputReader;
+    [SerializeField] private UIManager uiManager;
+    [SerializeField] private PlayerFormController formController;
+    [LabelText("重生倒计时秒数")]
+    [SerializeField] private int respawnCountdownSeconds = 3;
+    [LabelText("每拍停留时长")]
+    [SerializeField] private float respawnCountdownStepDuration = 0.45f;
+
+    private const float RespawnHealthRatio = 0.3f;
 
     public FailureType LastFailureType { get; private set; } = FailureType.None;
     
@@ -40,6 +50,8 @@ public class PlayerRespawnController : MonoBehaviour
         flowController = flowController != null ? flowController : FindObjectOfType<GameFlowController>();
         sessionController = sessionController != null ? sessionController : FindObjectOfType<GameSessionController>();
         inputReader = inputReader != null ? inputReader : GetComponent<PlayerInputReader>();
+        uiManager = uiManager != null ? uiManager : FindObjectOfType<UIManager>(true);
+        formController = formController != null ? formController : GetComponent<PlayerFormController>();
     }
 
     private void Update()
@@ -89,6 +101,18 @@ public class PlayerRespawnController : MonoBehaviour
             return;
         }
 
+        if (failureType == FailureType.FuelDepleted)
+        {
+            HandleFuelDepleted();
+            return;
+        }
+
+        if (failureType == FailureType.HealthDepleted)
+        {
+            HandleHealthDepleted();
+            return;
+        }
+
         LastFailureType = failureType;
         hasTriggeredFailure = true;
         flowController = flowController != null ? flowController : FindObjectOfType<GameFlowController>();
@@ -119,6 +143,21 @@ public class PlayerRespawnController : MonoBehaviour
             ? sessionController.GetRespawnPositionOrDefault(transform.position)
             : transform.position;
         transform.position = targetPosition;
+
+        if (sessionController != null)
+        {
+            sessionController.StopLevelTimer();
+            if (sessionController.HasActiveCheckpoint)
+            {
+                sessionController.RestoreCheckpointProgressSnapshot();
+            }
+            else
+            {
+                sessionController.ResetLevelScoreAndTimer();
+            }
+
+            sessionController.StartLevelTimer();
+        }
 
         Rigidbody2D playerRigidbody = formRoot.PlayerRigidbody;
         if (playerRigidbody != null)
@@ -153,6 +192,11 @@ public class PlayerRespawnController : MonoBehaviour
                     fuelController.ResetFuel();
                 }
             }
+        }
+
+        if (formController != null)
+        {
+            formController.RestoreVehicleForms();
         }
 
         PlayerBuffController buffController = GetComponent<PlayerBuffController>();
@@ -243,5 +287,72 @@ public class PlayerRespawnController : MonoBehaviour
         {
             Respawn(FailureType.HealthDepleted);
         }
+    }
+
+    private void HandleFuelDepleted()
+    {
+        if (fuelController != null)
+        {
+            fuelController.SetFuelDirect(0f);
+        }
+
+        if (formController != null)
+        {
+            formController.DisableVehicleFormsForFuelDepleted();
+        }
+    }
+
+    private void HandleHealthDepleted()
+    {
+        if (hasTriggeredFailure)
+        {
+            return;
+        }
+
+        LastFailureType = FailureType.HealthDepleted;
+        hasTriggeredFailure = true;
+        StartCoroutine(RespawnFromCheckpointRoutine());
+    }
+
+    private IEnumerator RespawnFromCheckpointRoutine()
+    {
+        RestorePlayerAtCurrentRespawn();
+        if (healthController != null)
+        {
+            healthController.SetHealthDirect(healthController.MaxHealth * RespawnHealthRatio);
+        }
+
+        yield return StartCoroutine(PlayRespawnCountdownRoutine());
+        LastFailureType = FailureType.None;
+        hasTriggeredFailure = false;
+    }
+
+    public IEnumerator PlayRespawnCountdownRoutine()
+    {
+        Time.timeScale = 0f;
+        RespawnCountdownPanelUI countdownPanelUi = uiManager != null ? uiManager.Get<RespawnCountdownPanelUI>() : null;
+        if (countdownPanelUi != null)
+        {
+            countdownPanelUi.Show();
+        }
+
+        int countdownSeconds = Mathf.Max(1, respawnCountdownSeconds);
+        float stepDuration = Mathf.Max(0.05f, respawnCountdownStepDuration);
+        for (int seconds = countdownSeconds; seconds >= 1; seconds--)
+        {
+            if (countdownPanelUi != null)
+            {
+                countdownPanelUi.SetCountdownText(seconds.ToString());
+            }
+
+            yield return new WaitForSecondsRealtime(stepDuration);
+        }
+
+        if (countdownPanelUi != null)
+        {
+            countdownPanelUi.Hide();
+        }
+
+        Time.timeScale = 1f;
     }
 }

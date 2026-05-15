@@ -184,12 +184,23 @@ public class GameFlowController : MonoBehaviour
 
     private void ResumeGameplay()
     {
+        StartCoroutine(ResumeGameplayRoutine());
+    }
+
+    private IEnumerator ResumeGameplayRoutine()
+    {
         Time.timeScale = 1f;
         isTransitioning = false;
         levelStartX = sessionController != null && sessionController.HasLevelStartPosition
             ? sessionController.LevelStartX
             : GetPlayerX();
         ApplyUiState(FlowUiState.Gameplay);
+
+        PlayerRuntimeContext runtimeContext = PlayerRuntimeContext.FindInScene();
+        if (runtimeContext != null && runtimeContext.RespawnController != null)
+        {
+            yield return StartCoroutine(runtimeContext.RespawnController.PlayRespawnCountdownRoutine());
+        }
     }
 
     private void BeginNewRun()
@@ -241,6 +252,7 @@ public class GameFlowController : MonoBehaviour
         Time.timeScale = 1f;
         if (sessionController != null)
         {
+            sessionController.StopLevelTimer();
             sessionController.BeginTransition();
         }
 
@@ -251,28 +263,7 @@ public class GameFlowController : MonoBehaviour
         if (currentLevel < levelCount)
         {
             SoundEffectPlayback.Play(SoundEffectId.Success);
-            ShowLevelClearCard(currentLevel, transitionDelay);
-            yield return new WaitForSeconds(transitionDelay);
-            if (sessionController != null)
-            {
-                sessionController.AdvanceLevel(levelCount);
-            }
-
-            if (IsUsingManualLevelFlow())
-            {
-                int nextLevelNumber = sessionController != null ? sessionController.CurrentLevelNumber : currentLevel + 1;
-                levelController?.SetLevel(nextLevelNumber - 1);
-                manualLevelSequenceController = manualLevelSequenceController != null
-                    ? manualLevelSequenceController
-                    : FindObjectOfType<ManualLevelSequenceController>();
-                manualLevelSequenceController?.LoadLevel(nextLevelNumber, false);
-                RestorePlayerForCurrentManualLevel(false);
-                ResumeGameplay();
-                TryShowLevelIntroCard();
-                yield break;
-            }
-
-            ReloadActiveScene();
+            ShowEndScreen();
             yield break;
         }
 
@@ -448,12 +439,10 @@ public class GameFlowController : MonoBehaviour
             }
 
             bool canGoToNextLevel = levelController != null && levelController.CurrentLevelNumber < levelController.LevelCount;
-            string description = canGoToNextLevel
-                ? "Level cleared. Move on when you are ready."
-                : "Final level cleared. Return to the home screen to start over.";
+            string stats = BuildWinResultStats();
             winResultPanelUi.SetContent(
                 $"Level {levelController?.CurrentLevelNumber ?? 1} Clear",
-                description,
+                stats,
                 canGoToNextLevel);
             return;
         }
@@ -742,6 +731,40 @@ public class GameFlowController : MonoBehaviour
     private LevelCardUI GetLevelCardUi()
     {
         return uiManager != null ? uiManager.Get<LevelCardUI>() : null;
+    }
+
+    private string BuildWinResultStats()
+    {
+        if (sessionController == null)
+        {
+            return "Time: 00:00.00\nPickup Score: 0\nHealth Bonus: 50\nFuel Bonus: 50\nBonus Score: 100\nTotal Score: 100";
+        }
+
+        PlayerRuntimeContext runtimeContext = PlayerRuntimeContext.FindInScene();
+        float healthValue = runtimeContext != null && runtimeContext.HealthController != null ? runtimeContext.HealthController.CurrentHealth : 0f;
+        float fuelValue = runtimeContext != null && runtimeContext.FuelController != null ? runtimeContext.FuelController.CurrentFuel : 0f;
+        float maxHealth = runtimeContext != null && runtimeContext.HealthController != null ? runtimeContext.HealthController.MaxHealth : 100f;
+        float maxFuel = runtimeContext != null && runtimeContext.FuelController != null ? runtimeContext.FuelController.MaxFuel : 100f;
+
+        int pickupScore = sessionController.PickupScore;
+        int healthBonus = GetSurvivalBonus(healthValue, maxHealth);
+        int fuelBonus = GetSurvivalBonus(fuelValue, maxFuel);
+        int bonusScore = healthBonus + fuelBonus;
+        int totalScore = pickupScore + bonusScore;
+
+        return $"Time: {FormatElapsedTime(sessionController.LevelElapsedTime)}\nPickup Score: {pickupScore}\nHealth Bonus: {healthBonus}\nFuel Bonus: {fuelBonus}\nTotal Score: {totalScore}";
+    }
+
+    private static int GetSurvivalBonus(float value, float maxValue)
+    {
+        return value > 50f || value > maxValue * 0.5f ? 100 : 50;
+    }
+
+    private static string FormatElapsedTime(float elapsedTime)
+    {
+        int minutes = Mathf.FloorToInt(elapsedTime / 60f);
+        float seconds = elapsedTime - minutes * 60f;
+        return $"{minutes:00}:{seconds:00.000}";
     }
 
     private string BuildLevelIntroTitle(int levelNumber)

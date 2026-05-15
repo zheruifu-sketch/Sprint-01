@@ -23,6 +23,7 @@ public class FuelPickupItem : PlayerCollectibleBase
         }
 
         fuelController.RestoreFuel(fuelAmount);
+        GameSessionController.Instance?.AddPickupScore(10);
         return true;
     }
 

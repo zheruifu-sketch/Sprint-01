@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultStartingLevel: 1
   transitionDelay: 1.25
-  enableDebugHotkeys: 1
+  enableDebugHotkeys: 0
   levels:
   - levelName: Level 1
     description: 

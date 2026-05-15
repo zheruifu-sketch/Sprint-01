@@ -20,6 +20,9 @@ public class PlayerFormController : MonoBehaviour
     [LabelText("玩家调参配置")]
     [SerializeField] private PlayerTuningConfig tuningConfig;
 
+    private bool vehicleFormsDisabledByFuel;
+    public bool VehicleFormsDisabledByFuel => vehicleFormsDisabledByFuel;
+
     private void Reset()
     {
         CacheReferences();
@@ -53,6 +56,12 @@ public class PlayerFormController : MonoBehaviour
 
     private void OnEnable()
     {
+        if (fuelController != null)
+        {
+            fuelController.FuelChanged -= HandleFuelChanged;
+            fuelController.FuelChanged += HandleFuelChanged;
+        }
+
         if (levelController == null)
         {
             levelController = FindObjectOfType<GameLevelController>();
@@ -66,6 +75,11 @@ public class PlayerFormController : MonoBehaviour
 
     private void OnDisable()
     {
+        if (fuelController != null)
+        {
+            fuelController.FuelChanged -= HandleFuelChanged;
+        }
+
         if (levelController != null)
         {
             levelController.LevelChanged -= HandleLevelChanged;
@@ -112,6 +126,11 @@ public class PlayerFormController : MonoBehaviour
 
     private bool CanUseForm(PlayerFormType targetForm)
     {
+        if (vehicleFormsDisabledByFuel && targetForm != PlayerFormType.Human)
+        {
+            return false;
+        }
+
         if (levelController != null && !levelController.IsFormUnlocked(targetForm))
         {
             return false;
@@ -179,5 +198,27 @@ public class PlayerFormController : MonoBehaviour
         }
 
         buffController.ApplyTimedBuff(PlayerBuffType.Shield, duration);
+    }
+
+    public void DisableVehicleFormsForFuelDepleted()
+    {
+        vehicleFormsDisabledByFuel = true;
+        if (formRoot != null)
+        {
+            formRoot.SetForm(PlayerFormType.Human);
+        }
+    }
+
+    public void RestoreVehicleForms()
+    {
+        vehicleFormsDisabledByFuel = false;
+    }
+
+    private void HandleFuelChanged(float currentFuel, float _)
+    {
+        if (currentFuel > 0f)
+        {
+            vehicleFormsDisabledByFuel = false;
+        }
     }
 }

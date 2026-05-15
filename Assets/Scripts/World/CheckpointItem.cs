@@ -59,7 +59,12 @@ public class CheckpointItem : PlayerCollectibleBase
         PlayerFuelController playerFuel = playerObject.GetComponentInParent<PlayerFuelController>();
         float checkpointHealth = playerHealth != null ? playerHealth.CurrentHealth : 0f;
         float checkpointFuel = playerFuel != null ? playerFuel.CurrentFuel : 0f;
-        sessionController.ActivateCheckpoint(transform.position, checkpointHealth, checkpointFuel);
+        sessionController.ActivateCheckpoint(
+            transform.position,
+            checkpointHealth,
+            checkpointFuel,
+            sessionController.LevelElapsedTime,
+            sessionController.PickupScore);
         return true;
     }
 }

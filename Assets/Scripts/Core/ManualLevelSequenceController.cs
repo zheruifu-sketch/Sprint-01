@@ -6,6 +6,8 @@ using Nenn.InspectorEnhancements.Runtime.Attributes;
 [DisallowMultipleComponent]
 public class ManualLevelSequenceController : MonoBehaviour
 {
+    private static readonly Vector3 DefaultLevelStartPosition = new Vector3(0f, 2f, 0f);
+
     [Header("Mode")]
     [LabelText("启用手工关卡模式")]
     [SerializeField] private bool enableManualLevelMode = true;
@@ -252,23 +254,7 @@ public class ManualLevelSequenceController : MonoBehaviour
 
     private Vector3 ResolveLevelStartPosition(Transform levelInstanceTransform)
     {
-        if (levelInstanceTransform == null)
-        {
-            return Vector3.zero;
-        }
-
-        ManualLevelRoot levelRoot = levelInstanceTransform.GetComponent<ManualLevelRoot>();
-        if (levelRoot == null)
-        {
-            levelRoot = levelInstanceTransform.GetComponentInChildren<ManualLevelRoot>(true);
-        }
-
-        if (levelRoot != null && levelRoot.LevelStartMarker != null)
-        {
-            return levelRoot.LevelStartMarker.position;
-        }
-
-        return levelInstanceTransform.position;
+        return DefaultLevelStartPosition;
     }
 
     private void ClearCurrentLevel(GameObject levelInstanceToClear)

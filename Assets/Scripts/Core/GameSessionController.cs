@@ -38,6 +38,22 @@ public class GameSessionController : MonoBehaviour
     [SerializeField] private float checkpointFuelSnapshot;
     [LabelText("已展示过开场卡片的关卡")]
     [SerializeField] private int lastShownLevelIntroNumber;
+    [LabelText("本关开始时间")]
+    [SerializeField] private float levelStartTime;
+    [LabelText("本关是否正在计时")]
+    [SerializeField] private bool isLevelTimerRunning;
+    [LabelText("本关累计用时")]
+    [SerializeField] private float levelElapsedTime;
+    [LabelText("本关拾取加分")]
+    [SerializeField] private int pickupScore;
+    [LabelText("是否已记录检查点时间快照")]
+    [SerializeField] private bool hasCheckpointTimeSnapshot;
+    [LabelText("检查点时间快照")]
+    [SerializeField] private float checkpointElapsedTimeSnapshot;
+    [LabelText("是否已记录检查点拾取分快照")]
+    [SerializeField] private bool hasCheckpointPickupScoreSnapshot;
+    [LabelText("检查点拾取分快照")]
+    [SerializeField] private int checkpointPickupScoreSnapshot;
 
     public bool HasActiveRun => runState != GameRunState.Idle;
     public bool IsGameplayRunning => runState == GameRunState.Running;
@@ -58,6 +74,13 @@ public class GameSessionController : MonoBehaviour
     public bool HasCheckpointFuelSnapshot => hasCheckpointFuelSnapshot;
     public float CheckpointFuelSnapshot => checkpointFuelSnapshot;
     public int LastShownLevelIntroNumber => Mathf.Max(0, lastShownLevelIntroNumber);
+    public bool IsLevelTimerRunning => isLevelTimerRunning;
+    public float LevelElapsedTime => levelElapsedTime + (isLevelTimerRunning ? Mathf.Max(0f, Time.realtimeSinceStartup - levelStartTime) : 0f);
+    public int PickupScore => Mathf.Max(0, pickupScore);
+    public bool HasCheckpointTimeSnapshot => hasCheckpointTimeSnapshot;
+    public float CheckpointElapsedTimeSnapshot => checkpointElapsedTimeSnapshot;
+    public bool HasCheckpointPickupScoreSnapshot => hasCheckpointPickupScoreSnapshot;
+    public int CheckpointPickupScoreSnapshot => checkpointPickupScoreSnapshot;
 
     public event Action<GameRunState> RunStateChanged;
     public event Action<int> RunLevelChanged;
@@ -80,16 +103,19 @@ public class GameSessionController : MonoBehaviour
         SetCurrentLevelNumber(1);
         ClearCheckpointProgress();
         lastShownLevelIntroNumber = 0;
+        ResetLevelScoreAndTimer();
         SetRunState(GameRunState.Running);
     }
 
     public void ResumeLevel(int levelNumber)
     {
-        bool levelChanged = CurrentLevelNumber != Mathf.Max(1, levelNumber);
-        SetCurrentLevelNumber(levelNumber);
+        int resolvedLevelNumber = Mathf.Max(1, levelNumber);
+        bool levelChanged = CurrentLevelNumber != resolvedLevelNumber;
+        SetCurrentLevelNumber(resolvedLevelNumber);
         if (levelChanged)
         {
             ClearCheckpointProgress();
+            ResetLevelScoreAndTimer();
         }
 
         SetRunState(GameRunState.Running);
@@ -109,6 +135,7 @@ public class GameSessionController : MonoBehaviour
     {
         SetCurrentLevelNumber(Mathf.Clamp(currentLevelNumber + 1, 1, Mathf.Max(1, maxLevelNumber)));
         ClearCheckpointProgress();
+        ResetLevelScoreAndTimer();
         SetRunState(GameRunState.Running);
     }
 
@@ -137,6 +164,7 @@ public class GameSessionController : MonoBehaviour
         SetCurrentLevelNumber(1);
         ClearCheckpointProgress();
         lastShownLevelIntroNumber = 0;
+        ResetLevelScoreAndTimer();
         SetLevelStartPositionInternal(Vector3.zero, false);
         SetRespawnPositionInternal(Vector3.zero, false);
         SetRunState(GameRunState.Idle);
@@ -148,6 +176,7 @@ public class GameSessionController : MonoBehaviour
         SetCurrentLevelNumber(resolvedLevelNumber);
         ClearCheckpointProgress();
         lastShownLevelIntroNumber = resolvedLevelNumber - 1;
+        ResetLevelScoreAndTimer();
         SetLevelStartPositionInternal(Vector3.zero, false);
         SetRespawnPositionInternal(Vector3.zero, false);
         SetRunState(GameRunState.Running);
@@ -173,6 +202,7 @@ public class GameSessionController : MonoBehaviour
         {
             SetCurrentLevelNumber(resolvedLevelNumber);
             ClearCheckpointProgress();
+            ResetLevelScoreAndTimer();
         }
 
         if (!hasLevelStartPosition || levelChanged)
@@ -199,8 +229,14 @@ public class GameSessionController : MonoBehaviour
             return;
         }
 
-        SetCurrentLevelNumber(Mathf.Max(1, levelNumber));
+        int resolvedLevelNumber = Mathf.Max(1, levelNumber);
+        bool levelChanged = CurrentLevelNumber != resolvedLevelNumber;
+        SetCurrentLevelNumber(resolvedLevelNumber);
         ClearCheckpointProgress();
+        if (levelChanged)
+        {
+            ResetLevelScoreAndTimer();
+        }
         SetLevelStartPositionInternal(sceneEntryPosition, true);
         SetRespawnPositionInternal(sceneEntryPosition, true);
     }
@@ -220,7 +256,7 @@ public class GameSessionController : MonoBehaviour
         return Mathf.Max(0f, worldX - levelStartPosition.x);
     }
 
-    public void ActivateCheckpoint(Vector3 checkpointPosition, float currentHealth, float currentFuel)
+    public void ActivateCheckpoint(Vector3 checkpointPosition, float currentHealth, float currentFuel, float elapsedTime, int currentPickupScore)
     {
         if (!hasLevelStartPosition)
         {
@@ -234,6 +270,66 @@ public class GameSessionController : MonoBehaviour
         checkpointHealthSnapshot = Mathf.Max(0f, currentHealth);
         hasCheckpointFuelSnapshot = true;
         checkpointFuelSnapshot = Mathf.Max(0f, currentFuel);
+        hasCheckpointTimeSnapshot = true;
+        checkpointElapsedTimeSnapshot = Mathf.Max(0f, elapsedTime);
+        hasCheckpointPickupScoreSnapshot = true;
+        checkpointPickupScoreSnapshot = Mathf.Max(0, currentPickupScore);
+    }
+
+    public void StartLevelTimer()
+    {
+        if (isLevelTimerRunning)
+        {
+            return;
+        }
+
+        levelStartTime = Time.realtimeSinceStartup;
+        isLevelTimerRunning = true;
+    }
+
+    public void StopLevelTimer()
+    {
+        if (!isLevelTimerRunning)
+        {
+            return;
+        }
+
+        levelElapsedTime += Mathf.Max(0f, Time.realtimeSinceStartup - levelStartTime);
+        isLevelTimerRunning = false;
+    }
+
+    public void AddPickupScore(int amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        pickupScore += amount;
+    }
+
+    public void RestoreCheckpointProgressSnapshot()
+    {
+        if (hasCheckpointTimeSnapshot)
+        {
+            levelElapsedTime = Mathf.Max(0f, checkpointElapsedTimeSnapshot);
+        }
+
+        if (hasCheckpointPickupScoreSnapshot)
+        {
+            pickupScore = Mathf.Max(0, checkpointPickupScoreSnapshot);
+        }
+
+        levelStartTime = Time.realtimeSinceStartup;
+        isLevelTimerRunning = false;
+    }
+
+    public void ResetLevelScoreAndTimer()
+    {
+        levelStartTime = Time.realtimeSinceStartup;
+        levelElapsedTime = 0f;
+        isLevelTimerRunning = false;
+        pickupScore = 0;
     }
 
     public void ResetRespawnToLevelStart()
@@ -255,6 +351,10 @@ public class GameSessionController : MonoBehaviour
         checkpointHealthSnapshot = 0f;
         hasCheckpointFuelSnapshot = false;
         checkpointFuelSnapshot = 0f;
+        hasCheckpointTimeSnapshot = false;
+        checkpointElapsedTimeSnapshot = 0f;
+        hasCheckpointPickupScoreSnapshot = false;
+        checkpointPickupScoreSnapshot = 0;
     }
 
     private void SetLevelStartPositionInternal(Vector3 position, bool hasValue)

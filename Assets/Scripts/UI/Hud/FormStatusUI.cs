@@ -13,6 +13,8 @@ public class FormStatusUI : HudUIBase
     [SerializeField] private PlayerRuleController ruleController;
     [LabelText("关卡控制器")]
     [SerializeField] private GameLevelController levelController;
+    [LabelText("形态控制器")]
+    [SerializeField] private PlayerFormController formController;
 
     [Header("State Roots")]
     [LabelText("人形节点")]
@@ -72,6 +74,7 @@ public class FormStatusUI : HudUIBase
             runtimeContext.RefreshReferences();
             playerFormRoot = playerFormRoot != null ? playerFormRoot : runtimeContext.FormRoot;
             ruleController = ruleController != null ? ruleController : runtimeContext.RuleController;
+            formController = formController != null ? formController : runtimeContext.FormController;
         }
 
         if (playerFormRoot == null)
@@ -87,6 +90,11 @@ public class FormStatusUI : HudUIBase
         if (levelController == null)
         {
             levelController = FindObjectOfType<GameLevelController>();
+        }
+
+        if (formController == null)
+        {
+            formController = FindObjectOfType<PlayerFormController>();
         }
 
         if (humanRoot == null)
@@ -194,6 +202,11 @@ public class FormStatusUI : HudUIBase
 
     private bool IsFormDisabled(PlayerFormType formType)
     {
+        if (formType != PlayerFormType.Human && formController != null && formController.VehicleFormsDisabledByFuel)
+        {
+            return true;
+        }
+
         if (ruleController == null)
         {
             return false;

@@ -51,6 +51,7 @@ public class PlayerRuntimeContext : MonoBehaviour
     public PlayerBuffController BuffController => buffController;
     public PlayerFlashEffectController FlashEffectController => flashEffectController;
     public PlayerRespawnController RespawnController => respawnController;
+    public GameSessionController SessionController => GameSessionController.Instance;
     public PlayerTuningConfig TuningConfig => tuningConfig;
 
     public static PlayerRuntimeContext FindInScene()

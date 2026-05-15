@@ -23,6 +23,7 @@ public class HealthPickupItem : PlayerCollectibleBase
         }
 
         healthController.Heal(healAmount);
+        GameSessionController.Instance?.AddPickupScore(10);
         return true;
     }
 
