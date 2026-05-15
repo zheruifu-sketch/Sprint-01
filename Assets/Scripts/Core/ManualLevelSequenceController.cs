@@ -25,6 +25,8 @@ public class ManualLevelSequenceController : MonoBehaviour
     [SerializeField] private List<GameObject> levelPrefabs = new List<GameObject>();
     [LabelText("手工关卡名称列表")]
     [SerializeField] private List<string> levelNames = new List<string>();
+    [LabelText("测试关卡预制体")]
+    [SerializeField] private GameObject testLevelPrefab;
 
     private GameObject currentLevelInstance;
 
@@ -33,6 +35,7 @@ public class ManualLevelSequenceController : MonoBehaviour
 
     public bool IsManualLevelModeEnabled => enableManualLevelMode && GetConfiguredLevelCount() > 0;
     public int LevelCount => GetConfiguredLevelCount();
+    public bool HasDedicatedTestLevel => testLevelPrefab != null;
 
     private void Reset()
     {
@@ -62,6 +65,12 @@ public class ManualLevelSequenceController : MonoBehaviour
 
     public void RefreshLoadedLevel()
     {
+        if (HasDedicatedTestLevel)
+        {
+            LoadDedicatedTestLevel();
+            return;
+        }
+
         LoadLevel(ResolveCurrentLevelNumber(), true);
     }
 
@@ -119,6 +128,25 @@ public class ManualLevelSequenceController : MonoBehaviour
         if (sessionController != null)
         {
             sessionController.PrepareLevelSpawn(levelNumber, levelStartPosition);
+        }
+    }
+
+    public void LoadDedicatedTestLevel()
+    {
+        GameObject previousRuntimeLevelInstance = currentLevelInstance;
+        ClearCurrentLevel(previousRuntimeLevelInstance);
+        if (!IsManualLevelModeEnabled || testLevelPrefab == null)
+        {
+            return;
+        }
+
+        currentLevelInstance = Instantiate(testLevelPrefab, levelParent);
+        currentLevelInstance.name = testLevelPrefab.name;
+
+        Vector3 levelStartPosition = ResolveLevelStartPosition(currentLevelInstance.transform);
+        if (sessionController != null)
+        {
+            sessionController.PrepareLevelSpawn(1, levelStartPosition);
         }
     }
 

@@ -65,12 +65,10 @@ public class CollapsingSnowSegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintId("blizzard.collapse-snow");
     }
 
     private void Awake()
     {
-        EnsureHintId("blizzard.collapse-snow");
         CachePlayerReferences();
         ClearRendererCaches();
     }

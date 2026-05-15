@@ -67,6 +67,10 @@ public class LevelCardUI : HudUIBase
         {
             hideCoroutine = StartCoroutine(HideAfterDelay(duration));
         }
+        else
+        {
+            hideCoroutine = null;
+        }
     }
 
     public void HideImmediate()

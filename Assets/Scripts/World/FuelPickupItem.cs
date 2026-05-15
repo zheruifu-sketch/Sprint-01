@@ -11,13 +11,13 @@ public class FuelPickupItem : PlayerCollectibleBase
     protected override bool CanCollect(GameObject playerObject)
     {
         PlayerFuelController fuelController = ResolveFuelController(playerObject);
-        return fuelController != null && !fuelController.IsFull();
+        return fuelController != null;
     }
 
     protected override bool Collect(GameObject playerObject)
     {
         PlayerFuelController fuelController = ResolveFuelController(playerObject);
-        if (fuelController == null || fuelController.IsFull())
+        if (fuelController == null)
         {
             return false;
         }

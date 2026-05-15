@@ -11,13 +11,13 @@ public class HealthPickupItem : PlayerCollectibleBase
     protected override bool CanCollect(GameObject playerObject)
     {
         PlayerHealthController healthController = ResolveHealthController(playerObject);
-        return healthController != null && !healthController.IsDead() && !healthController.IsFull();
+        return healthController != null && !healthController.IsDead();
     }
 
     protected override bool Collect(GameObject playerObject)
     {
         PlayerHealthController healthController = ResolveHealthController(playerObject);
-        if (healthController == null || healthController.IsDead() || healthController.IsFull())
+        if (healthController == null || healthController.IsDead())
         {
             return false;
         }

@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 using Nenn.InspectorEnhancements.Runtime.Attributes;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -30,15 +28,6 @@ public class GameFlowController : MonoBehaviour
     [LabelText("手工关卡序列控制器")]
     [SerializeField] private ManualLevelSequenceController manualLevelSequenceController;
 
-    [Header("Text")]
-    [LabelText("重开按钮文本")]
-    [SerializeField] private string restartButtonText = "Restart";
-    [LabelText("退出按钮文本")]
-    [SerializeField] private string exitButtonText = "Exit";
-    [LabelText("关卡卡片显示时长")]
-    [SerializeField] private float levelCardDuration = 2.25f;
-    [LabelText("启用关卡提示卡")]
-    [SerializeField] private bool enableLevelCards;
     private bool isTransitioning;
     private float levelStartX;
     private FailureType currentFailureType;
@@ -62,10 +51,23 @@ public class GameFlowController : MonoBehaviour
         levelStartX = GetPlayerX();
         RefreshLevelPresentation();
 
+        if (manualLevelSequenceController != null && manualLevelSequenceController.HasDedicatedTestLevel)
+        {
+            if (sessionController != null && !sessionController.HasActiveRun)
+            {
+                sessionController.StartNewRun();
+            }
+
+            levelController?.SetLevel(0);
+            manualLevelSequenceController.LoadDedicatedTestLevel();
+            RestorePlayerForCurrentManualLevel(false);
+            ResumeGameplay();
+            return;
+        }
+
         if (sessionController != null && sessionController.HasActiveRun)
         {
             ResumeGameplay();
-            TryShowLevelIntroCard();
             return;
         }
 
@@ -179,6 +181,7 @@ public class GameFlowController : MonoBehaviour
     {
         Time.timeScale = 0f;
         isTransitioning = false;
+        BackgroundMusicPlayback.Stop();
         ApplyUiState(FlowUiState.Start);
     }
 
@@ -191,6 +194,7 @@ public class GameFlowController : MonoBehaviour
     {
         Time.timeScale = 1f;
         isTransitioning = false;
+        BackgroundMusicPlayback.PlayLoop();
         levelStartX = sessionController != null && sessionController.HasLevelStartPosition
             ? sessionController.LevelStartX
             : GetPlayerX();
@@ -238,12 +242,11 @@ public class GameFlowController : MonoBehaviour
             manualLevelSequenceController = manualLevelSequenceController != null
                 ? manualLevelSequenceController
                 : FindObjectOfType<ManualLevelSequenceController>();
-            manualLevelSequenceController?.LoadLevel(levelNumber, true);
+            manualLevelSequenceController?.LoadLevel(levelNumber, false);
             RestorePlayerForCurrentManualLevel(false);
         }
 
         ResumeGameplay();
-        TryShowLevelIntroCard();
     }
 
     private IEnumerator HandleLevelCompleted()
@@ -440,8 +443,11 @@ public class GameFlowController : MonoBehaviour
 
             bool canGoToNextLevel = levelController != null && levelController.CurrentLevelNumber < levelController.LevelCount;
             string stats = BuildWinResultStats();
+            string levelTitle = !string.IsNullOrWhiteSpace(levelController?.CurrentLevelName)
+                ? levelController.CurrentLevelName
+                : $"Level {levelController?.CurrentLevelNumber ?? 1}";
             winResultPanelUi.SetContent(
-                $"Level {levelController?.CurrentLevelNumber ?? 1} Clear",
+                $"{levelTitle} Clear",
                 stats,
                 canGoToNextLevel);
             return;
@@ -487,6 +493,7 @@ public class GameFlowController : MonoBehaviour
 
     private void ShowEndScreen()
     {
+        BackgroundMusicPlayback.Stop();
         Time.timeScale = 0f;
         isTransitioning = false;
         if (sessionController != null)
@@ -500,6 +507,7 @@ public class GameFlowController : MonoBehaviour
     {
         currentFailureType = failureType;
         SoundEffectPlayback.Play(SoundEffectId.Failure);
+        BackgroundMusicPlayback.Stop();
         Time.timeScale = 0f;
         isTransitioning = false;
         if (sessionController != null)
@@ -572,7 +580,6 @@ public class GameFlowController : MonoBehaviour
             manualLevelSequenceController?.LoadLevel(nextLevelNumber, false);
             RestorePlayerForCurrentManualLevel(false);
             ResumeGameplay();
-            TryShowLevelIntroCard();
             return;
         }
 
@@ -688,51 +695,6 @@ public class GameFlowController : MonoBehaviour
         return uiManager != null ? uiManager.Get<LevelProgressUI>() : null;
     }
 
-    private void TryShowLevelIntroCard()
-    {
-        if (levelController == null || sessionController == null)
-        {
-            return;
-        }
-
-        int levelNumber = levelController.CurrentLevelNumber;
-        if (!sessionController.ShouldShowLevelIntro(levelNumber))
-        {
-            return;
-        }
-
-        ShowLevelCard(BuildLevelIntroTitle(levelNumber), BuildLevelIntroBody(levelNumber), levelCardDuration);
-        sessionController.MarkLevelIntroShown(levelNumber);
-    }
-
-    private void ShowLevelClearCard(int clearedLevelNumber, float duration)
-    {
-        string title = $"Level {Mathf.Max(1, clearedLevelNumber)} Clear";
-        string body = "Get ready for the next level.";
-        ShowLevelCard(title, body, duration);
-    }
-
-    private void ShowLevelCard(string title, string body, float duration)
-    {
-        if (!enableLevelCards)
-        {
-            return;
-        }
-
-        LevelCardUI levelCardUi = GetLevelCardUi();
-        if (levelCardUi == null)
-        {
-            return;
-        }
-
-        levelCardUi.ShowCard(title, body, duration);
-    }
-
-    private LevelCardUI GetLevelCardUi()
-    {
-        return uiManager != null ? uiManager.Get<LevelCardUI>() : null;
-    }
-
     private string BuildWinResultStats()
     {
         if (sessionController == null)
@@ -765,11 +727,6 @@ public class GameFlowController : MonoBehaviour
         int minutes = Mathf.FloorToInt(elapsedTime / 60f);
         float seconds = elapsedTime - minutes * 60f;
         return $"{minutes:00}:{seconds:00.000}";
-    }
-
-    private string BuildLevelIntroTitle(int levelNumber)
-    {
-        return $"Level {Mathf.Max(1, levelNumber)}";
     }
 
     private void TryCompleteCurrentLevel()
@@ -820,155 +777,5 @@ public class GameFlowController : MonoBehaviour
             : GetPlayerX();
     }
 
-    private string BuildLevelIntroBody(int levelNumber)
-    {
-        ManualLevelFlowConfig.ManualLevelDefinition manualLevelConfig = GetManualLevelConfig(levelNumber);
-        GameProgressionConfig.LevelDefinition levelConfig = GetLegacyLevelConfig(levelNumber);
-        if (IsUsingManualLevelFlow())
-        {
-            if (manualLevelConfig == null)
-            {
-                return "Reach the goal trigger.";
-            }
-
-            StringBuilder manualBuilder = new StringBuilder();
-            manualBuilder.Append("Reach the goal trigger.");
-            manualBuilder.AppendLine();
-            manualBuilder.Append($"Forms: {JoinFormNames(manualLevelConfig != null ? manualLevelConfig.UnlockedForms : null)}");
-            return manualBuilder.ToString();
-        }
-
-        if (levelConfig == null)
-        {
-            return "Goal\n0m";
-        }
-
-        StringBuilder builder = new StringBuilder();
-        builder.Append($"Goal: {levelConfig.TargetDistance:0}m");
-        builder.AppendLine();
-        builder.Append($"Environments: {JoinEnvironmentNames(levelConfig.AllowedEnvironments)}");
-        builder.AppendLine();
-        builder.Append($"Forms: {JoinFormNames(levelConfig.UnlockedForms)}");
-        builder.AppendLine();
-        builder.Append($"Hazards: {JoinHazardNames(levelConfig.Hazards)}");
-        return builder.ToString();
-    }
-
-    private ManualLevelFlowConfig.ManualLevelDefinition GetManualLevelConfig(int levelNumber)
-    {
-        ManualLevelFlowConfig manualConfig = ManualLevelFlowConfig.Load();
-        return manualConfig != null ? manualConfig.GetLevel(levelNumber - 1) : null;
-    }
-
-    private GameProgressionConfig.LevelDefinition GetLegacyLevelConfig(int levelNumber)
-    {
-        GameProgressionConfig progressionConfig = GameProgressionConfig.Load();
-        return progressionConfig != null ? progressionConfig.GetLevel(levelNumber - 1) : null;
-    }
-
-    private static string JoinEnvironmentNames(IReadOnlyList<EnvironmentType> environments)
-    {
-        if (environments == null || environments.Count == 0)
-        {
-            return "Mixed";
-        }
-
-        List<string> names = new List<string>();
-        for (int i = 0; i < environments.Count; i++)
-        {
-            names.Add(GetEnvironmentName(environments[i]));
-        }
-
-        return string.Join(", ", names);
-    }
-
-    private static string JoinFormNames(IReadOnlyList<PlayerFormType> forms)
-    {
-        if (forms == null || forms.Count == 0)
-        {
-            return "All";
-        }
-
-        List<string> names = new List<string>();
-        for (int i = 0; i < forms.Count; i++)
-        {
-            names.Add(GetFormName(forms[i]));
-        }
-
-        return string.Join(", ", names);
-    }
-
-    private static string JoinHazardNames(IReadOnlyList<HazardProfile> hazards)
-    {
-        if (hazards == null || hazards.Count == 0)
-        {
-            return "None";
-        }
-
-        List<string> names = new List<string>();
-        for (int i = 0; i < hazards.Count; i++)
-        {
-            HazardProfile profile = hazards[i];
-            if (profile == null)
-            {
-                continue;
-            }
-
-            names.Add(!string.IsNullOrWhiteSpace(profile.DisplayName)
-                ? profile.DisplayName
-                : GetHazardName(profile.HazardType));
-        }
-
-        return names.Count > 0 ? string.Join(", ", names) : "None";
-    }
-
-    private static string GetEnvironmentName(EnvironmentType environmentType)
-    {
-        switch (environmentType)
-        {
-            case EnvironmentType.Road:
-                return "Road";
-            case EnvironmentType.Water:
-                return "Water";
-            case EnvironmentType.Cliff:
-                return "Cliff";
-            case EnvironmentType.Blizzard:
-                return "Blizzard";
-            case EnvironmentType.Obstacle:
-                return "Obstacle";
-            default:
-                return "Unknown";
-        }
-    }
-
-    private static string GetFormName(PlayerFormType formType)
-    {
-        switch (formType)
-        {
-            case PlayerFormType.Human:
-                return "Human";
-            case PlayerFormType.Car:
-                return "Car";
-            case PlayerFormType.Plane:
-                return "Plane";
-            case PlayerFormType.Boat:
-                return "Boat";
-            default:
-                return "Unknown";
-        }
-    }
-
-    private static string GetHazardName(GameHazardType hazardType)
-    {
-        switch (hazardType)
-        {
-            case GameHazardType.BoulderChase:
-                return "Boulder";
-            case GameHazardType.FallingRocks:
-                return "Falling Rocks";
-            default:
-                return "None";
-        }
-    }
 
 }

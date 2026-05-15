@@ -20,10 +20,11 @@ public class PlayerRespawnController : MonoBehaviour
     [SerializeField] private PlayerInputReader inputReader;
     [SerializeField] private UIManager uiManager;
     [SerializeField] private PlayerFormController formController;
+    [SerializeField] private SmoothCameraFollow2D cameraFollow;
     [LabelText("重生倒计时秒数")]
     [SerializeField] private int respawnCountdownSeconds = 3;
-    [LabelText("每拍停留时长")]
-    [SerializeField] private float respawnCountdownStepDuration = 0.45f;
+    [LabelText("倒计时每拍时长")]
+    [SerializeField] private float respawnCountdownBeatDuration = 0.5f;
 
     private const float RespawnHealthRatio = 0.3f;
 
@@ -52,6 +53,7 @@ public class PlayerRespawnController : MonoBehaviour
         inputReader = inputReader != null ? inputReader : GetComponent<PlayerInputReader>();
         uiManager = uiManager != null ? uiManager : FindObjectOfType<UIManager>(true);
         formController = formController != null ? formController : GetComponent<PlayerFormController>();
+        cameraFollow = cameraFollow != null ? cameraFollow : FindObjectOfType<SmoothCameraFollow2D>();
     }
 
     private void Update()
@@ -155,8 +157,6 @@ public class PlayerRespawnController : MonoBehaviour
             {
                 sessionController.ResetLevelScoreAndTimer();
             }
-
-            sessionController.StartLevelTimer();
         }
 
         Rigidbody2D playerRigidbody = formRoot.PlayerRigidbody;
@@ -197,6 +197,11 @@ public class PlayerRespawnController : MonoBehaviour
         if (formController != null)
         {
             formController.RestoreVehicleForms();
+        }
+
+        if (cameraFollow != null)
+        {
+            cameraFollow.SnapToTarget();
         }
 
         PlayerBuffController buffController = GetComponent<PlayerBuffController>();
@@ -337,7 +342,7 @@ public class PlayerRespawnController : MonoBehaviour
         }
 
         int countdownSeconds = Mathf.Max(1, respawnCountdownSeconds);
-        float stepDuration = Mathf.Max(0.05f, respawnCountdownStepDuration);
+        float beatDuration = Mathf.Max(0.05f, respawnCountdownBeatDuration);
         for (int seconds = countdownSeconds; seconds >= 1; seconds--)
         {
             if (countdownPanelUi != null)
@@ -345,12 +350,24 @@ public class PlayerRespawnController : MonoBehaviour
                 countdownPanelUi.SetCountdownText(seconds.ToString());
             }
 
-            yield return new WaitForSecondsRealtime(stepDuration);
+            yield return new WaitForSecondsRealtime(beatDuration);
         }
 
         if (countdownPanelUi != null)
         {
+            countdownPanelUi.SetCountdownText("GO!");
+        }
+
+        yield return new WaitForSecondsRealtime(beatDuration);
+
+        if (countdownPanelUi != null)
+        {
             countdownPanelUi.Hide();
+        }
+
+        if (sessionController != null)
+        {
+            sessionController.StartLevelTimer();
         }
 
         Time.timeScale = 1f;

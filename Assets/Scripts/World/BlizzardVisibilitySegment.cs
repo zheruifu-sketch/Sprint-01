@@ -30,7 +30,6 @@ public class BlizzardVisibilitySegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintId("blizzard.visibility");
         blizzardVisualRoot = transform;
         CollectTargets();
         CaptureInitialState();
@@ -38,8 +37,6 @@ public class BlizzardVisibilitySegment : SpecialRoadSegmentBase
 
     private void Awake()
     {
-        EnsureHintId("blizzard.visibility");
-
         if (blizzardVisualRoot == null)
         {
             blizzardVisualRoot = transform;

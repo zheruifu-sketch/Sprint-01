@@ -16,16 +16,19 @@ public class PlayerFlashEffectController : MonoBehaviour
     [LabelText("出生闪烁时长")]
     [SerializeField] private float spawnFlashDuration = 0.5f;
     [LabelText("受伤闪烁时长")]
-    [SerializeField] private float damageFlashDuration = 0.5f;
+    [SerializeField] private float damageFlashDuration = 0.18f;
+    [LabelText("受伤闪烁触发间隔")]
+    [SerializeField] private float damageFlashCooldown = 0.2f;
     [LabelText("闪烁次数")]
-    [SerializeField] private int flashPulseCount = 2;
+    [SerializeField] private int flashPulseCount = 1;
     [LabelText("闪烁最低透明度")]
-    [SerializeField] private float flashAlpha = 0.25f;
+    [SerializeField] private float flashAlpha = 0.55f;
 
     private SpriteRenderer[] renderers;
     private Color[] baseColors;
     private float spawnFlashRemaining;
     private float damageFlashRemaining;
+    private float lastDamageFlashTime = -999f;
 
     private void Reset()
     {
@@ -106,6 +109,12 @@ public class PlayerFlashEffectController : MonoBehaviour
 
     public void PlayDamageFlash()
     {
+        if (Time.unscaledTime - lastDamageFlashTime < Mathf.Max(0f, damageFlashCooldown))
+        {
+            return;
+        }
+
+        lastDamageFlashTime = Time.unscaledTime;
         damageFlashRemaining = damageFlashDuration;
         ApplyFlash();
     }

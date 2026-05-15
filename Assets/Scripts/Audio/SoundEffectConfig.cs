@@ -11,13 +11,13 @@ public class SoundEffectConfig : ScriptableObject
     {
         [LabelText("音效类型")]
         [SerializeField] private SoundEffectId soundEffectId = SoundEffectId.None;
-        [LabelText("音效列表")]
-        [SerializeField] private List<AudioClip> clips = new List<AudioClip>();
+        [LabelText("音效")]
+        [SerializeField] private AudioClip clip;
         [LabelText("音量")]
         [SerializeField] private float volume = 1f;
 
         public SoundEffectId SoundEffectId => soundEffectId;
-        public List<AudioClip> Clips => clips;
+        public AudioClip Clip => clip;
         public float Volume => Mathf.Clamp01(volume);
     }
 
@@ -43,27 +43,12 @@ public class SoundEffectConfig : ScriptableObject
                 continue;
             }
 
-            List<AudioClip> clips = entry.Clips;
-            if (clips == null || clips.Count == 0)
+            if (entry.Clip == null)
             {
                 return false;
             }
 
-            List<AudioClip> validClips = new List<AudioClip>();
-            for (int clipIndex = 0; clipIndex < clips.Count; clipIndex++)
-            {
-                if (clips[clipIndex] != null)
-                {
-                    validClips.Add(clips[clipIndex]);
-                }
-            }
-
-            if (validClips.Count == 0)
-            {
-                return false;
-            }
-
-            clip = validClips[UnityEngine.Random.Range(0, validClips.Count)];
+            clip = entry.Clip;
             volume = entry.Volume;
             return true;
         }

@@ -12,13 +12,11 @@ public class LavaRoadSegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintId("road.lava");
         CacheReferences();
     }
 
     private void Awake()
     {
-        EnsureHintId("road.lava");
         CacheReferences();
     }
 

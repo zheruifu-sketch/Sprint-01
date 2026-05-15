@@ -65,12 +65,10 @@ public class CliffPlatformChainSegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintId("cliff.platform-chain");
     }
 
     private void Awake()
     {
-        EnsureHintId("cliff.platform-chain");
         CachePlayerReferences();
         ClearRendererCaches();
     }

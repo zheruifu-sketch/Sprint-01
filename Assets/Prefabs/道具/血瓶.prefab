@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1602728165616516147}
   - component: {fileID: 534001001}
   - component: {fileID: 534001002}
+  - component: {fileID: 7533127859020064132}
   m_Layer: 0
   m_Name: "\u8840\u74F6"
   m_TagString: Untagged
@@ -112,8 +113,27 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ea38665dca34df3ae95b5634460b3e9, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   triggerCollider: {fileID: 534001001}
   destroyOnCollect: 1
   healAmount: 25
+--- !u!114 &7533127859020064132
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2057589768345766926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6f616d430b9c2646b2344f97991a48a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  title: Health Bottle
+  body: ' Pick up a Health Bottle to restore health. Current restore amount: 25.
+    Recover as soon as possible after taking damage to avoid failing from repeated
+    mistakes.'
+  pauseGameplay: 1
+  closeOnAnyKey: 1
+  triggerOnce: 1

@@ -42,13 +42,11 @@ public class BreakableRoadBlock : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintId("road.breakable-block");
         CollectTargets();
     }
 
     private void Awake()
     {
-        EnsureHintId("road.breakable-block");
         CollectTargets();
         AttachColliderRelays();
     }

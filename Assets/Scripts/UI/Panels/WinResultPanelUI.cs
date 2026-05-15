@@ -56,7 +56,13 @@ public class WinResultPanelUI : PanelUIBase
 
         if (nextLevelButton != null)
         {
+            nextLevelButton.gameObject.SetActive(canGoToNextLevel);
             nextLevelButton.interactable = canGoToNextLevel;
+        }
+
+        if (homeButton != null)
+        {
+            homeButton.gameObject.SetActive(true);
         }
     }
 

@@ -62,12 +62,10 @@ public class IcicleSnowSegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintId("blizzard.icicle-fall");
     }
 
     private void Awake()
     {
-        EnsureHintId("blizzard.icicle-fall");
         CachePlayerReferences();
         ScheduleNextSpawn();
     }

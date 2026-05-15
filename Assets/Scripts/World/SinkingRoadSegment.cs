@@ -55,14 +55,12 @@ public class SinkingRoadSegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintId("road.sinking");
         sinkingRoot = transform;
         CollectTargets();
     }
 
     private void Awake()
     {
-        EnsureHintId("road.sinking");
         if (sinkingRoot == null)
         {
             sinkingRoot = transform;
@@ -79,7 +77,6 @@ public class SinkingRoadSegment : SpecialRoadSegmentBase
 
     private void Start()
     {
-        EnsureHintId("road.sinking");
         CaptureInitialState();
         RestoreInitialState(true);
     }

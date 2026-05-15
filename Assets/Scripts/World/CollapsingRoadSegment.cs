@@ -30,13 +30,11 @@ public class CollapsingRoadSegment : SpecialRoadSegmentBase
 
     private void Reset()
     {
-        EnsureHintId("road.collapse");
         CollectTargets();
     }
 
     private void Awake()
     {
-        EnsureHintId("road.collapse");
         CollectTargets();
         SetRenderersVisible(true);
         SetCollidersEnabled(true);

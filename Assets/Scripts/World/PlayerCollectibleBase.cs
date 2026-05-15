@@ -47,6 +47,7 @@ public abstract class PlayerCollectibleBase : MonoBehaviour
         }
 
         collected = true;
+        NotifyTutorialHint();
         SoundEffectPlayback.Play(SoundEffectId.Pickup);
 
         if (destroyOnCollect)
@@ -70,6 +71,15 @@ public abstract class PlayerCollectibleBase : MonoBehaviour
     protected static PlayerRuntimeContext ResolveRuntimeContext(GameObject playerObject)
     {
         return playerObject != null ? playerObject.GetComponent<PlayerRuntimeContext>() : null;
+    }
+
+    private void NotifyTutorialHint()
+    {
+        CollectibleTutorialHint tutorialHint = GetComponent<CollectibleTutorialHint>();
+        if (tutorialHint != null)
+        {
+            tutorialHint.TryShowHint();
+        }
     }
 
     private void CacheCollectibleReferences()
