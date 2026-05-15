@@ -351,6 +351,15 @@ public class GameFlowController : MonoBehaviour
             tutorialPanelUi.CloseRequested += HandleTutorialClosed;
         }
 
+        FixedActionButtonsUI fixedActionButtonsUi = uiManager.Get<FixedActionButtonsUI>();
+        if (fixedActionButtonsUi != null)
+        {
+            fixedActionButtonsUi.HelpRequested -= HandleTutorialRequested;
+            fixedActionButtonsUi.HelpRequested += HandleTutorialRequested;
+            fixedActionButtonsUi.ResetLevelRequested -= HandleResetCurrentLevelRequested;
+            fixedActionButtonsUi.ResetLevelRequested += HandleResetCurrentLevelRequested;
+        }
+
         FailResultPanelUI failResultPanelUi = uiManager.Get<FailResultPanelUI>();
         if (failResultPanelUi != null)
         {
@@ -618,11 +627,6 @@ public class GameFlowController : MonoBehaviour
 
     private void HandleTutorialRequested()
     {
-        if (sessionController != null && sessionController.HasActiveRun)
-        {
-            return;
-        }
-
         Time.timeScale = 0f;
         isTransitioning = false;
         ApplyUiState(FlowUiState.Tutorial);
@@ -637,6 +641,28 @@ public class GameFlowController : MonoBehaviour
         }
 
         PauseForStartScreen();
+    }
+
+    private void HandleResetCurrentLevelRequested()
+    {
+        if (sessionController == null || !sessionController.HasActiveRun)
+        {
+            return;
+        }
+
+        Time.timeScale = 1f;
+        isTransitioning = false;
+        sessionController.ResetRespawnToLevelStart();
+        sessionController.ResumeLevel(sessionController.CurrentLevelNumber);
+
+        if (IsUsingManualLevelFlow())
+        {
+            RestorePlayerForCurrentManualLevel(true);
+            ResumeGameplay();
+            return;
+        }
+
+        ReloadActiveScene();
     }
 
     private string BuildFailureDescription(FailureType failureType)
