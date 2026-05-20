@@ -27,6 +27,15 @@ public class GameFlowController : MonoBehaviour
     [SerializeField] private UIManager uiManager;
     [LabelText("手工关卡序列控制器")]
     [SerializeField] private ManualLevelSequenceController manualLevelSequenceController;
+    [Header("Intro")]
+    [LabelText("首次进关变黑时长")]
+    [SerializeField] private float firstRunFadeToBlackDuration = 0.8f;
+    [LabelText("首次进关黑屏停留")]
+    [SerializeField] private float firstRunBlackHoldDuration = 1f;
+    [LabelText("首次进关淡入时长")]
+    [SerializeField] private float firstRunFadeDuration = 1.2f;
+    [LabelText("变亮后多久接倒计时")]
+    [SerializeField] private float firstRunCountdownLeadDelay = 0.5f;
 
     private bool isTransitioning;
     private float levelStartX;
@@ -182,17 +191,18 @@ public class GameFlowController : MonoBehaviour
         Time.timeScale = 0f;
         isTransitioning = false;
         BackgroundMusicPlayback.Stop();
+        GetRunIntroFadePanelUi()?.HideImmediate();
         ApplyUiState(FlowUiState.Start);
     }
 
-    private void ResumeGameplay()
+    private void ResumeGameplay(bool playOpeningFade = false)
     {
-        StartCoroutine(ResumeGameplayRoutine());
+        StartCoroutine(ResumeGameplayRoutine(playOpeningFade));
     }
 
-    private IEnumerator ResumeGameplayRoutine()
+    private IEnumerator ResumeGameplayRoutine(bool playOpeningFade)
     {
-        Time.timeScale = 1f;
+        Time.timeScale = 0f;
         isTransitioning = false;
         BackgroundMusicPlayback.PlayLoop();
         levelStartX = sessionController != null && sessionController.HasLevelStartPosition
@@ -200,11 +210,50 @@ public class GameFlowController : MonoBehaviour
             : GetPlayerX();
         ApplyUiState(FlowUiState.Gameplay);
 
+        RunIntroFadePanelUI runIntroFadePanelUi = GetRunIntroFadePanelUi();
+        if (playOpeningFade && runIntroFadePanelUi != null)
+        {
+            Coroutine fadeCoroutine = StartCoroutine(runIntroFadePanelUi.PlayFadeFromBlackRoutine(
+                firstRunBlackHoldDuration,
+                firstRunFadeDuration));
+
+            float countdownLeadDelay = firstRunBlackHoldDuration
+                + Mathf.Clamp(firstRunCountdownLeadDelay, 0f, firstRunFadeDuration);
+            if (countdownLeadDelay > 0f)
+            {
+                yield return new WaitForSecondsRealtime(countdownLeadDelay);
+            }
+
+            PlayerRuntimeContext introRuntimeContext = PlayerRuntimeContext.FindInScene();
+            if (introRuntimeContext != null && introRuntimeContext.RespawnController != null)
+            {
+                yield return StartCoroutine(introRuntimeContext.RespawnController.PlayRespawnCountdownRoutine());
+                yield break;
+            }
+
+            if (fadeCoroutine != null)
+            {
+                yield return fadeCoroutine;
+            }
+        }
+        else
+        {
+            runIntroFadePanelUi?.HideImmediate();
+        }
+
         PlayerRuntimeContext runtimeContext = PlayerRuntimeContext.FindInScene();
         if (runtimeContext != null && runtimeContext.RespawnController != null)
         {
             yield return StartCoroutine(runtimeContext.RespawnController.PlayRespawnCountdownRoutine());
+            yield break;
         }
+
+        if (sessionController != null)
+        {
+            sessionController.StartLevelTimer();
+        }
+
+        Time.timeScale = 1f;
     }
 
     private void BeginNewRun()
@@ -226,6 +275,20 @@ public class GameFlowController : MonoBehaviour
 
     private void BeginNewRunFromLevelSelection(int levelNumber)
     {
+        StartCoroutine(BeginNewRunFromLevelSelectionRoutine(levelNumber));
+    }
+
+    private IEnumerator BeginNewRunFromLevelSelectionRoutine(int levelNumber)
+    {
+        isTransitioning = true;
+        Time.timeScale = 0f;
+
+        RunIntroFadePanelUI runIntroFadePanelUi = GetRunIntroFadePanelUi();
+        if (runIntroFadePanelUi != null)
+        {
+            yield return StartCoroutine(runIntroFadePanelUi.PlayFadeToBlackRoutine(firstRunFadeToBlackDuration));
+        }
+
         if (sessionController != null)
         {
             sessionController.StartNewRun();
@@ -251,7 +314,7 @@ public class GameFlowController : MonoBehaviour
             RestorePlayerForCurrentManualLevel(false);
         }
 
-        ResumeGameplay();
+        ResumeGameplay(true);
     }
 
     private IEnumerator HandleLevelCompleted()
@@ -705,6 +768,11 @@ public class GameFlowController : MonoBehaviour
     private TutorialPanelUI GetTutorialPanelUi()
     {
         return uiManager != null ? uiManager.Get<TutorialPanelUI>() : null;
+    }
+
+    private RunIntroFadePanelUI GetRunIntroFadePanelUi()
+    {
+        return uiManager != null ? uiManager.Get<RunIntroFadePanelUI>() : null;
     }
 
     private LevelProgressUI GetLevelProgressUi()
