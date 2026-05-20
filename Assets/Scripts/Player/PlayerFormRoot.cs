@@ -48,7 +48,6 @@ public class PlayerFormRoot : MonoBehaviour
         if (formView != null)
         {
             formView.ShowForm(CurrentForm);
-            formView.SetRunState(CurrentForm, false);
 
             if (hasFacingDirection)
             {
