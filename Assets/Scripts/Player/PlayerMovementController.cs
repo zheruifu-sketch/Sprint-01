@@ -212,7 +212,7 @@ public class PlayerMovementController : MonoBehaviour
 
                     rb.velocity = velocity;
                 }
-                isRunning = Mathf.Abs(velocity.x) > 0.05f && isGrounded;
+                isRunning = !isGrounded || Mathf.Abs(velocity.x) > 0.05f;
                 break;
 
             case PlayerFormType.Car:
