@@ -209,6 +209,11 @@ public class GameFlowController : MonoBehaviour
 
     private void BeginNewRun()
     {
+        BeginNewRunFromLevelSelection(1);
+    }
+
+    private void OpenLevelSelect()
+    {
         if (sessionController != null && sessionController.HasActiveRun)
         {
             return;
@@ -334,6 +339,8 @@ public class GameFlowController : MonoBehaviour
         {
             startPanelUi.StartRequested -= BeginNewRun;
             startPanelUi.StartRequested += BeginNewRun;
+            startPanelUi.LevelSelectRequested -= OpenLevelSelect;
+            startPanelUi.LevelSelectRequested += OpenLevelSelect;
             startPanelUi.HelpRequested -= HandleTutorialRequested;
             startPanelUi.HelpRequested += HandleTutorialRequested;
         }
@@ -423,7 +430,17 @@ public class GameFlowController : MonoBehaviour
 
         if (uiState == FlowUiState.LevelSelect)
         {
-            uiManager.ShowOnly<LevelSelectPanelUI>();
+            StartPanelUI startPanelUi = uiManager.Get<StartPanelUI>();
+            if (startPanelUi != null)
+            {
+                startPanelUi.Show();
+            }
+
+            LevelSelectPanelUI levelSelectPanelUi = uiManager.Get<LevelSelectPanelUI>();
+            if (levelSelectPanelUi != null)
+            {
+                levelSelectPanelUi.Show();
+            }
             return;
         }
 

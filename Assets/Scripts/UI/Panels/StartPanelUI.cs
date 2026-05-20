@@ -14,10 +14,13 @@ public class StartPanelUI : PanelUIBase
     [SerializeField] private TMP_Text descriptionText;
     [LabelText("开始按钮")]
     [SerializeField] private Button startButton;
+    [LabelText("关卡按钮")]
+    [SerializeField] private Button levelSelectButton;
     [LabelText("说明按钮")]
     [SerializeField] private Button helpButton;
 
     public event Action StartRequested;
+    public event Action LevelSelectRequested;
     public event Action HelpRequested;
 
     protected override void Reset()
@@ -52,6 +55,7 @@ public class StartPanelUI : PanelUIBase
         }
 
         SetButtonLabel(startButton, "Start");
+        SetButtonLabel(levelSelectButton, "Level");
         SetButtonLabel(helpButton, "Help");
     }
 
@@ -61,6 +65,12 @@ public class StartPanelUI : PanelUIBase
         {
             startButton.onClick.RemoveListener(HandleStartClicked);
             startButton.onClick.AddListener(HandleStartClicked);
+        }
+
+        if (levelSelectButton != null)
+        {
+            levelSelectButton.onClick.RemoveListener(HandleLevelSelectClicked);
+            levelSelectButton.onClick.AddListener(HandleLevelSelectClicked);
         }
 
         if (helpButton != null)
@@ -76,6 +86,12 @@ public class StartPanelUI : PanelUIBase
         StartRequested?.Invoke();
     }
 
+    private void HandleLevelSelectClicked()
+    {
+        SoundEffectPlayback.Play(SoundEffectId.Click);
+        LevelSelectRequested?.Invoke();
+    }
+
     private void HandleHelpClicked()
     {
         SoundEffectPlayback.Play(SoundEffectId.Click);
@@ -87,6 +103,7 @@ public class StartPanelUI : PanelUIBase
         titleText = titleText != null ? titleText : FindText("Card/Title", "Title");
         descriptionText = descriptionText != null ? descriptionText : FindText("Card/Description", "Description");
         startButton = startButton != null ? startButton : FindButton("Card/StartButton", "StartButton");
+        levelSelectButton = levelSelectButton != null ? levelSelectButton : FindButton("Card/LevelButton", "LevelButton");
         helpButton = helpButton != null ? helpButton : FindButton("Card/HelpButton", "HelpButton");
     }
 
